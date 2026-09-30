@@ -303,8 +303,8 @@ tfoot td{font-weight:700;border-bottom:0;font-size:18px;letter-spacing:-.02em}
 .d-body{padding:20px;display:grid;gap:22px}
 .d-hero{display:flex;gap:16px;align-items:flex-start}
 .d-hero .thumb{width:72px;height:72px;border-radius:18px}
-.st-open{width:100%;justify-content:center;border:1px dashed var(--line)}
-.st-open:hover{border-color:var(--accent);color:var(--accent)}
+.st-open{width:100%;justify-content:center;border:1px solid var(--accent);color:var(--accent);background:var(--glow);font-weight:600}
+.st-open:hover{background:var(--accent);color:var(--accent-ink)}
 .card-img{height:150px;border-radius:12px;background:#fff;overflow:hidden;flex:none}
 .card-img img{display:block;width:100%;height:100%;object-fit:contain;padding:10px;box-sizing:border-box}
 .thumb.has-img{background:#fff;overflow:hidden}
@@ -1344,7 +1344,7 @@ function card(p){
     <div class="card-top" style="padding-right:0"><div class="thumb">${ICON[p.cat]}</div><div style="min-width:0;flex:1"><div class="pbrand">${esc(p.brand)}${award?` · <span style="color:var(--accent)">${award.award}</span>`:''}</div><button class="link pname" data-detail="${p.id}">${esc(p.name)}</button><div class="meta-row"><span class="dm-chip ${d.score>=80?'hot':''}">${demandLabel(d.score)}</span><span data-rating-for="${p.id}">${ratingHtml(p.id)}</span></div></div></div>
     <p class="card-desc">${esc(p.best)}</p>
     <div class="tags">${keyTags(p).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
-    <button class="btn sm ghost st-open" data-stores="${p.id}">Compare store prices</button>
+    <button class="btn sm ghost st-open" data-stores="${p.id}">🛒 Compare store prices</button>
       <div class="card-foot"><div class="price num">${money(p.price)}${cur!=='THB'?`<small>${fmtIn('THB',p.price)}</small>`:''}${trendChip(p)}</div>
       <div class="acts"><button class="btn sm ghost ${inC?'on-c':''}" data-compare="${p.id}" aria-pressed="${inC}">${inC?'✓ Comparing':'+ Compare'}</button><button class="btn sm primary" data-detail="${p.id}">Details</button></div></div>
   </article>`;
