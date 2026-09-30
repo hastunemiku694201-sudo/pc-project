@@ -1149,7 +1149,7 @@ function renderList(cat){
       ${m?`<div class="msgs">${m}</div>`:''}
       ${p.none?'':`<button class="btn sm ghost st-open" data-stores="${p.id}">🛒 Compare store prices</button>`}
       <div class="card-foot"><div class="price num">${p.price?money(p.price):'Free'}${cur!=='THB'&&p.price?`<small>${fmtIn('THB',p.price)}</small>`:''}${trendChip(p)}</div>
-        <div class="acts"><button class="btn sm ghost" data-detail="${p.id}">Details</button>${sel?`<button class="btn sm sel" data-clear="${cat}">✓ Selected</button>`:`<button class="btn sm ${st==='err'?'':'primary'}" data-pick="${p.id}">${build[cat]?'Swap in':'Add'}</button>`}</div></div>
+        <div class="acts">${sel?`<button class="btn sm sel" data-clear="${cat}">✓ Selected</button>`:`<button class="btn sm ${st==='err'?'':'primary'}" data-pick="${p.id}">${build[cat]?'Swap in':'Add'}</button>`}</div></div>
     </article>`}).join(''):`<div class="empty">No parts match. Clear the search or turn off “Compatible only”.</div>`)}
   </div>
   <p class="note">Demo catalog: prices and specs are sample data. Prices are set in Thai Baht; other currencies use rates from ${RATES_DATE}.</p>`;
@@ -1282,7 +1282,7 @@ function ageMonths(p){const n=p.brand+' '+p.name;
   if(/5600|5700X3D|B550|A520|DDR4|RTX 3050|H610|MX500|870 EVO|BarraCuda|AK400|NH-U12S|SE-214|MWE|Smart 500|RM850x|4000D|NR200P|RX 7600|RX 7700|Red Plus|IronWolf|RTX 4060/.test(n))return 40+hashStr(p.id)%14;
   return 20+hashStr(p.id)%14;}
 const HIST={};
-function history(p){
+function priceHistory(p){
   if(HIST[p.id])return HIST[p.id];
   const r=rng(hashStr(p.id)),age=ageMonths(p),weeks=Math.round(age*4.345),isGpu=p.cat==='gpu';
   const prem=0.1+r()*0.22+(isGpu?0.06:0),tau=weeks*(0.3+r()*0.3),eol=age>44;
@@ -1301,7 +1301,7 @@ function history(p){
   return HIST[p.id]=out;
 }
 function forecast(p,months){
-  const hs=history(p),W=Math.min(26,hs.length-1),seg=hs.slice(-W-1);
+  const hs=priceHistory(p),W=Math.min(26,hs.length-1),seg=hs.slice(-W-1);
   const xs=seg.map((_,i)=>i),ys=seg.map(x=>Math.log(x.p)),mx=xs.reduce((a,b)=>a+b,0)/xs.length,my=ys.reduce((a,b)=>a+b,0)/ys.length;
   let num=0,den=0;xs.forEach((x,i)=>{num+=(x-mx)*(ys[i]-my);den+=(x-mx)**2});
   let b=den?num/den*0.6:0;const res=Math.sqrt(ys.reduce((s,y,i)=>s+(y-(my+b/0.6*(xs[i]-mx)))**2,0)/Math.max(1,ys.length-2));
@@ -1312,7 +1312,7 @@ function forecast(p,months){
     const r10=v=>Math.round(v/10)*10;pts.push({t:new Date(NOW.getTime()+k*7*864e5),p:r10(mid),lo:r10(mid*Math.exp(-z)),hi:r10(mid*Math.exp(z)),fc:true})}
   return pts;
 }
-function trendPct(p,weeks){const hs=history(p);if(hs.length<2)return 0;const a=hs[Math.max(0,hs.length-1-weeks)].p;return (p.price-a)/a*100}
+function trendPct(p,weeks){const hs=priceHistory(p);if(hs.length<2)return 0;const a=hs[Math.max(0,hs.length-1-weeks)].p;return (p.price-a)/a*100}
 function trendChip(p){if(!p.price)return'';const t=trendPct(p,13);const a=Math.abs(t);
   return `<span class="trend">${a<1?'→ Steady':t<0?`▼ ${a.toFixed(0)}%`:`▲ ${a.toFixed(0)}%`} <span>3 mo</span></span>`}
 function demand(p){
@@ -1344,7 +1344,7 @@ function niceStep(span,n){const raw=span/n,pw=10**Math.floor(Math.log10(raw)),f=
 function renderPriceSec(){
   const el=$('#priceSec');if(!el||!drawerId)return;const p=BYID[drawerId];
   if(!p.price){el.innerHTML='';return}
-  const hs=history(p),rw=RANGES.find(r=>r[0]===priceRange)[2],seg=hs.slice(-Math.min(hs.length,rw+1)),fc=forecast(p,fcH);
+  const hs=priceHistory(p),rw=RANGES.find(r=>r[0]===priceRange)[2],seg=hs.slice(-Math.min(hs.length,rw+1)),fc=forecast(p,fcH);
   const k=CUR[cur].r,first=seg[0].p,chg=(p.price-first)/first*100,lo=Math.min(...seg.map(x=>x.p)),hi=Math.max(...seg.map(x=>x.p));
   const end=fc[fc.length-1],fchg=(end.p-p.price)/p.price*100;
   const rangeName=priceRange==='all'?'since launch':`over the last ${{'3m':'3 months','6m':'6 months','1y':'year','2y':'2 years'}[priceRange]}`;
@@ -1422,12 +1422,12 @@ function renderDemandSec(){
 
 /* ---------- detail drawer + reviews/comments ---------- */
 let reviewStars=0;
-function openDrawer(id){
+function openDrawer(id,fromPop){
   const p=BYID[id];if(!p)return;drawerId=id;reviewStars=0;
   const iss=issuesFor(p.cat,{...build,[p.cat]:p.id}),st=worst(iss),sel=build[p.cat]===p.id;
   const award=BEST.filter(x=>x.id===id);
   $('#drawer').innerHTML=`
-    <div class="d-head"><span class="eyebrow">${catLabel(p.cat)}</span><button class="btn ghost sm" id="dClose" aria-label="Close details">✕</button></div>
+    <div class="d-head"><button class="btn sm d-back" id="dClose" aria-label="Back to the list">← Back</button><span class="eyebrow">${catLabel(p.cat)}</span></div>
     <div class="d-body">
       <div class="d-hero">${photo(p,'thumb d-img',ICON[p.cat])}<div style="min-width:0"><div class="pbrand">${p.brand}</div><h2>${p.name}</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">${award.map(a=>`<span class="pick" style="padding:0;border:0;background:none"><span class="award">${a.award}</span></span>`).join('')}<span id="dRating">${ratingHtml(id)}</span></div></div></div>
@@ -1446,9 +1446,16 @@ function openDrawer(id){
     </div>`;
   renderForms();renderDrawerLists();renderPriceSec();renderDemandSec();
   $('#drawer').classList.add('open');$('#drawer').setAttribute('aria-hidden','false');$('#dscrim').hidden=false;
+  document.body.classList.add('d-open');
+  if(!fromPop){if(window.history.state&&window.history.state.d)window.history.replaceState({d:id},'');else window.history.pushState({d:id},'')}
   setTimeout(()=>$('#dClose')?.focus(),50);
 }
-function closeDrawer(){drawerId=null;$('#drawer').classList.remove('open');$('#drawer').setAttribute('aria-hidden','true');$('#dscrim').hidden=true}
+function closeDrawer(fromPop){const was=drawerId;drawerId=null;$('#drawer').classList.remove('open');$('#drawer').setAttribute('aria-hidden','true');$('#dscrim').hidden=true;document.body.classList.remove('d-open');
+  if(was&&!fromPop&&window.history.state&&window.history.state.d)window.history.back()}
+/* full-screen product page: it has its own history entry, so the browser/phone Back button closes it too */
+window.addEventListener('popstate',()=>{if(window.history.state&&window.history.state.d){if(drawerId!==window.history.state.d)openDrawer(window.history.state.d,true)}else if(drawerId)closeDrawer(true)});
+/* clicking anywhere on a product card opens it (its own buttons, links and pickers keep working) */
+document.addEventListener('click',e=>{const c=e.target.closest('.card');if(!c||e.target.closest('button,a,input,select,label,textarea,[data-cw],[data-stores]'))return;const d=c.querySelector('[data-detail]');if(d)openDrawer(d.dataset.detail)});
 function renderForms(){
   if(!drawerId)return;
   const unavailable=`<p class="muted">Customer reviews are coming soon.</p>`;

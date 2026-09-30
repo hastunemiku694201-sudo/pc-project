@@ -1216,7 +1216,7 @@ function ageMonths(p){const n=p.brand+' '+p.name;
   if(/K552|G305|G102|G213|RK61|K2|24G2SP|VG249Q1A|QcK|G640|DT 770|C920|Yeti|Alloy Origins|BlackShark V2 X|Basilisk V3|EC2-C|Wireless Controller|27GP850|34GP83A/.test(n))return 40+hashStr(p.id)%14;
   return 22+hashStr(p.id)%14;}
 const HIST={};
-function history(p){
+function priceHistory(p){
   if(HIST[p.id])return HIST[p.id];
   const r=rng(hashStr(p.id)),age=ageMonths(p),weeks=Math.round(age*4.345);
   const prem=0.08+r()*0.2+(p.cat==='monitor'?0.08:0),tau=weeks*(0.3+r()*0.35),eol=age>44;
@@ -1235,7 +1235,7 @@ function history(p){
   return HIST[p.id]=out;
 }
 function forecast(p,months){
-  const hs=history(p),W=Math.min(26,hs.length-1),seg=hs.slice(-W-1);
+  const hs=priceHistory(p),W=Math.min(26,hs.length-1),seg=hs.slice(-W-1);
   const xs=seg.map((_,i)=>i),ys=seg.map(x=>Math.log(x.p)),mx=xs.reduce((a,b)=>a+b,0)/xs.length,my=ys.reduce((a,b)=>a+b,0)/ys.length;
   let num=0,den=0;xs.forEach((x,i)=>{num+=(x-mx)*(ys[i]-my);den+=(x-mx)**2});
   const raw=den?num/den:0;const res=Math.sqrt(ys.reduce((s,y,i)=>s+(y-(my+raw*(xs[i]-mx)))**2,0)/Math.max(1,ys.length-2));
@@ -1245,7 +1245,7 @@ function forecast(p,months){
     pts.push({t:new Date(NOW.getTime()+k*7*864e5),p:r10(mid),lo:r10(mid*Math.exp(-z)),hi:r10(mid*Math.exp(z)),fc:true})}
   return pts;
 }
-function trendPct(p,weeks){const hs=history(p);if(hs.length<2)return 0;const a=hs[Math.max(0,hs.length-1-weeks)].p;return (p.price-a)/a*100}
+function trendPct(p,weeks){const hs=priceHistory(p);if(hs.length<2)return 0;const a=hs[Math.max(0,hs.length-1-weeks)].p;return (p.price-a)/a*100}
 function trendChip(p){const t=trendPct(p,13),a=Math.abs(t);return `<span class="trend">${a<1?'→ Steady':t<0?`▼ ${a.toFixed(0)}%`:`▲ ${a.toFixed(0)}%`} <span>3 mo</span></span>`}
 function demand(p){
   const r=rng(hashStr(p.id+'d'));let s=34+r()*30;
@@ -1275,7 +1275,7 @@ function fmtShort(v){const x=CUR[cur],abs=Math.abs(v),sp=x.s.length>1?' ':'';
 function niceStep(span,n){const raw=span/n,pw=10**Math.floor(Math.log10(raw)),f=raw/pw;return (f<1.5?1:f<3?2:f<7?5:10)*pw}
 function renderPriceSec(){
   const el=$('#priceSec');if(!el||!drawerId)return;const p=BYID[drawerId];
-  const hs=history(p),rw=RANGES.find(r=>r[0]===priceRange)[2],seg=hs.slice(-Math.min(hs.length,rw+1)),fc=forecast(p,fcH);
+  const hs=priceHistory(p),rw=RANGES.find(r=>r[0]===priceRange)[2],seg=hs.slice(-Math.min(hs.length,rw+1)),fc=forecast(p,fcH);
   const first=seg[0].p,chg=(p.price-first)/first*100,lo=Math.min(...seg.map(x=>x.p)),hi=Math.max(...seg.map(x=>x.p));
   const end=fc[fc.length-1],fchg=(end.p-p.price)/p.price*100;
   const rangeName=priceRange==='all'?'since launch':`over the last ${{'3m':'3 months','6m':'6 months','1y':'year','2y':'2 years'}[priceRange]}`;
@@ -1364,7 +1364,7 @@ function card(p){
     <div class="tags">${keyTags(p).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
     <button class="btn sm ghost st-open" data-stores="${p.id}">🛒 Compare store prices</button>
       <div class="card-foot"><div class="price num">${money(p.price)}${cur!=='THB'?`<small>${fmtIn('THB',p.price)}</small>`:''}${trendChip(p)}</div>
-      <div class="acts"><button class="btn sm ghost ${inC?'on-c':''}" data-compare="${p.id}" aria-pressed="${inC}">${inC?'✓ Comparing':'+ Compare'}</button><button class="btn sm primary" data-detail="${p.id}">Details</button></div></div>
+      <div class="acts"><button class="btn sm ghost ${inC?'on-c':''}" data-compare="${p.id}" aria-pressed="${inC}">${inC?'✓ Comparing':'+ Compare'}</button></div></div>
   </article>`;
 }
 function renderBrowse(){
@@ -1439,11 +1439,11 @@ function render(){
 }
 
 /* ---------- drawer ---------- */
-function openDrawer(id){
+function openDrawer(id,fromPop){
   const p=BYID[id];if(!p)return;drawerId=id;reviewStars=0;
   const award=BEST.find(x=>x.id===id),inC=compare.includes(id);
   $('#drawer').innerHTML=`
-    <div class="d-head"><span class="eyebrow">${catOf(p.cat).label} · ${esc(p.sub)}</span><button class="btn ghost sm" id="dClose" aria-label="Close details">✕</button></div>
+    <div class="d-head"><button class="btn sm d-back" id="dClose" aria-label="Back to the list">← Back</button><span class="eyebrow">${catOf(p.cat).label} · ${esc(p.sub)}</span></div>
     <div class="d-body">
       <div class="d-hero">${photo(p,'thumb d-img',ICON[p.cat])}<div style="min-width:0"><div class="pbrand">${esc(p.brand)}</div><h2>${esc(p.name)}</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;align-items:center">${award?`<span class="award-b">${award.award}</span>`:''}<span id="dRating">${ratingHtml(id)}</span></div></div></div>
@@ -1465,9 +1465,16 @@ function openDrawer(id){
     </div>`;
   $('#drawer').classList.add('open');$('#drawer').setAttribute('aria-hidden','false');$('#dscrim').hidden=false;$('#drawer').scrollTop=0;
   renderForms();renderDrawerLists();renderPriceSec();renderDemandSec();
+  document.body.classList.add('d-open');
+  if(!fromPop){if(window.history.state&&window.history.state.d)window.history.replaceState({d:id},'');else window.history.pushState({d:id},'')}
   setTimeout(()=>$('#dClose')?.focus(),50);
 }
-function closeDrawer(){drawerId=null;$('#drawer').classList.remove('open');$('#drawer').setAttribute('aria-hidden','true');$('#dscrim').hidden=true}
+function closeDrawer(fromPop){const was=drawerId;drawerId=null;$('#drawer').classList.remove('open');$('#drawer').setAttribute('aria-hidden','true');$('#dscrim').hidden=true;document.body.classList.remove('d-open');
+  if(was&&!fromPop&&window.history.state&&window.history.state.d)window.history.back()}
+/* full-screen product page: it has its own history entry, so the browser/phone Back button closes it too */
+window.addEventListener('popstate',()=>{if(window.history.state&&window.history.state.d){if(drawerId!==window.history.state.d)openDrawer(window.history.state.d,true)}else if(drawerId)closeDrawer(true)});
+/* clicking anywhere on a product card opens it (its own buttons, links and pickers keep working) */
+document.addEventListener('click',e=>{const c=e.target.closest('.card');if(!c||e.target.closest('button,a,input,select,label,textarea,[data-cw],[data-stores]'))return;const d=c.querySelector('[data-detail]');if(d)openDrawer(d.dataset.detail)});
 function renderForms(){
   if(!drawerId)return;
   if(!db){$('#revForm').innerHTML=`<p class="muted">Member reviews appear when this page is opened in Claude by a signed-in viewer.</p>`;$('#comForm').innerHTML='';$('#comWrap').hidden=true;return}

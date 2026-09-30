@@ -120,3 +120,16 @@ h1,.main-head h1{letter-spacing:.01em}
 
 @media (prefers-reduced-motion:reduce){.top,.hero::after,.hero h1 span{animation:none}}
 a.btn{text-decoration:none}
+
+/* ---------- full-screen product page (replaces the side drawer) ---------- */
+.drawer{left:0;right:0;width:100%;border-left:0;transform:translateY(18px);opacity:0;visibility:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s,visibility 0s .28s}
+.drawer.open{transform:none;opacity:1;visibility:visible;transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s}
+.drawer .d-head{justify-content:flex-start;gap:14px;padding-inline:max(16px,calc((100% - 980px)/2))}
+.drawer .d-body{max-width:980px;margin:0 auto;width:100%;box-sizing:border-box;padding-inline:16px}
+.d-back{font-weight:600}
+.drawer .d-hero .thumb.d-img.has-img{width:min(380px,42vw);height:300px;border-radius:18px}
+@media (max-width:560px){.drawer .d-hero{flex-direction:column}.drawer .d-hero .thumb.d-img.has-img{width:100%;height:240px}}
+body.d-open{overflow:hidden}
+.card{cursor:pointer}
+@media (prefers-reduced-motion:reduce){.drawer,.drawer.open{transition:none}}
+.drawer{background-color:var(--bg);background-image:linear-gradient(var(--gridline) 1px,transparent 1px),linear-gradient(90deg,var(--gridline) 1px,transparent 1px);background-size:44px 44px}
