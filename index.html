@@ -279,6 +279,18 @@ tfoot td{font-weight:700;border-bottom:0;font-size:18px;letter-spacing:-.02em}
 .stage{position:relative;background:radial-gradient(ellipse at 50% 40%,var(--surface-2),var(--surface));border:1px solid var(--line);border-radius:22px;overflow:hidden;aspect-ratio:4/3;max-width:100%;touch-action:none;cursor:grab}
 .stage:active{cursor:grabbing}
 .stage canvas{display:block;width:100%;height:100%}
+.stage{background:#05030d;border-color:rgba(0,229,255,.35);box-shadow:0 0 0 1px rgba(255,43,214,.12),0 0 40px rgba(0,229,255,.12),inset 0 0 60px rgba(0,229,255,.06)}
+.stage::before,.stage::after{content:"";position:absolute;width:26px;height:26px;border:2px solid #00e5ff;pointer-events:none;z-index:1;filter:drop-shadow(0 0 6px #00e5ff)}
+.stage::before{top:10px;left:10px;border-right:0;border-bottom:0;border-top-left-radius:8px}
+.stage::after{top:10px;right:10px;border-left:0;border-bottom:0;border-top-right-radius:8px}
+.stage-readout{position:absolute;top:18px;left:24px;display:grid;gap:3px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;color:#8fdcff;pointer-events:none;z-index:1;text-shadow:0 0 8px rgba(0,229,255,.6)}
+.stage-readout b{color:#fff;font-weight:600;letter-spacing:.14em}
+.stage-readout em{font-style:normal;color:#ff7be5}
+.stage .stage-hint{background:rgba(5,3,13,.65);color:#bfe9ff;border:1px solid rgba(0,229,255,.25)}
+.stage .stage-ctrls .btn{background:rgba(5,3,13,.65);color:#e6f7ff;border-color:rgba(0,229,255,.3)}
+.stage .stage-ctrls .btn.on{border-color:#00e5ff;color:#00e5ff;box-shadow:0 0 12px rgba(0,229,255,.35)}
+.stage .tip{background:rgba(5,3,13,.85);color:#e6f7ff;border:1px solid #00e5ff;box-shadow:0 0 14px rgba(0,229,255,.35)}
+@media (max-width:560px){.stage-readout{font-size:10px;left:18px}}
 .stage-hud{position:absolute;left:14px;right:14px;bottom:14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:flex-end;pointer-events:none}
 .stage-hud > *{pointer-events:auto}
 .stage-hint{font-size:12px;color:var(--muted);background:var(--head);backdrop-filter:blur(8px);padding:6px 10px;border-radius:8px}
@@ -305,6 +317,12 @@ tfoot td{font-weight:700;border-bottom:0;font-size:18px;letter-spacing:-.02em}
 .d-hero{display:flex;gap:16px;align-items:flex-start}
 .d-hero .thumb{width:72px;height:72px;border-radius:18px}
 .d-hero .thumb svg{width:40px;height:40px}
+.card-img{height:140px;border-radius:12px;background:#fff;overflow:hidden;flex:none}
+.card-img img{display:block;width:100%;height:100%;object-fit:contain;padding:10px;box-sizing:border-box}
+.thumb.has-img{background:#fff;overflow:hidden}
+.thumb.has-img svg{display:none}
+.thumb img{display:block;width:100%;height:100%;object-fit:contain;padding:3px;box-sizing:border-box}
+.d-hero .thumb.d-img.has-img{width:180px;height:140px}
 .d-hero h2{font-size:22px;line-height:1.2}
 .d-buy{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--surface-2);border-radius:14px;padding:14px 16px}
 .d-desc{margin:0;font-size:15px;line-height:1.6}
@@ -445,6 +463,13 @@ tfoot td{font-weight:700;border-bottom:0;font-size:18px;letter-spacing:-.02em}
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="parts-images.js"></script>
 <script>
 /* ================= DATA START ================= */
 const ICON={
@@ -633,6 +658,148 @@ P.push(
   {id:'hyte-y60',cat:'case',brand:'HYTE',name:'Y60',price:6490,forms:['ATX','mATX','ITX'],maxGpu:375,maxCooler:160,maxRad:360},
   {id:'nv7',cat:'case',brand:'Phanteks',name:'NV7 Full Tower',price:7490,forms:['ATX','mATX','ITX'],maxGpu:450,maxCooler:175,maxRad:360}
 );
+/* ---------- extra parts (approximate Thai prices and specs; check before buying) ---------- */
+P.push(
+  {id:'r5-5500',cat:'cpu',brand:'AMD',name:'Ryzen 5 5500',price:2590,socket:'AM4',cores:6,threads:12,boost:4.2,power:65,igpu:false},
+  {id:'r7-5800x',cat:'cpu',brand:'AMD',name:'Ryzen 7 5800X',price:5990,socket:'AM4',cores:8,threads:16,boost:4.7,power:105,igpu:false},
+  {id:'r9-5900x',cat:'cpu',brand:'AMD',name:'Ryzen 9 5900X',price:8900,socket:'AM4',cores:12,threads:24,boost:4.8,power:105,igpu:false},
+  {id:'r9-5950x',cat:'cpu',brand:'AMD',name:'Ryzen 9 5950X',price:12900,socket:'AM4',cores:16,threads:32,boost:4.9,power:105,igpu:false},
+  {id:'r5-8500g',cat:'cpu',brand:'AMD',name:'Ryzen 5 8500G',price:5290,socket:'AM5',cores:6,threads:12,boost:5.0,power:65,igpu:true},
+  {id:'r7-8700g',cat:'cpu',brand:'AMD',name:'Ryzen 7 8700G',price:9900,socket:'AM5',cores:8,threads:16,boost:5.1,power:88,igpu:true},
+  {id:'r7-7700',cat:'cpu',brand:'AMD',name:'Ryzen 7 7700',price:8490,socket:'AM5',cores:8,threads:16,boost:5.3,power:88,igpu:true},
+  {id:'r7-7700x',cat:'cpu',brand:'AMD',name:'Ryzen 7 7700X',price:9490,socket:'AM5',cores:8,threads:16,boost:5.4,power:142,igpu:true},
+  {id:'r9-7900x',cat:'cpu',brand:'AMD',name:'Ryzen 9 7900X',price:13900,socket:'AM5',cores:12,threads:24,boost:5.6,power:230,igpu:true},
+  {id:'r9-7950x3d',cat:'cpu',brand:'AMD',name:'Ryzen 9 7950X3D',price:22900,socket:'AM5',cores:16,threads:32,boost:5.7,power:162,igpu:true},
+  {id:'r9-9900x3d',cat:'cpu',brand:'AMD',name:'Ryzen 9 9900X3D',price:21900,socket:'AM5',cores:12,threads:24,boost:5.5,power:162,igpu:true},
+  {id:'i5-12400f',cat:'cpu',brand:'Intel',name:'Core i5-12400F',price:3990,socket:'LGA1700',cores:6,threads:12,boost:4.4,power:117,igpu:false},
+  {id:'i5-13400f',cat:'cpu',brand:'Intel',name:'Core i5-13400F',price:5490,socket:'LGA1700',cores:10,threads:16,boost:4.6,power:148,igpu:false},
+  {id:'i5-14600kf',cat:'cpu',brand:'Intel',name:'Core i5-14600KF',price:8990,socket:'LGA1700',cores:14,threads:20,boost:5.3,power:181,igpu:false},
+  {id:'i7-13700k',cat:'cpu',brand:'Intel',name:'Core i7-13700K',price:12500,socket:'LGA1700',cores:16,threads:24,boost:5.4,power:253,igpu:true},
+  {id:'i7-14700f',cat:'cpu',brand:'Intel',name:'Core i7-14700F',price:12500,socket:'LGA1700',cores:20,threads:28,boost:5.4,power:219,igpu:false},
+  {id:'i9-13900k',cat:'cpu',brand:'Intel',name:'Core i9-13900K',price:17900,socket:'LGA1700',cores:24,threads:32,boost:5.8,power:253,igpu:true},
+  {id:'u5-225f',cat:'cpu',brand:'Intel',name:'Core Ultra 5 225F',price:7290,socket:'LGA1851',cores:10,threads:10,boost:4.9,power:121,igpu:false},
+  {id:'u7-265kf',cat:'cpu',brand:'Intel',name:'Core Ultra 7 265KF',price:12500,socket:'LGA1851',cores:20,threads:20,boost:5.5,power:250,igpu:false},
+  {id:'u9-285',cat:'cpu',brand:'Intel',name:'Core Ultra 9 285',price:19900,socket:'LGA1851',cores:24,threads:24,boost:5.6,power:182,igpu:true},
+
+  {id:'prime-b550m-a',cat:'mb',brand:'ASUS',name:'Prime B550M-A WiFi II',price:3490,socket:'AM4',form:'mATX',ramType:'DDR4',ramSlots:4,m2:2},
+  {id:'gb-b550-elite',cat:'mb',brand:'Gigabyte',name:'B550 Aorus Elite AX V2',price:5290,socket:'AM4',form:'ATX',ramType:'DDR4',ramSlots:4,m2:2},
+  {id:'msi-b550a-pro',cat:'mb',brand:'MSI',name:'B550-A Pro',price:3990,socket:'AM4',form:'ATX',ramType:'DDR4',ramSlots:4,m2:2},
+  {id:'strix-b550f',cat:'mb',brand:'ASUS',name:'ROG Strix B550-F Gaming WiFi II',price:6490,socket:'AM4',form:'ATX',ramType:'DDR4',ramSlots:4,m2:2},
+  {id:'msi-b650m-a',cat:'mb',brand:'MSI',name:'PRO B650M-A WiFi',price:4990,socket:'AM5',form:'mATX',ramType:'DDR5',ramSlots:4,m2:2},
+  {id:'gb-b650m-elite',cat:'mb',brand:'Gigabyte',name:'B650M Aorus Elite AX',price:5990,socket:'AM5',form:'mATX',ramType:'DDR5',ramSlots:4,m2:2},
+  {id:'msi-b650m-mortar',cat:'mb',brand:'MSI',name:'MAG B650M Mortar WiFi',price:6490,socket:'AM5',form:'mATX',ramType:'DDR5',ramSlots:4,m2:2},
+  {id:'tuf-b650-plus',cat:'mb',brand:'ASUS',name:'TUF Gaming B650-Plus WiFi',price:6990,socket:'AM5',form:'ATX',ramType:'DDR5',ramSlots:4,m2:3},
+  {id:'msi-b650-tomahawk',cat:'mb',brand:'MSI',name:'MAG B650 Tomahawk WiFi',price:7490,socket:'AM5',form:'ATX',ramType:'DDR5',ramSlots:4,m2:3},
+  {id:'asrock-x870-pro',cat:'mb',brand:'ASRock',name:'X870 Pro RS WiFi',price:7990,socket:'AM5',form:'ATX',ramType:'DDR5',ramSlots:4,m2:3},
+  {id:'tuf-x870-plus',cat:'mb',brand:'ASUS',name:'TUF Gaming X870-Plus WiFi',price:9490,socket:'AM5',form:'ATX',ramType:'DDR5',ramSlots:4,m2:4},
+  {id:'gb-x870-elite',cat:'mb',brand:'Gigabyte',name:'X870 Aorus Elite WiFi7',price:9900,socket:'AM5',form:'ATX',ramType:'DDR5',ramSlots:4,m2:4},
+  {id:'msi-x870e-carbon',cat:'mb',brand:'MSI',name:'MPG X870E Carbon WiFi',price:16900,socket:'AM5',form:'ATX',ramType:'DDR5',ramSlots:4,m2:4},
+  {id:'msi-b760m-a-d4',cat:'mb',brand:'MSI',name:'PRO B760M-A WiFi DDR4',price:4290,socket:'LGA1700',form:'mATX',ramType:'DDR4',ramSlots:4,m2:2},
+  {id:'strix-b760f',cat:'mb',brand:'ASUS',name:'ROG Strix B760-F Gaming WiFi',price:8490,socket:'LGA1700',form:'ATX',ramType:'DDR5',ramSlots:4,m2:3},
+  {id:'gb-z790-elite',cat:'mb',brand:'Gigabyte',name:'Z790 Aorus Elite AX',price:8990,socket:'LGA1700',form:'ATX',ramType:'DDR5',ramSlots:4,m2:4},
+  {id:'msi-z790-tomahawk',cat:'mb',brand:'MSI',name:'MAG Z790 Tomahawk WiFi',price:9490,socket:'LGA1700',form:'ATX',ramType:'DDR5',ramSlots:4,m2:4},
+  {id:'gb-b860m-elite',cat:'mb',brand:'Gigabyte',name:'B860M Aorus Elite WiFi6E',price:6490,socket:'LGA1851',form:'mATX',ramType:'DDR5',ramSlots:4,m2:2},
+  {id:'msi-b860-tomahawk',cat:'mb',brand:'MSI',name:'MAG B860 Tomahawk WiFi',price:7490,socket:'LGA1851',form:'ATX',ramType:'DDR5',ramSlots:4,m2:3},
+  {id:'strix-b860i',cat:'mb',brand:'ASUS',name:'ROG Strix B860-I Gaming WiFi',price:8990,socket:'LGA1851',form:'ITX',ramType:'DDR5',ramSlots:2,m2:2},
+  {id:'tuf-z890-plus',cat:'mb',brand:'ASUS',name:'TUF Gaming Z890-Plus WiFi',price:10900,socket:'LGA1851',form:'ATX',ramType:'DDR5',ramSlots:4,m2:4},
+
+  {id:'fury-32-d4',cat:'ram',brand:'Kingston',name:'Fury Beast 32GB DDR4-3200',price:2090,type:'DDR4',cap:32,sticks:2,speed:3200},
+  {id:'tzneo-32-d4',cat:'ram',brand:'G.Skill',name:'Trident Z Neo 32GB DDR4-3600',price:2790,type:'DDR4',cap:32,sticks:2,speed:3600},
+  {id:'fury-8-d4',cat:'ram',brand:'Kingston',name:'Fury Beast 8GB DDR4-3200 (single)',price:690,type:'DDR4',cap:8,sticks:1,speed:3200},
+  {id:'vengrgb-32-d5',cat:'ram',brand:'Corsair',name:'Vengeance RGB 32GB DDR5-6000',price:4190,type:'DDR5',cap:32,sticks:2,speed:6000},
+  {id:'delta-32-d5',cat:'ram',brand:'TeamGroup',name:'T-Force Delta RGB 32GB DDR5-6000',price:3890,type:'DDR5',cap:32,sticks:2,speed:6000},
+  {id:'tz5neo-64-d5',cat:'ram',brand:'G.Skill',name:'Trident Z5 Neo RGB 64GB DDR5-6000',price:7490,type:'DDR5',cap:64,sticks:2,speed:6000},
+  {id:'renegade-32-d5',cat:'ram',brand:'Kingston',name:'Fury Renegade 32GB DDR5-6400',price:4490,type:'DDR5',cap:32,sticks:2,speed:6400},
+  {id:'domti-64-d5',cat:'ram',brand:'Corsair',name:'Dominator Titanium 64GB DDR5-6600',price:9990,type:'DDR5',cap:64,sticks:2,speed:6600},
+  {id:'crpro-32-d5',cat:'ram',brand:'Crucial',name:'Pro 32GB DDR5-5600',price:3190,type:'DDR5',cap:32,sticks:2,speed:5600},
+  {id:'crpro-64-d5',cat:'ram',brand:'Crucial',name:'Pro 64GB DDR5-5600',price:5990,type:'DDR5',cap:64,sticks:2,speed:5600},
+  {id:'ares-32-d5',cat:'ram',brand:'Lexar',name:'Ares RGB 32GB DDR5-6000',price:3490,type:'DDR5',cap:32,sticks:2,speed:6000},
+  {id:'ripjaws-s5-32',cat:'ram',brand:'G.Skill',name:'Ripjaws S5 32GB DDR5-6000',price:3390,type:'DDR5',cap:32,sticks:2,speed:6000},
+
+  {id:'rtx3060',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 3060 12GB',price:9490,vram:12,power:170,length:242},
+  {id:'rtx4060ti',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 4060 Ti 8GB',price:13900,vram:8,power:160,length:244},
+  {id:'rtx4070',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 4070 12GB',price:18900,vram:12,power:200,length:244},
+  {id:'rtx4070tis',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 4070 Ti Super 16GB',price:29900,vram:16,power:285,length:305},
+  {id:'rtx4080s',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 4080 Super 16GB',price:37900,vram:16,power:320,length:310},
+  {id:'rtx4090',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 4090 24GB',price:69900,vram:24,power:450,length:304},
+  {id:'rx6600',cat:'gpu',brand:'AMD',name:'Radeon RX 6600 8GB',price:7490,vram:8,power:132,length:190},
+  {id:'rx6750xt',cat:'gpu',brand:'AMD',name:'Radeon RX 6750 XT 12GB',price:11900,vram:12,power:250,length:267},
+  {id:'rx7800xt',cat:'gpu',brand:'AMD',name:'Radeon RX 7800 XT 16GB',price:17900,vram:16,power:263,length:267},
+  {id:'rx7900gre',cat:'gpu',brand:'AMD',name:'Radeon RX 7900 GRE 16GB',price:20900,vram:16,power:260,length:276},
+  {id:'rx7900xt',cat:'gpu',brand:'AMD',name:'Radeon RX 7900 XT 20GB',price:26900,vram:20,power:315,length:276},
+  {id:'arc-a750',cat:'gpu',brand:'Intel',name:'Arc A750 8GB',price:7490,vram:8,power:225,length:267},
+  {id:'arc-b570',cat:'gpu',brand:'Intel',name:'Arc B570 10GB',price:8490,vram:10,power:150,length:250},
+  {id:'astral-5090',cat:'gpu',brand:'ASUS',name:'ROG Astral GeForce RTX 5090 32GB',price:109900,vram:32,power:600,length:358},
+  {id:'tuf-5070ti',cat:'gpu',brand:'ASUS',name:'TUF Gaming GeForce RTX 5070 Ti 16GB',price:35900,vram:16,power:300,length:348},
+  {id:'msi-5070-trio',cat:'gpu',brand:'MSI',name:'GeForce RTX 5070 Gaming Trio OC 12GB',price:23900,vram:12,power:250,length:338},
+  {id:'gb-5060-wf',cat:'gpu',brand:'Gigabyte',name:'GeForce RTX 5060 Windforce OC 8GB',price:10490,vram:8,power:145,length:199},
+  {id:'pulse-9070xt',cat:'gpu',brand:'Sapphire',name:'Pulse Radeon RX 9070 XT 16GB',price:25900,vram:16,power:304,length:314},
+  {id:'hellhound-9070',cat:'gpu',brand:'PowerColor',name:'Hellhound Radeon RX 9070 16GB',price:23490,vram:16,power:220,length:332},
+  {id:'xfx-9060xt',cat:'gpu',brand:'XFX',name:'Swift Radeon RX 9060 XT 16GB',price:13490,vram:16,power:160,length:245},
+
+  {id:'990pro-4',cat:'storage',brand:'Samsung',name:'990 Pro 4TB NVMe Gen4',price:13900,iface:'NVMe',capacity:'4 TB',speed:7450},
+  {id:'9100pro-2',cat:'storage',brand:'Samsung',name:'9100 Pro 2TB NVMe Gen5',price:9990,iface:'NVMe',capacity:'2 TB',speed:14700},
+  {id:'p3plus-1',cat:'storage',brand:'Crucial',name:'P3 Plus 1TB NVMe Gen4',price:2290,iface:'NVMe',capacity:'1 TB',speed:5000},
+  {id:'p3plus-2',cat:'storage',brand:'Crucial',name:'P3 Plus 2TB NVMe Gen4',price:3990,iface:'NVMe',capacity:'2 TB',speed:5000},
+  {id:'t500-2',cat:'storage',brand:'Crucial',name:'T500 2TB NVMe Gen4',price:4990,iface:'NVMe',capacity:'2 TB',speed:7400},
+  {id:'sn580-1',cat:'storage',brand:'WD',name:'Blue SN580 1TB NVMe Gen4',price:2190,iface:'NVMe',capacity:'1 TB',speed:4150},
+  {id:'sn850x-1',cat:'storage',brand:'WD',name:'Black SN850X 1TB NVMe Gen4',price:3290,iface:'NVMe',capacity:'1 TB',speed:7300},
+  {id:'sn8100-2',cat:'storage',brand:'WD',name:'Black SN8100 2TB NVMe Gen5',price:10900,iface:'NVMe',capacity:'2 TB',speed:14900},
+  {id:'kc3000-2',cat:'storage',brand:'Kingston',name:'KC3000 2TB NVMe Gen4',price:5290,iface:'NVMe',capacity:'2 TB',speed:7000},
+  {id:'fc530r-2',cat:'storage',brand:'Seagate',name:'FireCuda 530R 2TB NVMe Gen4',price:6490,iface:'NVMe',capacity:'2 TB',speed:7400},
+  {id:'p44pro-2',cat:'storage',brand:'Solidigm',name:'P44 Pro 2TB NVMe Gen4',price:4990,iface:'NVMe',capacity:'2 TB',speed:7000},
+  {id:'mp44-2',cat:'storage',brand:'TeamGroup',name:'MP44 2TB NVMe Gen4',price:3990,iface:'NVMe',capacity:'2 TB',speed:7400},
+  {id:'a400-480',cat:'storage',brand:'Kingston',name:'A400 480GB SATA SSD',price:990,iface:'SATA',capacity:'480 GB',speed:500},
+  {id:'870evo-2',cat:'storage',brand:'Samsung',name:'870 EVO 2TB SATA SSD',price:5290,iface:'SATA',capacity:'2 TB',speed:560},
+  {id:'wdblue-4',cat:'storage',brand:'WD',name:'Blue 4TB HDD',price:3290,iface:'SATA',capacity:'4 TB',speed:180,hdd:true},
+  {id:'ironwolfpro-12',cat:'storage',brand:'Seagate',name:'IronWolf Pro 12TB NAS HDD',price:9990,iface:'SATA',capacity:'12 TB',speed:250,hdd:true},
+
+  {id:'hyper212',cat:'cooler',brand:'Cooler Master',name:'Hyper 212 Black Edition',price:1190,type:'Air',height:159,maxTdp:180,sockets:ALLSOCK},
+  {id:'ax120-se',cat:'cooler',brand:'Thermalright',name:'Assassin X 120 Refined SE',price:590,type:'Air',height:148,maxTdp:220,sockets:ALLSOCK},
+  {id:'ag400',cat:'cooler',brand:'DeepCool',name:'AG400',price:790,type:'Air',height:150,maxTdp:220,sockets:ALLSOCK},
+  {id:'freezer36',cat:'cooler',brand:'ARCTIC',name:'Freezer 36',price:1090,type:'Air',height:159,maxTdp:220,sockets:ALLSOCK},
+  {id:'purerock2',cat:'cooler',brand:'be quiet!',name:'Pure Rock 2',price:1090,type:'Air',height:155,maxTdp:150,sockets:ALLSOCK},
+  {id:'fuma3',cat:'cooler',brand:'Scythe',name:'Fuma 3',price:1990,type:'Air',height:154,maxTdp:250,sockets:ALLSOCK,dual:true},
+  {id:'nh-u12a',cat:'cooler',brand:'Noctua',name:'NH-U12A',price:3990,type:'Air',height:158,maxTdp:250,sockets:ALLSOCK},
+  {id:'nh-d15-cb',cat:'cooler',brand:'Noctua',name:'NH-D15 chromax.black',price:4690,type:'Air',height:165,maxTdp:280,sockets:ALLSOCK,dual:true},
+  {id:'ml240l',cat:'cooler',brand:'Cooler Master',name:'MasterLiquid 240L Core',price:2490,type:'AIO',rad:240,maxTdp:250,sockets:ALLSOCK},
+  {id:'lf3-280',cat:'cooler',brand:'ARCTIC',name:'Liquid Freezer III 280',price:3890,type:'AIO',rad:280,maxTdp:320,sockets:ALLSOCK},
+  {id:'ls720se',cat:'cooler',brand:'DeepCool',name:'LS720 SE 360mm AIO',price:3690,type:'AIO',rad:360,maxTdp:330,sockets:ALLSOCK},
+  {id:'titan360',cat:'cooler',brand:'Corsair',name:'iCUE Link Titan 360 RX',price:7490,type:'AIO',rad:360,maxTdp:350,sockets:ALLSOCK},
+  {id:'kraken-elite360',cat:'cooler',brand:'NZXT',name:'Kraken Elite 360',price:10900,type:'AIO',rad:360,maxTdp:350,sockets:ALLSOCK},
+
+  {id:'cx650',cat:'psu',brand:'Corsair',name:'CX650',price:2190,watts:650,rating:'80+ Bronze'},
+  {id:'pm750d',cat:'psu',brand:'DeepCool',name:'PM750D',price:2690,watts:750,rating:'80+ Gold'},
+  {id:'focus-gx750',cat:'psu',brand:'Seasonic',name:'Focus GX-750',price:3790,watts:750,rating:'80+ Gold'},
+  {id:'a850gl',cat:'psu',brand:'MSI',name:'MAG A850GL PCIE5',price:3790,watts:850,rating:'80+ Gold'},
+  {id:'mwe-gold-850',cat:'psu',brand:'Cooler Master',name:'MWE Gold 850 V2',price:3490,watts:850,rating:'80+ Gold'},
+  {id:'nzxt-c850',cat:'psu',brand:'NZXT',name:'C850 Gold',price:3990,watts:850,rating:'80+ Gold'},
+  {id:'focus-gx850',cat:'psu',brand:'Seasonic',name:'Focus GX-850',price:4290,watts:850,rating:'80+ Gold'},
+  {id:'rm1000e',cat:'psu',brand:'Corsair',name:'RM1000e',price:5490,watts:1000,rating:'80+ Gold'},
+  {id:'rm1000x',cat:'psu',brand:'Corsair',name:'RM1000x',price:6290,watts:1000,rating:'80+ Gold'},
+  {id:'edge1000',cat:'psu',brand:'Lian Li',name:'EDGE 1000G',price:6990,watts:1000,rating:'80+ Gold'},
+  {id:'gf-a3-1050',cat:'psu',brand:'Thermaltake',name:'Toughpower GF A3 1050W',price:5490,watts:1050,rating:'80+ Gold'},
+  {id:'sp12-1000',cat:'psu',brand:'be quiet!',name:'Straight Power 12 1000W',price:7490,watts:1000,rating:'80+ Platinum'},
+  {id:'v850sfx',cat:'psu',brand:'Cooler Master',name:'V850 SFX Gold',price:5290,watts:850,rating:'80+ Gold',sfx:true},
+  {id:'loki1000',cat:'psu',brand:'ASUS',name:'ROG Loki 1000W SFX-L',price:9900,watts:1000,rating:'80+ Platinum',sfx:true},
+
+  {id:'q300l',cat:'case',brand:'Cooler Master',name:'MasterBox Q300L',price:1690,forms:['mATX','ITX'],maxGpu:360,maxCooler:157,maxRad:240},
+  {id:'dan-a3',cat:'case',brand:'Lian Li',name:'A3-mATX',price:2590,forms:['mATX','ITX'],maxGpu:415,maxCooler:165,maxRad:360},
+  {id:'xt-pro-ultra',cat:'case',brand:'Phanteks',name:'XT Pro Ultra',price:3290,forms:['ATX','mATX','ITX'],maxGpu:415,maxCooler:184,maxRad:360},
+  {id:'air903max',cat:'case',brand:'Montech',name:'Air 903 Max',price:3490,forms:['ATX','mATX','ITX'],maxGpu:400,maxCooler:180,maxRad:360},
+  {id:'3500x',cat:'case',brand:'Corsair',name:'3500X',price:3490,forms:['ATX','mATX','ITX'],maxGpu:410,maxCooler:170,maxRad:360},
+  {id:'h6flow',cat:'case',brand:'NZXT',name:'H6 Flow',price:3990,forms:['ATX','mATX','ITX'],maxGpu:365,maxCooler:163,maxRad:360},
+  {id:'lancool217',cat:'case',brand:'Lian Li',name:'Lancool 217',price:3990,forms:['ATX','mATX','ITX'],maxGpu:400,maxCooler:180,maxRad:360},
+  {id:'pb500dx',cat:'case',brand:'be quiet!',name:'Pure Base 500DX',price:3990,forms:['ATX','mATX','ITX'],maxGpu:369,maxCooler:190,maxRad:360},
+  {id:'king95pro',cat:'case',brand:'Montech',name:'King 95 Pro',price:4290,forms:['ATX','mATX','ITX'],maxGpu:420,maxCooler:175,maxRad:360},
+  {id:'5000d',cat:'case',brand:'Corsair',name:'5000D Airflow',price:5490,forms:['ATX','mATX','ITX'],maxGpu:420,maxCooler:170,maxRad:360},
+  {id:'h9flow',cat:'case',brand:'NZXT',name:'H9 Flow',price:5990,forms:['ATX','mATX','ITX'],maxGpu:435,maxCooler:165,maxRad:360},
+  {id:'o11evo-rgb',cat:'case',brand:'Lian Li',name:'O11 Dynamic EVO RGB',price:6490,forms:['ATX','mATX','ITX'],maxGpu:422,maxCooler:167,maxRad:360},
+  {id:'northxl',cat:'case',brand:'Fractal Design',name:'North XL',price:6990,forms:['ATX','mATX','ITX'],maxGpu:413,maxCooler:180,maxRad:420},
+  {id:'torrent',cat:'case',brand:'Fractal Design',name:'Torrent',price:7490,forms:['ATX','mATX','ITX'],maxGpu:461,maxCooler:188,maxRad:420},
+  {id:'hyte-y70',cat:'case',brand:'HYTE',name:'Y70',price:8990,forms:['ATX','mATX','ITX'],maxGpu:422,maxCooler:180,maxRad:360},
+  {id:'gr701',cat:'case',brand:'ASUS',name:'ROG Hyperion GR701',price:12900,forms:['ATX','mATX','ITX'],maxGpu:460,maxCooler:190,maxRad:420}
+);
 const BYID=Object.fromEntries(P.map(p=>[p.id,p]));
 
 const DESC={
@@ -733,6 +900,11 @@ function autoDesc(p){
   }
 }
 const descOf=id=>DESC[id]||autoDesc(BYID[id]);
+/* part photos: PIMG (parts-images.js) maps id -> [url, backup urls]. Broken links fall through to the next, then to the icon (or nothing). */
+function photo(p,cls,fallback=''){const u=((window.PIMG||{})[p.id]||[]);if(!u.length)return fallback?`<div class="${cls}">${fallback}</div>`:'';
+  return `<div class="${cls} has-img" data-fb="${fallback?1:0}"><img src="${esc(u[0])}" data-alt="${esc(u.slice(1).join(' '))}" alt="${esc(p.brand+' '+p.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="imgFail(this)">${fallback}</div>`}
+function imgFail(el){const rest=(el.dataset.alt||'').split(' ').filter(Boolean);if(rest.length){el.dataset.alt=rest.slice(1).join(' ');el.src=rest[0];return}
+  const box=el.parentNode;box.classList.remove('has-img');el.remove();if(box.dataset.fb==='0')box.remove()}
 
 const BUILDS=[
   {id:'office',tags:['budget','office'],label:['Office'],name:'Home & Office',desc:'Quiet, compact and capable. Integrated graphics handle work, study and light games.',good:['Office apps','Study','4K video'],
@@ -967,7 +1139,7 @@ function renderList(cat){
     const m=iss.map(i=>`<div class="msg ${i.level}"><b>${i.level==='err'?'✕':'!'}</b><span>${i.msg}</span></div>`).join('');
     const award=BEST.find(x=>x.id===p.id);
     return `<article class="card ${sel?'sel':''} ${st==='err'?'bad':''}">
-      ${badge}
+      ${badge}${photo(p,'card-img')}
       <div class="card-top"><div class="thumb">${ICON[cat]}</div><div style="min-width:0"><div class="pbrand">${p.brand}${award?` · <span style="color:var(--accent)">${award.award}</span>`:''}</div><button class="link pname" data-detail="${p.id}">${p.name}</button><div data-rating-for="${p.id}">${ratingHtml(p.id)}</div></div></div>
       <div class="tags">${tags(p).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
       ${m?`<div class="msgs">${m}</div>`:''}
@@ -1034,6 +1206,7 @@ function render3DView(){
   <div class="head-acts"><button class="btn" data-view="build" data-step-to="review">Review build</button></div></div>
   <div class="stage-wrap">
     <div class="stage" id="stage"><div class="tip" id="tip" hidden></div>
+      <div class="stage-readout" aria-hidden="true"><b>RIGFORGE // SYS</b><span>PARTS <em>${CATS.filter(c=>build[c.key]).length}/${CATS.length}</em></span><span>LOAD <em>~${load(b)} W</em></span><span>TOTAL <em>${money(CATS.reduce((s,c)=>s+(b[c.key]?.price||0),0))}</em></span></div>
       <div class="stage-hud"><span class="stage-hint">Drag to rotate · scroll or pinch to zoom · hover a part</span>
       <div class="stage-ctrls"><button class="btn sm ${explode?'on':''}" id="tExplode">Exploded view</button><button class="btn sm ${autoRot?'on':''}" id="tRotate">Auto-rotate</button><button class="btn sm" id="tReset">Reset</button></div></div>
     </div>
@@ -1251,7 +1424,7 @@ function openDrawer(id){
   $('#drawer').innerHTML=`
     <div class="d-head"><span class="eyebrow">${catLabel(p.cat)}</span><button class="btn ghost sm" id="dClose" aria-label="Close details">✕</button></div>
     <div class="d-body">
-      <div class="d-hero"><div class="thumb">${ICON[p.cat]}</div><div style="min-width:0"><div class="pbrand">${p.brand}</div><h2>${p.name}</h2>
+      <div class="d-hero">${photo(p,'thumb d-img',ICON[p.cat])}<div style="min-width:0"><div class="pbrand">${p.brand}</div><h2>${p.name}</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">${award.map(a=>`<span class="pick" style="padding:0;border:0;background:none"><span class="award">${a.award}</span></span>`).join('')}<span id="dRating">${ratingHtml(id)}</span></div></div></div>
       <div class="d-buy"><div class="price num">${p.price?money(p.price):'Free'}${cur!=='THB'&&p.price?`<small>${fmtIn('THB',p.price)}</small>`:''}</div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${Object.keys(build).some(k=>k!==p.cat&&build[k])?`<span class="pill ${st}">${st==='ok'?'Fits your build':st==='warn'?'Fits, with a warning':'Won’t fit your build'}</span>`:''}
@@ -1430,15 +1603,21 @@ function mount3D(){
     let renderer;try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:true})}catch(e){stage.insertAdjacentHTML('beforeend','<div class="stage-fallback">3D needs WebGL, which isn’t available here.</div>');return}
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
     const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(38,4/3,1,2000);
-    scene.add(new THREE.HemisphereLight(0xffffff,0x303848,0.85));
-    const d=new THREE.DirectionalLight(0xffffff,0.75);d.position.set(60,90,70);scene.add(d);
-    const d2=new THREE.DirectionalLight(0xffffff,0.3);d2.position.set(-50,20,-60);scene.add(d2);
-    const glow=new THREE.PointLight(0xff6b2c,0.8,90);glow.position.set(4,4,0);scene.add(glow);
-    T={renderer,scene,camera,root:null,groups:{},orbit:{th:0.75,ph:1.15,r:120},target:new THREE.Vector3(0,0,0),raf:0,hl:null,ray:new THREE.Raycaster(),mouse:new THREE.Vector2(),hover:null,drag:null,pinch:null,t0:performance.now()};
+    scene.background=new THREE.Color(0x05030d);scene.fog=new THREE.Fog(0x05030d,170,420);
+    scene.add(new THREE.HemisphereLight(0xcfe3ff,0x1a1030,0.75));
+    const d=new THREE.DirectionalLight(0xffffff,0.7);d.position.set(60,90,70);scene.add(d);
+    const d2=new THREE.DirectionalLight(0x9fb4ff,0.3);d2.position.set(-50,20,-60);scene.add(d2);
+    const rimC=new THREE.PointLight(0x00e5ff,1.1,220);rimC.position.set(-45,25,-35);scene.add(rimC);
+    const rimM=new THREE.PointLight(0xff2bd6,0.9,220);rimM.position.set(45,-10,45);scene.add(rimM);
+    T={renderer,scene,camera,root:null,groups:{},spin:[],rgb:[],anim:[],orbit:{th:0.75,ph:1.15,r:120},target:new THREE.Vector3(0,0,0),raf:0,hl:null,ray:new THREE.Raycaster(),mouse:new THREE.Vector2(),hover:null,drag:null,pinch:null,t0:performance.now()};
   }
+  if(!T.fx&&THREE.EffectComposer&&THREE.UnrealBloomPass){try{
+      const c=new THREE.EffectComposer(T.renderer);c.addPass(new THREE.RenderPass(T.scene,T.camera));
+      T.bloom=new THREE.UnrealBloomPass(new THREE.Vector2(512,384),0.8,0.45,0.6);c.addPass(T.bloom);T.composer=c}catch(e){T.composer=null}
+    T.fx=true;makeParticles()}
   stage.prepend(T.renderer.domElement);
   buildScene();
-  const resize=()=>{const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;T.renderer.setSize(w,h,false);T.camera.aspect=w/h;T.camera.updateProjectionMatrix()};
+  const resize=()=>{const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;T.renderer.setSize(w,h,false);if(T.composer){T.composer.setPixelRatio(T.renderer.getPixelRatio());T.composer.setSize(w,h)}T.camera.aspect=w/h;T.camera.updateProjectionMatrix()};
   resize();T.ro?.disconnect();T.ro=new ResizeObserver(resize);T.ro.observe(stage);
   bindStage(stage);
   cancelAnimationFrame(T.raf);loop();
@@ -1446,18 +1625,29 @@ function mount3D(){
 function unmount3D(){if(!T)return;cancelAnimationFrame(T.raf);T.raf=0;T.ro?.disconnect()}
 function mat(color,o={}){return new THREE.MeshStandardMaterial({color,roughness:o.rough??0.55,metalness:o.metal??0.25,transparent:!!o.opacity,opacity:o.opacity??1,emissive:o.emissive||0x000000,emissiveIntensity:o.ei??0.9,side:o.side||THREE.FrontSide,depthWrite:o.opacity?false:true})}
 function box(w,h,d,m,x,y,z){const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);me.position.set(x,y,z);return me}
-function fan(r,axis,m,x,y,z){const g=new THREE.Group();const ring=new THREE.Mesh(new THREE.CylinderGeometry(r,r,2.4,32,1,true),mat(0x15181d,{side:THREE.DoubleSide}));g.add(ring);
-  const hub=new THREE.Mesh(new THREE.CylinderGeometry(r*0.3,r*0.3,2.2,20),mat(0x22262d));g.add(hub);
-  const glowR=new THREE.Mesh(new THREE.TorusGeometry(r*0.92,0.18,8,40),m);glowR.rotation.x=Math.PI/2;g.add(glowR);
-  for(let i=0;i<7;i++){const bl=box(r*0.62,0.2,r*0.36,mat(0x2a2f38),0,0,0);bl.position.set(Math.cos(i/7*Math.PI*2)*r*0.55,0,Math.sin(i/7*Math.PI*2)*r*0.55);bl.rotation.y=-i/7*Math.PI*2;bl.rotation.z=0.35;g.add(bl)}
+/* RGB lighting: materials in T.rgb cycle hue over time (phase offsets them) */
+function rgbMat(phase,ei=1.5){const m=mat(0xffffff,{emissive:0xffffff,ei});m.userData.rgb=phase;T.rgb.push(m);return m}
+function rgbAt(phase,t){const c=new THREE.Color();c.setHSL(((0.52+0.36*(0.5+0.5*Math.sin(t*0.45+phase*6.283)))%1),1,0.55);return c}
+function makeParticles(){const n=260,pos=new Float32Array(n*3);for(let i=0;i<n;i++){const a=Math.random()*6.283,r=18+Math.random()*70;pos[i*3]=Math.cos(a)*r;pos[i*3+1]=-40+Math.random()*90;pos[i*3+2]=Math.sin(a)*r}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  T.dust=new THREE.Points(g,new THREE.PointsMaterial({color:0x7fe9ff,size:0.55,transparent:true,opacity:0.7,blending:THREE.AdditiveBlending,depthWrite:false}));T.scene.add(T.dust)}
+function fan(r,axis,m,x,y,z){const g=new THREE.Group();const ring=new THREE.Mesh(new THREE.CylinderGeometry(r,r,2.4,32,1,true),mat(0x15181d,{side:THREE.DoubleSide,metal:0.6,rough:0.35}));g.add(ring);
+  const rotor=new THREE.Group();g.add(rotor);
+  rotor.add(new THREE.Mesh(new THREE.CylinderGeometry(r*0.3,r*0.3,2.2,20),mat(0x22262d,{metal:0.7,rough:0.3})));
+  const ringM=m&&m.userData&&m.userData.rgb!==undefined?rgbMat(Math.random()):m;
+  const glowR=new THREE.Mesh(new THREE.TorusGeometry(r*0.92,0.18,8,40),ringM);glowR.rotation.x=Math.PI/2;g.add(glowR);
+  const hubGlow=new THREE.Mesh(new THREE.TorusGeometry(r*0.3,0.08,6,24),ringM);hubGlow.rotation.x=Math.PI/2;hubGlow.position.y=1.15;rotor.add(hubGlow);
+  const bladeM=mat(0x2a2f38,{opacity:0.85,metal:0.3,rough:0.4});
+  for(let i=0;i<7;i++){const bl=box(r*0.62,0.2,r*0.36,bladeM,0,0,0);bl.position.set(Math.cos(i/7*Math.PI*2)*r*0.55,0,Math.sin(i/7*Math.PI*2)*r*0.55);bl.rotation.y=-i/7*Math.PI*2;bl.rotation.z=0.35;rotor.add(bl)}
+  T.spin.push({o:rotor,v:0.08+Math.random()*0.05});
   if(axis==='x')g.rotation.z=Math.PI/2;if(axis==='z')g.rotation.x=Math.PI/2;g.position.set(x,y,z);return g}
 function buildScene(){
   if(!T)return;const THREE_=THREE;
   if(T.root){T.scene.remove(T.root);T.root.traverse(o=>{o.geometry?.dispose?.();if(o.material&&!Array.isArray(o.material))o.material.dispose?.()})}
-  const root=new THREE_.Group();T.root=root;T.groups={};
+  const root=new THREE_.Group();T.root=root;T.groups={};T.spin=[];T.rgb=[];T.anim=[];
   const b=resolve(build);
   const accent=new THREE_.Color(css('--accent'));
-  const glowM=mat(accent,{emissive:accent,ei:1.1});
+  const glowM=rgbMat(0);
   const forms=b.case?.forms||['ATX','mATX','ITX'];
   const itxCase=forms.length===1&&forms[0]==='ITX', matxCase=!forms.includes('ATX')&&!itxCase;
   const W=itxCase?19:matxCase?21:23, H=itxCase?30:matxCase?41:46, D=itxCase?38:matxCase?40:45;
@@ -1465,7 +1655,7 @@ function buildScene(){
   // case
   const cg=G('case',[0,0,0]);
   const shell=box(W,H,D,mat(PART_COLORS.case,{opacity:b.case?0.07:0.035,side:THREE_.DoubleSide}),0,0,0);cg.add(shell);
-  const edges=new THREE_.LineSegments(new THREE_.EdgesGeometry(new THREE_.BoxGeometry(W,H,D)),new THREE_.LineBasicMaterial({color:b.case?0x9aa4b2:0x5c6573,transparent:true,opacity:b.case?0.9:0.4}));cg.add(edges);
+  const edges=new THREE_.LineSegments(new THREE_.EdgesGeometry(new THREE_.BoxGeometry(W,H,D)),new THREE_.LineBasicMaterial({color:b.case?0x00e5ff:0x3a4a6a,transparent:true,opacity:b.case?0.95:0.45}));cg.add(edges);
   if(b.case){cg.add(box(0.6,H,D,mat(0x1a1e24,{opacity:0.9}),-W/2+0.3,0,0));cg.add(box(W,0.6,D,mat(0x1a1e24,{opacity:0.9}),0,-H/2+0.3,0));
     cg.add(box(W,H,0.5,mat(0x20252c,{opacity:0.55}),0,0,D/2-0.25));
     for(let i=0;i<(itxCase?1:3);i++)cg.add(fan(6,'z',glowM,0,H/2-9-i*13,D/2-2));
@@ -1480,6 +1670,13 @@ function buildScene(){
     g.add(box(0.6,5,5,mat(0x3a4450),xb+0.3,cy,cz));
     for(let i=0;i<Math.max(1,Math.floor(bh/10));i++)g.add(box(0.8,0.9,Math.min(9,bw-4),mat(0x0f1318),xb+0.4,cy-13-i*4.2,zRear+5.5));
     g.add(box(1.8,6,3,mat(0x3b434e,{metal:0.6}),xb+0.9,yTop-3,zRear+1.8));
+    const traceM=mat(0x00e5ff,{emissive:0x00e5ff,ei:0.7});let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
+    for(let i=0;i<34;i++){const vert=rnd()>0.5,len=2+rnd()*(vert?bh*0.35:bw*0.35);const ty=yTop-1-rnd()*(bh-2),tz=zRear+1+rnd()*(bw-2);
+      const tr=box(0.06,vert?len:0.09,vert?0.09:len,traceM,xb+0.02,Math.min(yTop-0.5,ty),Math.min(zRear+bw-0.5,tz));g.add(tr)}
+    g.add(box(1.4,1.6,6.5,mat(0x2a3038,{metal:0.8,rough:0.3}),xb+0.9,cy+4.2,cz));g.add(box(1.4,6.5,1.6,mat(0x2a3038,{metal:0.8,rough:0.3}),xb+0.9,cy,cz-4.2));
+    g.add(box(0.15,0.2,6.5,rgbMat(0.2,1.2),xb+1.65,cy+4.9,cz));
+    const chip=box(0.8,4,4,mat(0x1b1f25,{metal:0.7}),xb+0.5,yTop-bh+5,zRear+bw-5);g.add(chip);
+    const cr=new THREE_.Mesh(new THREE_.TorusGeometry(1.3,0.1,6,32),rgbMat(0.8,1.4));cr.rotation.y=Math.PI/2;cr.position.set(xb+0.95,yTop-bh+5,zRear+bw-5);g.add(cr);
   }
   // cpu
   if(b.cpu){const g=G('cpu',[5,4,0]);g.add(box(0.5,4,4,mat(PART_COLORS.cpu,{metal:0.9,rough:0.25}),xb+0.85,cy,cz))}
@@ -1491,19 +1688,21 @@ function buildScene(){
           for(let f=0;f<14;f++)g.add(box(h-2,12,0.12,mat(PART_COLORS.cooler,{metal:0.85,rough:0.3}),xb+1.1+(h-2)/2+0.8,cy,tz-2.2+f*0.33))}
         g.add(fan(6,'z',glowM,xb+1+h/2,cy,cz+(towers===2?0:2.6)))}
     }else{g.add(new THREE_.Mesh(new THREE_.CylinderGeometry(3.2,3.2,2,32),mat(0x1b1f25)).translateX(xb+2.1).translateY(cy).translateZ(cz).rotateZ(Math.PI/2));
-      const ring=new THREE_.Mesh(new THREE_.TorusGeometry(3,0.25,8,40),glowM);ring.position.set(xb+3.15,cy,cz);ring.rotation.y=Math.PI/2;g.add(ring);
+      const ring=new THREE_.Mesh(new THREE_.TorusGeometry(3,0.25,8,40),rgbMat(0.3,1.8));ring.position.set(xb+3.15,cy,cz);ring.rotation.y=Math.PI/2;g.add(ring);
       const L=c.rad/10,rx=Math.min(W/2-7,xb+14);g.add(box(12,2.7,L,mat(0x23272e,{metal:0.5}),rx,H/2-2.2,0));
       for(let i=0;i<Math.round(L/12);i++)g.add(fan(5.6,'y',glowM,rx,H/2-4.8,-L/2+6+i*12));
       const tube=new THREE_.Mesh(new THREE_.CylinderGeometry(0.45,0.45,Math.abs(H/2-4-cy),12),mat(0x111418));tube.position.set(xb+3,(H/2-4+cy)/2,cz+2);g.add(tube)}
   }
   // ram
   if(b.ram){const g=G('ram',[8,10,0]);const n=Math.min(b.ram.sticks,b.mb?b.mb.ramSlots:4);
-    for(let i=0;i<n;i++){const z=cz+6.5+i*1.1;g.add(box(3.2,13.3,0.7,mat(0x1c2027,{metal:0.4}),xb+1.6,cy-1,z));g.add(box(0.4,13.3,0.7,mat(PART_COLORS.ram,{emissive:new THREE_.Color(PART_COLORS.ram),ei:0.8}),xb+3.4,cy-1,z))}}
+    for(let i=0;i<n;i++){const z=cz+6.5+i*1.1;g.add(box(3.2,13.3,0.7,mat(0x1c2027,{metal:0.4}),xb+1.6,cy-1,z));g.add(box(0.4,13.3,0.7,rgbMat(i*0.12,1.3),xb+3.4,cy-1,z))}}
   // gpu
   if(b.gpu&&!b.gpu.none){const L=b.gpu.length/10,g=G('gpu',[14,-8,0]);const gy=cy-13.5, gz=zRear+L/2-1.2;
     const th=b.gpu.power>300?6.2:b.gpu.power>200?5.4:4.2;
     g.add(box(12,th,L,mat(0x16191e,{metal:0.6,rough:0.35}),xb+6.4,gy,gz));
-    g.add(box(0.35,0.5,L*0.9,mat(PART_COLORS.gpu,{emissive:new THREE_.Color(PART_COLORS.gpu),ei:1}),xb+12.5,gy+th/2-0.4,gz));
+    g.add(box(0.35,0.5,L*0.9,rgbMat(0.5),xb+12.5,gy+th/2-0.4,gz));
+    g.add(box(12,0.3,L,mat(0x1c2027,{metal:0.5,rough:0.6}),xb+6.4,gy+th/2+0.15,gz));
+    g.add(box(0.2,0.25,L*0.6,rgbMat(0.65,1.1),xb+9,gy+th/2+0.35,gz));
     g.add(box(0.3,th,L,mat(0x2b3038,{metal:0.8}),xb+12.55,gy,gz));
     const nf=L>28?3:2;for(let i=0;i<nf;i++)g.add(fan(4.4,'y',glowM,xb+6.4,gy-th/2-0.6,gz-L/2+L/(nf*2)+i*L/nf));
     g.add(box(0.6,th+1,0.4,mat(0x9aa4b2,{metal:0.9}),xb+0.5,gy,zRear-0.3));
@@ -1520,6 +1719,17 @@ function buildScene(){
     g.add(box(pw,ph,pd,mat(0x111317,{metal:0.5,rough:0.5}),px,py,pz));
     g.add(box(0.2,ph*0.6,pd*0.7,mat(0x2a2f38),px+pw/2+0.1,py,pz));
   }
+  const R=Math.max(W,D)*0.95,fy=-H/2-0.9;
+  const disc=new THREE_.Mesh(new THREE_.CylinderGeometry(R,R*1.04,0.9,64),mat(0x0b0a18,{metal:0.5,rough:0.7}));disc.position.y=fy;root.add(disc);
+  const r1=new THREE_.Mesh(new THREE_.TorusGeometry(R,0.14,8,96),rgbMat(0.1,1.6));r1.rotation.x=Math.PI/2;r1.position.y=fy+0.5;root.add(r1);
+  const r2=new THREE_.Group();for(let i=0;i<6;i++){const a=new THREE_.Mesh(new THREE_.TorusGeometry(R*0.78,0.07,6,24,Math.PI/5),mat(0xff2bd6,{emissive:0xff2bd6,ei:1.4}));a.rotation.z=i*Math.PI/3;r2.add(a)}
+  r2.rotation.x=Math.PI/2;r2.position.y=fy+0.5;root.add(r2);T.anim.push(t=>{r2.rotation.z=t*0.35});
+  const grid=new THREE_.GridHelper(R*6,30,0x00e5ff,0x3a1d6e);grid.position.y=fy-0.5;grid.material.transparent=true;grid.material.opacity=0.35;root.add(grid);
+  const scanM=new THREE_.MeshBasicMaterial({color:0x00e5ff,transparent:true,opacity:0.08,blending:THREE_.AdditiveBlending,side:THREE_.DoubleSide,depthWrite:false});
+  const scan=new THREE_.Mesh(new THREE_.PlaneGeometry(W+2,D+2),scanM);scan.rotation.x=-Math.PI/2;root.add(scan);
+  const scanE=new THREE_.LineSegments(new THREE_.EdgesGeometry(new THREE_.PlaneGeometry(W+2,D+2)),new THREE_.LineBasicMaterial({color:0x7ff4ff,transparent:true,opacity:0.8}));scanE.rotation.x=-Math.PI/2;root.add(scanE);
+  T.anim.push(t=>{const y=Math.sin(t*0.5)*(H/2-1);scan.position.y=scanE.position.y=y});
+  if(b.case){const lm=rgbMat(0.9,1.4);[[-1,1],[1,1]].forEach(([sx])=>cg.add(box(0.25,H-2,0.25,lm,sx*(W/2-0.45),0,D/2-0.45)));cg.add(box(W-1,0.25,0.25,lm,0,H/2-0.45,D/2-0.45))}
   T.scene.add(root);
   Object.values(T.groups).forEach(g=>{g.userData.base.copy(g.position)});
   T.orbit.r=Math.max(W,H,D)*2.55;T.target.set(0,-1,0);
@@ -1536,8 +1746,11 @@ function loop(){
   T.camera.lookAt(T.target);
   const t=(performance.now()-T.t0)/1000;
   Object.entries(T.groups).forEach(([k,g])=>{const on=T.hl===k;g.traverse(m=>{if(m.isMesh&&m.material&&m.material.emissive&&!m.userData.origE){m.userData.origE=m.material.emissive.clone();m.userData.origI=m.material.emissiveIntensity}
-      if(m.isMesh&&m.userData.origE){if(on){m.material.emissive.set(css('--accent'));m.material.emissiveIntensity=0.35+0.2*Math.sin(t*5)}else{m.material.emissive.copy(m.userData.origE);m.material.emissiveIntensity=m.userData.origI}}})});
-  T.renderer.render(T.scene,T.camera);
+      if(m.isMesh&&m.userData.origE){m.material.userData.hlOn=on;if(on){m.material.emissive.set(css('--accent'));m.material.emissiveIntensity=0.35+0.2*Math.sin(t*5)}else if(m.material.userData.rgb===undefined){m.material.emissive.copy(m.userData.origE);m.material.emissiveIntensity=m.userData.origI}}})});
+  T.rgb.forEach(m=>{if(m.userData.hlOn)return;const c=rgbAt(m.userData.rgb,reduce?0:t);m.color.copy(c);m.emissive.copy(c);m.emissiveIntensity=m.userData.ei0??(m.userData.ei0=m.emissiveIntensity)});
+  if(!reduce){T.spin.forEach(s=>{s.o.rotation.y+=s.v});T.anim.forEach(f=>f(t));
+    if(T.dust){const a=T.dust.geometry.attributes.position;for(let i=0;i<a.count;i++){let y=a.getY(i)+0.04;if(y>50)y=-40;a.setY(i,y)}a.needsUpdate=true;T.dust.rotation.y=t*0.02}}
+  if(T.composer)T.composer.render();else T.renderer.render(T.scene,T.camera);
 }
 function bindStage(stage){
   if(stage.dataset.bound)return;stage.dataset.bound='1';
