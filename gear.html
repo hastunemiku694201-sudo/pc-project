@@ -303,8 +303,23 @@ tfoot td{font-weight:700;border-bottom:0;font-size:18px;letter-spacing:-.02em}
 .d-body{padding:20px;display:grid;gap:22px}
 .d-hero{display:flex;gap:16px;align-items:flex-start}
 .d-hero .thumb{width:72px;height:72px;border-radius:18px}
-.st-open{width:100%;justify-content:center;border:1px solid var(--accent);color:var(--accent);background:var(--glow);font-weight:600}
-.st-open:hover{background:var(--accent);color:var(--accent-ink)}
+.cw-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:-4px}
+.cw-dot{width:26px;height:26px;border-radius:50%;padding:0;border:1px solid var(--line);background:#fff;overflow:hidden;cursor:pointer;flex:none}
+.cw-dot img{width:100%;height:100%;object-fit:cover}
+.cw-dot.on{outline:2px solid var(--accent);outline-offset:2px}
+.cw-more{font-size:12px;color:var(--muted)}
+.cw-name{font-size:12px;color:var(--muted);margin-left:auto;max-width:48%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.cw-opt{display:flex;flex-direction:column;gap:6px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);color:var(--ink);font:inherit;font-size:12px;cursor:pointer;text-align:center}
+.cw-opt img{width:100%;height:72px;object-fit:contain;background:#fff;border-radius:8px}
+.cw-opt.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset,0 0 14px var(--glow)}
+.gx-sum{margin:0;line-height:1.6}
+.gx-who{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.gx-p{display:grid;gap:4px;padding:12px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;background:var(--surface-2)}
+.gx-p span{font-size:13px;color:var(--muted);line-height:1.45}
+.gx-games{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px}
+.btn.st-open{width:100%;justify-content:center;border:1px solid var(--accent);color:var(--accent);background:var(--glow);font-weight:600}
+.btn.st-open:hover{background:var(--accent);color:var(--accent-ink)}
 .card-img{height:150px;border-radius:12px;background:#fff;overflow:hidden;flex:none}
 .card-img img{display:block;width:100%;height:100%;object-fit:contain;padding:10px;box-sizing:border-box}
 .thumb.has-img{background:#fff;overflow:hidden}
@@ -463,6 +478,7 @@ ul.pc.con li::marker{content:"–  ";color:var(--warn)}
 .card-foot{flex-wrap:nowrap}.card-foot .price{min-width:0}
 </style>
 <link rel="stylesheet" href="neon.css">
+<script src="theme.js"></script>
 <style>[hidden]{display:none!important}</style>
 </head>
 <body>
@@ -497,6 +513,8 @@ ul.pc.con li::marker{content:"–  ";color:var(--warn)}
 <div class="toast" id="toast" role="status"></div>
 
 <script src="gear-images.js"></script>
+<script src="gear-colors.js"></script>
+<script src="gear-extras.js"></script>
 <script src="stores.js"></script>
 <script>
 const CATS=[
@@ -1066,7 +1084,7 @@ const P=[
 const BYID=Object.fromEntries(P.map(p=>[p.id,p]));
 /* product photos: IMG (gear-images.js) maps id -> [url, backup urls]. Broken links fall through to the next, then to the icon (or nothing). */
 function photo(p,cls,fallback=''){const u=((window.IMG||{})[p.id]||[]);if(!u.length)return fallback?`<div class="${cls}">${fallback}</div>`:'';
-  return `<div class="${cls} has-img" data-fb="${fallback?1:0}"><img src="${esc(u[0])}" data-alt="${esc(u.slice(1).join(' '))}" alt="${esc(p.brand+' '+p.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="imgFail(this)">${fallback}</div>`}
+  return `<div class="${cls} has-img" data-fb="${fallback?1:0}" data-photo="${p.id}"><img src="${esc(cwImage(p.id)||u[0])}" data-alt="${esc(u.slice(1).join(' '))}" alt="${esc(p.brand+' '+p.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="imgFail(this)">${fallback}</div>`}
 function imgFail(el){const rest=(el.dataset.alt||'').split(' ').filter(Boolean);if(rest.length){el.dataset.alt=rest.slice(1).join(' ');el.src=rest[0];return}
   const box=el.parentNode;box.classList.remove('has-img');el.remove();if(box.dataset.fb==='0')box.remove()}
 
@@ -1340,7 +1358,7 @@ function filtered(){
 }
 function card(p){
   const award=BEST.find(x=>x.id===p.id),inC=compare.includes(p.id),d=demand(p);
-  return `<article class="card">${photo(p,'card-img')}
+  return `<article class="card">${photo(p,'card-img')}${cwCard(p)}
     <div class="card-top" style="padding-right:0"><div class="thumb">${ICON[p.cat]}</div><div style="min-width:0;flex:1"><div class="pbrand">${esc(p.brand)}${award?` · <span style="color:var(--accent)">${award.award}</span>`:''}</div><button class="link pname" data-detail="${p.id}">${esc(p.name)}</button><div class="meta-row"><span class="dm-chip ${d.score>=80?'hot':''}">${demandLabel(d.score)}</span><span data-rating-for="${p.id}">${ratingHtml(p.id)}</span></div></div></div>
     <p class="card-desc">${esc(p.best)}</p>
     <div class="tags">${keyTags(p).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
@@ -1433,6 +1451,8 @@ function openDrawer(id){
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ${inC?'sel':''}" data-compare="${p.id}">${inC?'✓ In compare':'+ Compare'}</button><a class="btn primary" href="#buy" data-jump="buy">Where to buy</a></div></div>
       <div><p class="d-desc">${esc(p.desc)}</p><p class="bestfor"><b>Best for:</b> ${esc(p.best)}</p>
         <div style="margin-top:10px"><button class="btn sm" data-chat-ask="Tell me more about the ${esc(p.brand+' '+p.name)}. Is it worth it, and what are the best alternatives?">Ask AI about this</button></div></div>
+      ${cwDetail(p)}
+      ${gearProfile(p)}
       <div class="proscons"><div><h3>What we like</h3><ul class="pc">${p.pros.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><div><h3>Keep in mind</h3><ul class="pc con">${p.cons.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>
       <div><h2 style="margin-bottom:8px">Specifications</h2><div class="specs"><table><tbody>${p.spec.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}<tr><td>Wireless</td><td>${p.wl?'Yes':'No'}</td></tr></tbody></table></div></div>
       <div id="buy"><div class="sec-h"><h2>Where to buy</h2><button class="btn sm primary" data-stores="${p.id}">Compare stores</button></div>

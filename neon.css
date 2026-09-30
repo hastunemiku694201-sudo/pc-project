@@ -70,3 +70,53 @@ body{
 .award-b{box-shadow:0 0 12px var(--glow-2)}
 
 @media (prefers-reduced-motion:reduce){.card,.pick,.catbtn,.search{transition:none}}
+
+/* ---------- futuristic layer (both themes) ---------- */
+:root{--chamfer:10px;--hud:rgba(0,229,255,.55);--scan:rgba(255,255,255,.018)}
+:root[data-theme="light"]{--hud:rgba(194,24,155,.45);--scan:transparent}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--hud:rgba(194,24,155,.45);--scan:transparent}}
+
+/* scanlines over the whole page (dark only; invisible in light) */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:60;background:repeating-linear-gradient(0deg,var(--scan) 0 1px,transparent 1px 3px)}
+::selection{background:var(--accent);color:var(--accent-ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 4px var(--glow)}
+*{scrollbar-color:var(--accent) transparent}
+
+/* header: flowing neon underline */
+.top{border-image:linear-gradient(90deg,transparent,var(--accent),var(--accent-2),var(--accent),transparent) 1;animation:rg-flow 8s linear infinite}
+@keyframes rg-flow{to{border-image-source:linear-gradient(90deg,transparent,var(--accent-2),var(--accent),var(--accent-2),transparent)}}
+
+/* HUD labels */
+.eyebrow::before{content:"▸ ";opacity:.8}
+.tag,.pbrand{font-family:var(--f-mono);letter-spacing:.04em}
+.tag{text-transform:uppercase;font-size:10.5px}
+h1,.main-head h1{letter-spacing:.01em}
+
+/* chamfered buttons */
+.btn.primary,.catbtn.on{clip-path:polygon(var(--chamfer) 0,100% 0,100% calc(100% - var(--chamfer)),calc(100% - var(--chamfer)) 100%,0 100%,0 var(--chamfer));box-shadow:none;filter:drop-shadow(0 0 10px var(--glow))}
+.btn.primary{letter-spacing:.03em}
+
+/* cards: glassy surface + corner brackets that light up */
+.card,.pick{background:linear-gradient(160deg,color-mix(in srgb,var(--surface) 88%,var(--accent) 12%),var(--surface) 38%);backdrop-filter:blur(6px)}
+.card::before,.card::after{content:"";position:absolute;width:14px;height:14px;border:2px solid var(--hud);pointer-events:none;opacity:.55;transition:opacity .18s,transform .18s}
+.card::before{top:6px;left:6px;border-right:0;border-bottom:0;border-top-left-radius:6px}
+.card::after{bottom:6px;right:6px;border-left:0;border-top:0;border-bottom-right-radius:6px}
+.card:hover::before,.card:hover::after{opacity:1;transform:scale(1.15)}
+.card-img{position:relative}
+.card-img::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(transparent 60%,rgba(0,229,255,.08));mix-blend-mode:multiply}
+
+/* hero: moving perspective grid */
+.hero{isolation:isolate}
+.hero::after{content:"";position:absolute;left:-20%;right:-20%;bottom:-40%;height:90%;z-index:-1;pointer-events:none;opacity:.45;
+  background:linear-gradient(var(--hud) 1px,transparent 1px) 0 0/48px 48px,linear-gradient(90deg,var(--hud) 1px,transparent 1px) 0 0/48px 48px;
+  transform:perspective(420px) rotateX(62deg);transform-origin:50% 0;animation:rg-grid 6s linear infinite;
+  -webkit-mask-image:linear-gradient(to top,#000 20%,transparent 85%);mask-image:linear-gradient(to top,#000 20%,transparent 85%)}
+@keyframes rg-grid{to{background-position:0 48px,0 0}}
+.hero h1 span{animation:rg-hue 7s ease-in-out infinite alternate}
+@keyframes rg-hue{to{filter:drop-shadow(0 0 18px var(--glow)) hue-rotate(40deg)}}
+
+/* theme button */
+#themeBtn svg{width:18px;height:18px}
+
+@media (prefers-reduced-motion:reduce){.top,.hero::after,.hero h1 span{animation:none}}
+a.btn{text-decoration:none}
