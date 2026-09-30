@@ -1,0 +1,1656 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="RigForge: build your custom PC with live compatibility checks, price history, a 3D preview and prices in 15 currencies.">
+<title>RigForge PC Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Unbounded:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500&display=swap">
+<style>
+/* Layout: forge workbench — glass header (views + currency + AI), card grid of parts, floating build console; 3D stage, picks page, detail drawer, chat panel. Dark-first, ember accent. */
+:root{
+  --bg:#0A0C0F; --surface:#12161C; --surface-2:#1A2029; --surface-3:#222A35; --ink:#ECEFF3; --muted:#8B95A3; --line:#252C36;
+  --accent:#FF6B2C; --accent-2:#FFB547; --accent-ink:#160A03; --glow:rgba(255,107,44,.16); --head:rgba(10,12,15,.74); --scrim:rgba(0,0,0,.55);
+  --ok:#3DD68C; --ok-soft:rgba(61,214,140,.12); --warn:#F5B544; --warn-soft:rgba(245,181,68,.13); --err:#FF6464; --err-soft:rgba(255,100,100,.13);
+  --star:#FFB547; --shadow:0 10px 40px rgba(0,0,0,.45);
+  --f-brand:"Unbounded","Geist",system-ui,sans-serif;
+  --f-body:"Geist","IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:16px; color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#F3F4F6; --surface:#FFFFFF; --surface-2:#F1F3F6; --surface-3:#E4E8EE; --ink:#0E1116; --muted:#5C6573; --line:#E1E5EA;
+  --accent:#E8541A; --accent-2:#F59E0B; --accent-ink:#FFFFFF; --glow:rgba(232,84,26,.10); --head:rgba(243,244,246,.8); --scrim:rgba(14,17,22,.35);
+  --ok:#138A4F; --ok-soft:#E3F5EB; --warn:#A96300; --warn-soft:#FDF1DC; --err:#CF3434; --err-soft:#FCE6E6;
+  --star:#E08A00; --shadow:0 10px 40px rgba(14,17,22,.10); color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#F3F4F6; --surface:#FFFFFF; --surface-2:#F1F3F6; --surface-3:#E4E8EE; --ink:#0E1116; --muted:#5C6573; --line:#E1E5EA;
+  --accent:#E8541A; --accent-2:#F59E0B; --accent-ink:#FFFFFF; --glow:rgba(232,84,26,.10); --head:rgba(243,244,246,.8); --scrim:rgba(14,17,22,.35);
+  --ok:#138A4F; --ok-soft:#E3F5EB; --warn:#A96300; --warn-soft:#FDF1DC; --err:#CF3434; --err-soft:#FCE6E6;
+  --star:#E08A00; --shadow:0 10px 40px rgba(14,17,22,.10); color-scheme:light}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+.no-claude [data-chat-open],.no-claude .fab,.no-claude [data-chat-ask]{display:none!important}
+body{background:var(--bg);background-image:radial-gradient(900px 420px at 85% -120px,var(--glow),transparent 70%),radial-gradient(700px 360px at -10% 10%,var(--glow),transparent 70%);background-attachment:fixed;color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;margin:0;min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.num{font-variant-numeric:tabular-nums}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--head);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border-bottom:1px solid var(--line)}
+.top-in{max-width:1320px;margin:0 auto;padding-block:12px;padding-inline:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-brand);font-weight:700;font-size:18px;letter-spacing:-.01em;color:var(--ink);background:none;border:0;padding:0}
+.logo{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:var(--accent-ink);box-shadow:0 4px 18px var(--glow)}
+.logo svg{width:18px;height:18px}
+.brand em{font-style:normal;color:var(--accent)}
+.tabs{display:flex;gap:2px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:3px}
+.tabs button{border:0;background:none;padding:7px 14px;border-radius:9px;font-weight:600;font-size:14px;color:var(--muted);white-space:nowrap}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.top-tools{margin-left:auto;display:flex;align-items:center;gap:8px}
+.cur-select{appearance:none;-webkit-appearance:none;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 30px 8px 12px;font-weight:600;font-size:14px;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+.icon-btn{display:inline-flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-weight:600;font-size:14px}
+.icon-btn:hover,.cur-select:hover{border-color:var(--muted)}
+.icon-btn svg{width:16px;height:16px}
+.icon-btn.on{border-color:var(--accent);color:var(--accent)}
+.icon-btn.ai{background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent;color:var(--accent-ink)}
+@media (max-width:820px){.tabs{order:3;width:100%}.tabs button{flex:1}}
+@media (max-width:560px){.icon-btn .lbl{display:none}.brand span.w{display:none}}
+
+/* steps */
+.steps{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:0 12px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.steps::-webkit-scrollbar{display:none}
+.step{flex:0 0 auto;display:flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--line);padding:6px 12px 6px 6px;border-radius:999px;font-size:13.5px;font-weight:500;color:var(--muted);white-space:nowrap;transition:.15s}
+.step .n{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-mono);font-size:11px;background:var(--surface-2);color:var(--muted)}
+.step.ok .n{background:var(--ok-soft);color:var(--ok)}
+.step.warn .n{background:var(--warn-soft);color:var(--warn)}
+.step.err .n{background:var(--err-soft);color:var(--err)}
+.step:hover{color:var(--ink);border-color:var(--muted)}
+.step.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.step.on .n{background:var(--bg);color:var(--ink)}
+
+/* converter popover */
+.conv{position:absolute;right:20px;top:calc(100% + 8px);width:min(380px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;z-index:50}
+.conv h3{margin:0 0 2px;font-size:16px;font-weight:600}
+.conv .sub{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.conv-grid{display:grid;gap:10px}
+.conv-row{display:grid;grid-template-columns:minmax(0,1fr) 108px;gap:8px}
+.conv input,.conv select{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;width:100%}
+.conv input{font-family:var(--f-mono);font-size:16px}
+.swap{justify-self:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);display:grid;place-items:center;transition:transform .2s}
+.swap:hover{transform:rotate(180deg);border-color:var(--accent)}
+.swap svg{width:16px;height:16px}
+.conv-out{background:linear-gradient(135deg,var(--glow),transparent);border:1px solid var(--line);border-radius:12px;padding:14px}
+.conv-out .big{font-family:var(--f-mono);font-size:26px;font-weight:500;letter-spacing:-.02em;overflow-wrap:anywhere}
+.conv-out .rate{font-size:12.5px;color:var(--muted)}
+.conv-foot{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.quick button{font-family:var(--f-mono);font-size:12px;padding:5px 9px;border-radius:8px;border:1px solid var(--line);background:none;color:var(--muted)}
+.quick button:hover{color:var(--ink);border-color:var(--muted)}
+@media (max-width:560px){.conv{right:16px}}
+
+/* shell */
+.shell{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:28px 60px;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:28px;align-items:start}
+.shell.full{grid-template-columns:minmax(0,1fr)}
+.shell.full .console{display:none}
+@media (max-width:980px){.shell{grid-template-columns:minmax(0,1fr);padding-bottom:120px}}
+@media (max-width:560px){.shell,.top-in,.steps{padding-inline:16px}}
+
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.02em}
+h1{font-size:clamp(26px,3.2vw,34px);font-weight:700;line-height:1.1}
+h2{font-size:19px;font-weight:600}
+.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.lede{color:var(--muted);max-width:62ch;margin:8px 0 0}
+.main-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
+.head-acts{display:flex;gap:8px;flex-wrap:wrap}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:9px 16px;font-weight:600;font-size:14px;white-space:nowrap;transition:.15s}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent;color:var(--accent-ink);box-shadow:0 6px 20px var(--glow)}
+.btn.primary:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.btn.ghost{background:none;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--ink)}
+.btn.sel{background:var(--ok-soft);border-color:transparent;color:var(--ok)}
+.btn.sm{padding:6px 11px;font-size:13px;border-radius:9px}
+.btn[disabled]{opacity:.4;cursor:not-allowed;transform:none;filter:none}
+.link{background:none;border:0;padding:0;color:inherit;text-align:left;font:inherit}
+.link:hover{color:var(--accent)}
+
+/* toolbar */
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.search{flex:1 1 240px;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 12px;min-width:0}
+.search svg{width:16px;height:16px;color:var(--muted);flex:none}
+.search input{border:0;background:none;padding:10px 0;width:100%;min-width:0;outline:none}
+.search:focus-within{border-color:var(--accent)}
+.seg{display:flex;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:9px;font-size:13.5px;font-weight:500;color:var(--muted)}
+.seg button.on{background:var(--surface-3);color:var(--ink)}
+.toggle{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:500;padding:6px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer}
+.toggle input{appearance:none;-webkit-appearance:none;width:34px;height:20px;border-radius:99px;background:var(--surface-3);position:relative;margin:0;cursor:pointer;transition:.2s;flex:none}
+.toggle input::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:.2s}
+.toggle input:checked{background:var(--accent)}
+.toggle input:checked::after{left:17px;background:var(--accent-ink)}
+
+/* part cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.card{position:relative;display:flex;flex-direction:column;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;transition:border-color .15s,transform .15s,box-shadow .15s}
+.card:hover{border-color:var(--surface-3);transform:translateY(-2px);box-shadow:var(--shadow)}
+.card.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 10px 40px var(--glow)}
+.card.bad{opacity:.62}
+.card.bad:hover{opacity:.92}
+.card-top{display:flex;gap:12px;align-items:flex-start;padding-right:64px}
+.thumb{width:48px;height:48px;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;color:var(--accent);flex:none}
+.thumb svg{width:26px;height:26px}
+.pbrand{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.02em}
+.pname{font-weight:600;font-size:15.5px;line-height:1.3;letter-spacing:-.01em}
+.badge{position:absolute;top:14px;right:14px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px}
+.badge.ok{background:var(--ok-soft);color:var(--ok)}.badge.warn{background:var(--warn-soft);color:var(--warn)}.badge.err{background:var(--err-soft);color:var(--err)}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-family:var(--f-mono);font-size:11.5px;padding:3px 8px;border-radius:7px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.rating{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--muted)}
+.rating b{color:var(--star);font-weight:600}
+.msgs{display:grid;gap:4px;font-size:13px}
+.msg{display:flex;gap:7px;align-items:flex-start}
+.msg b{font-family:var(--f-mono)}
+.msg.warn{color:var(--warn)}.msg.err{color:var(--err)}
+.card-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;border-top:1px dashed var(--line);flex-wrap:wrap}
+.card-foot .acts{display:flex;gap:6px}
+.price{font-weight:700;font-size:18px;letter-spacing:-.02em}
+.price small{display:block;font-size:11.5px;font-weight:500;color:var(--muted);letter-spacing:0}
+.empty{padding:40px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+
+/* build console */
+.console{position:sticky;top:calc(env(safe-area-inset-top,0px) + 128px);background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+.c-head{padding:18px 18px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pill{font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}.pill.warn{background:var(--warn-soft);color:var(--warn)}.pill.err{background:var(--err-soft);color:var(--err)}.pill.idle{background:var(--surface-2);color:var(--muted)}
+.gauge{display:flex;align-items:center;gap:16px;margin:0 18px 12px;padding:14px;border-radius:14px;background:var(--surface-2)}
+.gauge svg{width:76px;height:76px;flex:none}
+.gauge .g-l{font-size:12px;color:var(--muted)}
+.gauge .g-v{font-family:var(--f-mono);font-size:20px;font-weight:500}
+.gauge .g-s{font-size:12.5px;color:var(--muted)}
+.rows{list-style:none;margin:0;padding:0 8px 6px}
+.row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;cursor:pointer;width:100%;text-align:left;background:none;border:0}
+.row:hover{background:var(--surface-2)}
+.row .ri{width:30px;height:30px;border-radius:8px;background:var(--surface-2);display:grid;place-items:center;color:var(--muted);position:relative}
+.row:hover .ri{background:var(--surface-3)}
+.row .ri svg{width:16px;height:16px}
+.row .ri i{position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;border:2px solid var(--surface)}
+.row .ri i.ok{background:var(--ok)}.row .ri i.warn{background:var(--warn)}.row .ri i.err{background:var(--err)}
+.row .ri.filled{color:var(--accent)}
+.row .k{font-size:11px;color:var(--muted);font-family:var(--f-mono);letter-spacing:.06em;text-transform:uppercase}
+.row .v{font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .v.none{color:var(--muted);font-weight:400}
+.row .p{font-size:13px;color:var(--muted)}
+.c-total{margin:4px 18px 0;padding:16px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.c-total .lab{font-size:13px;color:var(--muted)}
+.c-total strong{font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.c-total .alt{font-size:12px;color:var(--muted);text-align:right;margin-top:4px}
+.c-actions{padding:0 18px 18px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.c-actions .btn.primary{grid-column:1/-1}
+.close-sheet{display:none}
+
+/* mobile */
+.mbar{display:none}
+.scrim{display:none}
+@media (max-width:980px){
+  .console{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:60;border-radius:22px 22px 0 0;max-height:85vh;overflow:auto;transform:translateY(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .console.open{transform:none}
+  .shell.full .console{display:block}
+  .close-sheet{display:inline-flex}
+  .mbar{display:flex;position:fixed;left:12px;right:84px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 10px 10px 16px;align-items:center;gap:12px;box-shadow:var(--shadow)}
+  .mbar .t{font-weight:700;font-size:18px;letter-spacing:-.02em}
+  .mbar .s{font-size:12px;color:var(--muted)}
+  .mbar .btn{margin-left:auto}
+  .scrim{display:block;position:fixed;inset:0;background:var(--scrim);z-index:55}
+}
+
+/* start + hero */
+.hero{position:relative;overflow:hidden;border-radius:24px;padding:clamp(24px,4vw,44px);background:var(--surface);border:1px solid var(--line)}
+.hero::before{content:"";position:absolute;inset:auto -10% -60% 40%;height:120%;background:radial-gradient(closest-side,var(--glow),transparent);pointer-events:none}
+.hero h1{font-family:var(--f-brand);font-size:clamp(30px,5vw,52px);font-weight:700;line-height:1.02;letter-spacing:-.03em;max-width:14ch}
+.hero h1 span{background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .lede{font-size:16px;position:relative}
+.hero-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;position:relative}
+.stats{display:flex;flex-wrap:wrap;gap:24px;margin-top:24px;position:relative}
+.stat .v{font-family:var(--f-mono);font-size:22px;font-weight:500}
+.stat .l{font-size:12.5px;color:var(--muted)}
+.presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-top:16px}
+.preset{position:relative;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:12px;transition:.15s}
+.preset:hover{border-color:var(--accent);box-shadow:0 10px 40px var(--glow)}
+.preset .tier{display:flex;gap:6px;flex-wrap:wrap}
+.preset .tier span{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:var(--glow);padding:3px 7px;border-radius:6px}
+.preset h3{font-size:19px;font-weight:600}
+.preset p{margin:0;color:var(--muted);font-size:14px}
+.preset ul{margin:0;padding:0;list-style:none;display:grid;gap:6px;font-size:13px}
+.preset li{display:flex;gap:8px;align-items:center}
+.preset li svg{width:14px;height:14px;color:var(--muted);flex:none}
+.preset .pp{font-size:21px;font-weight:700;letter-spacing:-.02em;margin-top:auto;padding-top:12px;border-top:1px dashed var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.preset .pp .acts{display:flex;gap:6px}
+.section{margin-top:36px}
+.section-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.saved{display:grid;gap:8px;margin-top:12px}
+.saved-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.saved-row .nm{font-weight:600}
+.saved-row .meta{font-size:13px;color:var(--muted)}
+.saved-row .acts{margin-left:auto;display:flex;gap:6px}
+
+/* best picks */
+.picks-group{margin-top:22px}
+.picks-group h3{font-size:14px;font-family:var(--f-mono);font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.picks-group h3 svg{width:16px;height:16px;color:var(--accent)}
+.picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.pick{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.pick .award{align-self:flex-start;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:99px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--accent-ink)}
+.pick .why{font-size:13.5px;color:var(--muted)}
+.pick .row2{margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:8px}
+
+/* review page */
+.report{display:grid;gap:8px;margin-bottom:22px}
+.check-item{display:flex;gap:10px;align-items:flex-start;padding:12px 16px;border-radius:12px;font-size:14px;background:var(--surface);border:1px solid var(--line)}
+.check-item.err{background:var(--err-soft);border-color:transparent}
+.check-item.warn{background:var(--warn-soft);border-color:transparent}
+.check-item.ok{background:var(--ok-soft);border-color:transparent}
+.check-item .ic{font-family:var(--f-mono);font-weight:600;min-width:16px}
+.check-item.err .ic{color:var(--err)}.check-item.warn .ic{color:var(--warn)}.check-item.ok .ic{color:var(--ok)}
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+td.r,th.r{text-align:right;white-space:nowrap}
+tfoot td{font-weight:700;border-bottom:0;font-size:18px;letter-spacing:-.02em}
+.save-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.save-row input{flex:1 1 220px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 14px;min-width:0}
+.note{font-size:12.5px;color:var(--muted);margin-top:24px}
+.note a{color:var(--accent)}
+.banner{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:10px 14px;font-size:14px;margin-bottom:18px}
+.banner .btn{padding:5px 10px;font-size:13px}
+.banner span{flex:1 1 220px}
+
+/* 3D */
+.stage-wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.stage-wrap{grid-template-columns:minmax(0,1fr)}}
+.stage{position:relative;background:radial-gradient(ellipse at 50% 40%,var(--surface-2),var(--surface));border:1px solid var(--line);border-radius:22px;overflow:hidden;aspect-ratio:4/3;max-width:100%;touch-action:none;cursor:grab}
+.stage:active{cursor:grabbing}
+.stage canvas{display:block;width:100%;height:100%}
+.stage-hud{position:absolute;left:14px;right:14px;bottom:14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:flex-end;pointer-events:none}
+.stage-hud > *{pointer-events:auto}
+.stage-hint{font-size:12px;color:var(--muted);background:var(--head);backdrop-filter:blur(8px);padding:6px 10px;border-radius:8px}
+.stage-ctrls{display:flex;gap:6px;flex-wrap:wrap}
+.stage-ctrls .btn{background:var(--head);backdrop-filter:blur(8px)}
+.stage-ctrls .btn.on{border-color:var(--accent);color:var(--accent)}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12.5px;font-weight:500;padding:6px 10px;border-radius:8px;transform:translate(-50%,-130%);white-space:nowrap;z-index:2}
+.stage-fallback{position:absolute;inset:0 0 60px 0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted)}
+.legend{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:8px}
+.legend h2{padding:10px 10px 6px}
+.lg{display:grid;grid-template-columns:12px minmax(0,1fr);gap:10px;align-items:center;padding:8px 10px;border-radius:10px;width:100%;text-align:left;background:none;border:0}
+.lg:hover,.lg.on{background:var(--surface-2)}
+.lg i{width:12px;height:12px;border-radius:4px}
+.lg .k{font-size:11px;font-family:var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lg .v{font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lg .v.none{color:var(--muted);font-weight:400}
+
+/* drawer */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);z-index:90;background:var(--surface);border-left:1px solid var(--line);box-shadow:var(--shadow);overflow-y:auto;transform:translateX(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);padding-bottom:env(safe-area-inset-bottom,0px);padding-top:env(safe-area-inset-top,0px)}
+.drawer.open{transform:none}
+.dscrim{position:fixed;inset:0;background:var(--scrim);z-index:85}
+.d-head{position:sticky;top:0;z-index:2;background:var(--surface);display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.d-body{padding:20px;display:grid;gap:22px}
+.d-hero{display:flex;gap:16px;align-items:flex-start}
+.d-hero .thumb{width:72px;height:72px;border-radius:18px}
+.d-hero .thumb svg{width:40px;height:40px}
+.d-hero h2{font-size:22px;line-height:1.2}
+.d-buy{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--surface-2);border-radius:14px;padding:14px 16px}
+.d-desc{margin:0;font-size:15px;line-height:1.6}
+.specs{width:100%;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.specs td{padding:9px 14px;font-size:14px}
+.specs td:first-child{color:var(--muted);width:42%}
+.specs tr:last-child td{border-bottom:0}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.stars{display:inline-flex;gap:1px;color:var(--star);letter-spacing:0}
+.stars .off{color:var(--surface-3)}
+.rv-sum{display:flex;align-items:center;gap:14px;background:var(--surface-2);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.rv-sum .avg{font-size:32px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.rv-list{display:grid;gap:10px}
+.rv{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.rv-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rv-top img{width:26px;height:26px;border-radius:50%}
+.rv-top .who{font-weight:600;font-size:14px}
+.rv-top .when{font-size:12px;color:var(--muted)}
+.rv-top .del{margin-left:auto}
+.rv p{margin:8px 0 0;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.form{display:grid;gap:8px;margin-top:12px;border:1px dashed var(--line);border-radius:12px;padding:12px}
+.form textarea{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:72px;resize:vertical;width:100%}
+.form textarea:focus{outline:none;border-color:var(--accent)}
+.form .frow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.star-pick{display:flex;gap:2px}
+.star-pick button{background:none;border:0;padding:2px;font-size:22px;line-height:1;color:var(--surface-3)}
+.star-pick button.on{color:var(--star)}
+.muted{color:var(--muted);font-size:13.5px}
+
+.trend{display:block;font-size:11.5px;font-weight:500;color:var(--muted);letter-spacing:0;margin-top:2px}.trend span{opacity:.75}
+.ph-ctrls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.ph-ctrls .seg button{padding:5px 10px;font-size:13px}
+.ph-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
+@media (max-width:480px){.ph-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ph-stats>div{background:var(--surface-2);border-radius:12px;padding:10px 12px;min-width:0}
+.ph-stats .k{font-size:11px;font-family:var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ph-stats .v{font-weight:700;font-size:16px;letter-spacing:-.01em}
+.ph-stats .v.sm{font-size:13px;font-weight:600}
+.ph-chart{position:relative;border:1px solid var(--line);border-radius:14px;padding:8px 4px 0;touch-action:pan-y}
+.ph-chart svg{display:block}
+.ph-tip{position:absolute;transform:translate(-50%,-120%);background:var(--ink);color:var(--bg);padding:7px 10px;border-radius:8px;font-size:12px;pointer-events:none;white-space:nowrap;z-index:2}
+.ph-tip .p{font-weight:700;font-size:14px}
+.ph-tip .d{opacity:.8}
+.ph-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:8px 2px 0}
+.ph-legend span{display:inline-flex;align-items:center;gap:6px}
+.ph-legend i{display:inline-block;width:18px;height:0}
+.l-line{border-top:2px solid var(--accent)}.l-dash{border-top:2px dashed var(--accent)}.l-band{height:10px!important;background:var(--accent);opacity:.2;border-radius:3px}
+.ph-sum{margin:10px 0 0;font-size:14.5px;line-height:1.55}
+.ph-data{margin-top:10px;font-size:13.5px}.ph-data summary{cursor:pointer;color:var(--muted)}.ph-data .tbl-wrap{margin-top:8px;max-height:220px;overflow:auto}
+.dm{background:var(--surface-2);border-radius:14px;padding:14px 16px}
+.dm-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dm-label{font-weight:700;font-size:16px}
+.dm-trend{font-size:12.5px;color:var(--muted);font-weight:500}
+.dm-score{margin-left:auto;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.dm-bar{height:8px;border-radius:99px;background:var(--surface-3);margin:10px 0;overflow:hidden}
+.dm-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.dm p{margin:0;font-size:14.5px;line-height:1.55}
+/* chat */
+.fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:70;width:58px;height:58px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--accent-ink);display:grid;place-items:center;box-shadow:0 10px 30px var(--glow),var(--shadow);transition:transform .15s}
+.fab:hover{transform:scale(1.06)}
+.fab svg{width:26px;height:26px}
+@media (max-width:980px){.fab{right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:62px;height:62px}}
+.chat{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:95;width:min(420px,calc(100vw - 32px));height:min(640px,calc(100vh - 110px));background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+@media (max-width:560px){.chat{inset:0;width:100%;height:100%;border-radius:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}}
+.ch-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.ch-head .logo{width:34px;height:34px}
+.ch-head .t{font-weight:600}
+.ch-head .s{font-size:12px;color:var(--muted)}
+.ch-head .btn{margin-left:auto}
+.ch-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.bub{max-width:88%;padding:10px 14px;border-radius:16px;font-size:14.5px;line-height:1.55;overflow-wrap:anywhere}
+.bub.user{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--accent-ink);border-bottom-right-radius:6px;white-space:pre-wrap}
+.bub.bot{align-self:flex-start;background:var(--surface-2);border-bottom-left-radius:6px}
+.bub.bot p{margin:0 0 8px}.bub.bot p:last-child{margin:0}
+.bub.bot ul,.bub.bot ol{margin:4px 0 8px;padding-left:20px}
+.bub.bot code{font-family:var(--f-mono);font-size:13px;background:var(--surface-3);padding:1px 5px;border-radius:5px}
+.bub.err{background:var(--err-soft);color:var(--err)}
+.thinking span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);margin-right:4px;animation:blink 1.2s infinite}
+.thinking span:nth-child(2){animation-delay:.2s}.thinking span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.chip-part{display:inline-flex;align-items:center;gap:6px;margin:3px 2px;padding:4px 10px;border-radius:99px;border:1px solid var(--accent);background:var(--glow);color:var(--ink);font-size:13px;font-weight:600;vertical-align:middle}
+.chip-part:hover{background:var(--accent);color:var(--accent-ink)}
+.chip-part.in{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.sugg{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px}
+.sugg button{font-size:12.5px;padding:6px 10px;border-radius:99px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink)}
+.sugg button:hover{border-color:var(--accent)}
+.ch-foot{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);align-items:flex-end}
+.ch-foot textarea{flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:10px 14px;resize:none;max-height:120px;min-height:44px}
+.ch-foot textarea:focus{outline:none;border-color:var(--accent)}
+.ch-foot .btn{height:44px}
+.ch-note{font-size:11.5px;color:var(--muted);text-align:center;padding:0 12px 10px}
+
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(16px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:.2s;z-index:120;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media (min-width:981px){.toast{bottom:28px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <button class="brand" data-view="build" data-step-to="start" aria-label="RigForge home"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><span class="w">Rig<em>Forge</em></span></button>
+    <a class="icon-btn" href="gear.html" style="text-decoration:none;color:inherit">Gaming gear</a>
+    <nav class="tabs" id="tabs" aria-label="Sections">
+      <button data-view="build">Builder</button><button data-view="recs">Recommended</button><button data-view="3d">3D View</button>
+    </nav>
+    <div class="top-tools">
+      <select class="cur-select" id="cur" aria-label="Display currency"></select>
+      <button class="icon-btn" id="convBtn" aria-expanded="false" aria-controls="conv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 7h13l-4-4M17 17H4l4 4"/></svg><span class="lbl">Converter</span></button>
+      <button class="icon-btn ai" data-chat-open><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18 9.4l-4.2 1.8L12 16l-1.8-4.8L6 9.4l4.2-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg><span class="lbl">Ask AI</span></button>
+    </div>
+  </div>
+  <div class="steps" id="steps" role="tablist" aria-label="Build steps"></div>
+  <div class="conv" id="conv" hidden></div>
+</header>
+
+<div class="shell" id="shell">
+  <main id="main" aria-live="polite"></main>
+  <aside class="console" id="sheet" aria-label="Your build"></aside>
+</div>
+<div class="mbar" id="mbar"></div>
+<div class="scrim" id="scrim" hidden></div>
+
+<div class="dscrim" id="dscrim" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Part details" aria-hidden="true"></aside>
+
+<button class="fab" id="fab" data-chat-open aria-label="Ask the RigForge AI"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9 11h.01M12 11h.01M15 11h.01"/></svg></button>
+<section class="chat" id="chat" hidden aria-label="RigForge AI assistant">
+  <div class="ch-head"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><div><div class="t">RigForge AI</div><div class="s" id="chStatus">Knows your build and our catalog</div></div><button class="btn ghost sm" id="chClear" title="New chat">New chat</button><button class="btn ghost sm" id="chClose" aria-label="Close chat">✕</button></div>
+  <div class="ch-body" id="chBody"></div>
+  <div class="sugg" id="chSugg"></div>
+  <form class="ch-foot" id="chForm"><label for="chIn" class="visually-hidden">Message</label><textarea id="chIn" rows="1" placeholder="Ask anything about PCs or your build…" maxlength="2000"></textarea><button class="btn primary" id="chSend" type="submit">Send</button></form>
+  <div class="ch-note">AI answers can be wrong. Double-check before you buy.</div>
+</section>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ================= DATA START ================= */
+const ICON={
+  cpu:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="8" y="8" width="16" height="16" rx="3"/><rect x="12.5" y="12.5" width="7" height="7" rx="1.5"/><path d="M12 4v4M16 4v4M20 4v4M12 24v4M16 24v4M20 24v4M4 12h4M4 16h4M4 20h4M24 12h4M24 16h4M24 20h4"/></svg>',
+  mb:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="4" width="24" height="24" rx="3"/><rect x="8" y="8" width="8" height="8" rx="1"/><path d="M20 8v10M23.5 8v10M8 21h16M8 24.5h10"/></svg>',
+  ram:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="10" width="26" height="10" rx="2"/><path d="M7 13.5h3v3H7zM12 13.5h3v3h-3zM17 13.5h3v3h-3zM22 13.5h3v3h-3zM6 20v3M10 20v3M14 20v3M18 20v3M22 20v3M26 20v3"/></svg>',
+  gpu:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="8" width="26" height="14" rx="3"/><circle cx="11" cy="15" r="4"/><circle cx="21" cy="15" r="4"/><path d="M6 22v3h12v-3"/></svg>',
+  storage:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="26" height="10" rx="2"/><path d="M7 14h8v4H7zM18 14h3v4h-3zM26 14.5v3"/></svg>',
+  cooler:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="4" width="24" height="24" rx="5"/><circle cx="16" cy="16" r="2"/><path d="M16 14c0-4 2-6 5-6M18 16c4 0 6 2 6 5M16 18c0 4-2 6-5 6M14 16c-4 0-6-2-6-5"/></svg>',
+  psu:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="7" width="26" height="18" rx="3"/><circle cx="11.5" cy="16" r="5"/><path d="M22 12h3M22 16h3M22 20h3M18 7v18"/></svg>',
+  case:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="8" y="3" width="16" height="26" rx="3"/><circle cx="16" cy="8" r="1.5"/><path d="M11.5 13h9M11.5 16.5h9M11.5 20h9M11.5 23.5h9"/></svg>'
+};
+const SEARCH_I='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+
+/* currency: rates per 1 THB, open.er-api.com, 29 Sep 2026 */
+const RATES_DATE='29 Sep 2026';
+const CURRENCIES=[
+  {c:'THB',s:'฿',d:0,n:'Thai Baht',r:1},{c:'USD',s:'$',d:2,n:'US Dollar',r:0.02977},{c:'EUR',s:'€',d:2,n:'Euro',r:0.026173},
+  {c:'GBP',s:'£',d:2,n:'British Pound',r:0.022448},{c:'JPY',s:'¥',d:0,n:'Japanese Yen',r:4.680186},{c:'CNY',s:'CN¥',d:2,n:'Chinese Yuan',r:0.200622},
+  {c:'SGD',s:'S$',d:2,n:'Singapore Dollar',r:0.038067},{c:'MYR',s:'RM',d:2,n:'Malaysian Ringgit',r:0.121552},{c:'KRW',s:'₩',d:0,n:'Korean Won',r:40.455473},
+  {c:'AUD',s:'A$',d:2,n:'Australian Dollar',r:0.042417},{c:'HKD',s:'HK$',d:2,n:'Hong Kong Dollar',r:0.233522},{c:'VND',s:'₫',d:0,n:'Vietnamese Dong',r:771.491935},
+  {c:'IDR',s:'Rp',d:0,n:'Indonesian Rupiah',r:534.518277},{c:'PHP',s:'₱',d:2,n:'Philippine Peso',r:1.859811},{c:'INR',s:'₹',d:2,n:'Indian Rupee',r:2.859152}
+];
+const CUR=Object.fromEntries(CURRENCIES.map(x=>[x.c,x]));
+
+const CATS=[
+  {key:'cpu',label:'CPU',title:'Pick your processor',hint:'The CPU sets your socket. Everything else follows from here.'},
+  {key:'mb',label:'Motherboard',title:'Choose a motherboard',hint:'Must match the CPU socket. Its size decides which cases fit.'},
+  {key:'ram',label:'Memory',title:'Add memory',hint:'DDR4 and DDR5 are not interchangeable. Match what your board supports.'},
+  {key:'gpu',label:'Graphics',title:'Choose a graphics card',hint:'The biggest driver of gaming performance, and of power draw.'},
+  {key:'storage',label:'Storage',title:'Add storage',hint:'NVMe drives load games and projects far faster than SATA.'},
+  {key:'cooler',label:'Cooling',title:'Keep it cool',hint:'We check cooler height and radiator size against your case.'},
+  {key:'psu',label:'Power',title:'Power it up',hint:'We recommend at least 30% headroom above estimated load.'},
+  {key:'case',label:'Case',title:'Pick a case',hint:'Needs room for your board, graphics card and cooler.'}
+];
+const STEPS=['start',...CATS.map(c=>c.key),'review'];
+const ALLSOCK=['AM4','AM5','LGA1700','LGA1851'];
+const P=[
+  {id:'r5-5600',cat:'cpu',brand:'AMD',name:'Ryzen 5 5600',price:3590,socket:'AM4',cores:6,threads:12,boost:4.4,power:76,igpu:false},
+  {id:'r5-7600',cat:'cpu',brand:'AMD',name:'Ryzen 5 7600',price:6990,socket:'AM5',cores:6,threads:12,boost:5.1,power:88,igpu:true},
+  {id:'r7-9700x',cat:'cpu',brand:'AMD',name:'Ryzen 7 9700X',price:11900,socket:'AM5',cores:8,threads:16,boost:5.5,power:88,igpu:true},
+  {id:'r7-7800x3d',cat:'cpu',brand:'AMD',name:'Ryzen 7 7800X3D',price:14900,socket:'AM5',cores:8,threads:16,boost:5.0,power:120,igpu:true},
+  {id:'r9-9950x',cat:'cpu',brand:'AMD',name:'Ryzen 9 9950X',price:21900,socket:'AM5',cores:16,threads:32,boost:5.7,power:200,igpu:true},
+  {id:'i5-14400f',cat:'cpu',brand:'Intel',name:'Core i5-14400F',price:6490,socket:'LGA1700',cores:10,threads:16,boost:4.7,power:148,igpu:false},
+  {id:'i7-14700k',cat:'cpu',brand:'Intel',name:'Core i7-14700K',price:13900,socket:'LGA1700',cores:20,threads:28,boost:5.6,power:253,igpu:true},
+  {id:'u7-265k',cat:'cpu',brand:'Intel',name:'Core Ultra 7 265K',price:13500,socket:'LGA1851',cores:20,threads:20,boost:5.5,power:250,igpu:true},
+  {id:'asrock-b550m',cat:'mb',brand:'ASRock',name:'B550M Pro4',price:3290,socket:'AM4',form:'mATX',ramType:'DDR4',ramSlots:4,m2:2},
+  {id:'tuf-b650m',cat:'mb',brand:'ASUS',name:'TUF Gaming B650M-Plus WiFi',price:5490,socket:'AM5',form:'mATX',ramType:'DDR5',ramSlots:4,m2:2},
+  {id:'msi-b650-gp',cat:'mb',brand:'MSI',name:'B650 Gaming Plus WiFi',price:6290,socket:'AM5',form:'ATX',ramType:'DDR5',ramSlots:4,m2:2},
+  {id:'gb-b650i',cat:'mb',brand:'Gigabyte',name:'B650I Aorus Ultra',price:8900,socket:'AM5',form:'ITX',ramType:'DDR5',ramSlots:2,m2:3},
+  {id:'rog-x870e',cat:'mb',brand:'ASUS',name:'ROG Strix X870E-E Gaming WiFi',price:17900,socket:'AM5',form:'ATX',ramType:'DDR5',ramSlots:4,m2:5},
+  {id:'msi-b550',cat:'mb',brand:'MSI',name:'MAG B550 Tomahawk',price:4990,socket:'AM4',form:'ATX',ramType:'DDR4',ramSlots:4,m2:2},
+  {id:'prime-b760m-d4',cat:'mb',brand:'ASUS',name:'Prime B760M-A D4',price:3990,socket:'LGA1700',form:'mATX',ramType:'DDR4',ramSlots:4,m2:2},
+  {id:'msi-b760m',cat:'mb',brand:'MSI',name:'MAG B760M Mortar WiFi',price:5990,socket:'LGA1700',form:'mATX',ramType:'DDR5',ramSlots:4,m2:2},
+  {id:'gb-z890',cat:'mb',brand:'Gigabyte',name:'Z890 Aorus Elite WiFi7',price:10900,socket:'LGA1851',form:'ATX',ramType:'DDR5',ramSlots:4,m2:4},
+  {id:'fury-16-d5',cat:'ram',brand:'Kingston',name:'Fury Beast 16GB DDR5-5600',price:1990,type:'DDR5',cap:16,sticks:2,speed:5600},
+  {id:'veng-32-d5',cat:'ram',brand:'Corsair',name:'Vengeance 32GB DDR5-6000',price:3690,type:'DDR5',cap:32,sticks:2,speed:6000},
+  {id:'tz5-64-d5',cat:'ram',brand:'G.Skill',name:'Trident Z5 RGB 64GB DDR5-6000',price:7290,type:'DDR5',cap:64,sticks:2,speed:6000},
+  {id:'veng-96-d5',cat:'ram',brand:'Corsair',name:'Vengeance 96GB DDR5-5600',price:10490,type:'DDR5',cap:96,sticks:4,speed:5600},
+  {id:'fury-16-d4',cat:'ram',brand:'Kingston',name:'Fury Beast 16GB DDR4-3200',price:1290,type:'DDR4',cap:16,sticks:2,speed:3200},
+  {id:'lpx-32-d4',cat:'ram',brand:'Corsair',name:'Vengeance LPX 32GB DDR4-3600',price:2390,type:'DDR4',cap:32,sticks:2,speed:3600},
+  {id:'gpu-none',cat:'gpu',brand:'Integrated',name:'No graphics card',price:0,none:true,vram:0,power:0,length:0},
+  {id:'rx7600',cat:'gpu',brand:'AMD',name:'Radeon RX 7600 8GB',price:8990,vram:8,power:165,length:204},
+  {id:'rtx4060',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 4060 8GB',price:10900,vram:8,power:115,length:245},
+  {id:'rtx5070',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 5070 12GB',price:21900,vram:12,power:250,length:300},
+  {id:'rx9070xt',cat:'gpu',brand:'AMD',name:'Radeon RX 9070 XT 16GB',price:24900,vram:16,power:304,length:320},
+  {id:'rtx5080',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 5080 16GB',price:42900,vram:16,power:360,length:330},
+  {id:'rtx5090',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 5090 32GB',price:89900,vram:32,power:575,length:357},
+  {id:'t500-1',cat:'storage',brand:'Crucial',name:'T500 1TB NVMe Gen4',price:2890,iface:'NVMe',capacity:'1 TB',speed:7300},
+  {id:'990pro-1',cat:'storage',brand:'Samsung',name:'990 Pro 1TB NVMe Gen4',price:4290,iface:'NVMe',capacity:'1 TB',speed:7450},
+  {id:'sn850x-2',cat:'storage',brand:'WD',name:'Black SN850X 2TB NVMe Gen4',price:5990,iface:'NVMe',capacity:'2 TB',speed:7300},
+  {id:'870evo-1',cat:'storage',brand:'Samsung',name:'870 EVO 1TB SATA SSD',price:2790,iface:'SATA',capacity:'1 TB',speed:560},
+  {id:'barra-2',cat:'storage',brand:'Seagate',name:'BarraCuda 2TB HDD',price:1990,iface:'SATA',capacity:'2 TB',speed:220,hdd:true},
+  {id:'ak400',cat:'cooler',brand:'DeepCool',name:'AK400',price:990,type:'Air',height:155,maxTdp:220,sockets:ALLSOCK},
+  {id:'pa120se',cat:'cooler',brand:'Thermalright',name:'Peerless Assassin 120 SE',price:1390,type:'Air',height:155,maxTdp:245,sockets:ALLSOCK,dual:true},
+  {id:'nh-l9a',cat:'cooler',brand:'Noctua',name:'NH-L9a-AM5 Low Profile',price:1990,type:'Air',height:37,maxTdp:65,sockets:['AM4','AM5']},
+  {id:'nh-d15g2',cat:'cooler',brand:'Noctua',name:'NH-D15 G2',price:5490,type:'Air',height:168,maxTdp:280,sockets:ALLSOCK,dual:true},
+  {id:'lf3-240',cat:'cooler',brand:'ARCTIC',name:'Liquid Freezer III 240',price:3290,type:'AIO',rad:240,maxTdp:300,sockets:ALLSOCK},
+  {id:'kraken-360',cat:'cooler',brand:'NZXT',name:'Kraken 360',price:7490,type:'AIO',rad:360,maxTdp:350,sockets:ALLSOCK},
+  {id:'a550bn',cat:'psu',brand:'MSI',name:'MAG A550BN',price:1590,watts:550,rating:'80+ Bronze'},
+  {id:'rm650e',cat:'psu',brand:'Corsair',name:'RM650e',price:2990,watts:650,rating:'80+ Gold'},
+  {id:'a750gl',cat:'psu',brand:'MSI',name:'MAG A750GL PCIE5',price:3190,watts:750,rating:'80+ Gold'},
+  {id:'rm850x',cat:'psu',brand:'Corsair',name:'RM850x',price:4590,watts:850,rating:'80+ Gold'},
+  {id:'gx1000',cat:'psu',brand:'Seasonic',name:'Focus GX-1000',price:5990,watts:1000,rating:'80+ Gold'},
+  {id:'thor1200',cat:'psu',brand:'ASUS',name:'ROG Thor 1200P2',price:11900,watts:1200,rating:'80+ Platinum'},
+  {id:'air100',cat:'case',brand:'Montech',name:'Air 100 ARGB',price:1890,forms:['mATX','ITX'],maxGpu:330,maxCooler:161,maxRad:240},
+  {id:'nr200p',cat:'case',brand:'Cooler Master',name:'MasterBox NR200P',price:3390,forms:['ITX'],maxGpu:330,maxCooler:155,maxRad:280},
+  {id:'h5flow',cat:'case',brand:'NZXT',name:'H5 Flow',price:3290,forms:['ATX','mATX','ITX'],maxGpu:365,maxCooler:165,maxRad:360},
+  {id:'north',cat:'case',brand:'Fractal Design',name:'North',price:5290,forms:['ATX','mATX','ITX'],maxGpu:355,maxCooler:170,maxRad:360},
+  {id:'o11evo',cat:'case',brand:'Lian Li',name:'O11 Dynamic EVO',price:5490,forms:['ATX','mATX','ITX'],maxGpu:422,maxCooler:167,maxRad:360}
+];
+P.push(
+  {id:'r7-5700x3d',cat:'cpu',brand:'AMD',name:'Ryzen 7 5700X3D',price:7990,socket:'AM4',cores:8,threads:16,boost:4.1,power:105,igpu:false},
+  {id:'r5-8600g',cat:'cpu',brand:'AMD',name:'Ryzen 5 8600G',price:6490,socket:'AM5',cores:6,threads:12,boost:5.0,power:88,igpu:true},
+  {id:'r5-9600x',cat:'cpu',brand:'AMD',name:'Ryzen 5 9600X',price:8490,socket:'AM5',cores:6,threads:12,boost:5.4,power:88,igpu:true},
+  {id:'r7-9800x3d',cat:'cpu',brand:'AMD',name:'Ryzen 7 9800X3D',price:17900,socket:'AM5',cores:8,threads:16,boost:5.2,power:162,igpu:true},
+  {id:'r9-9900x',cat:'cpu',brand:'AMD',name:'Ryzen 9 9900X',price:15900,socket:'AM5',cores:12,threads:24,boost:5.6,power:162,igpu:true},
+  {id:'r9-9950x3d',cat:'cpu',brand:'AMD',name:'Ryzen 9 9950X3D',price:26900,socket:'AM5',cores:16,threads:32,boost:5.7,power:200,igpu:true},
+  {id:'i3-14100f',cat:'cpu',brand:'Intel',name:'Core i3-14100F',price:3290,socket:'LGA1700',cores:4,threads:8,boost:4.7,power:110,igpu:false},
+  {id:'i5-14600k',cat:'cpu',brand:'Intel',name:'Core i5-14600K',price:9900,socket:'LGA1700',cores:14,threads:20,boost:5.3,power:181,igpu:true},
+  {id:'i9-14900k',cat:'cpu',brand:'Intel',name:'Core i9-14900K',price:19900,socket:'LGA1700',cores:24,threads:32,boost:6.0,power:253,igpu:true},
+  {id:'u5-245k',cat:'cpu',brand:'Intel',name:'Core Ultra 5 245K',price:9900,socket:'LGA1851',cores:14,threads:14,boost:5.2,power:159,igpu:true},
+  {id:'u9-285k',cat:'cpu',brand:'Intel',name:'Core Ultra 9 285K',price:21900,socket:'LGA1851',cores:24,threads:24,boost:5.7,power:250,igpu:true},
+
+  {id:'gb-a520m',cat:'mb',brand:'Gigabyte',name:'A520M K V2',price:2190,socket:'AM4',form:'mATX',ramType:'DDR4',ramSlots:2,m2:1},
+  {id:'tuf-b550',cat:'mb',brand:'ASUS',name:'TUF Gaming B550-Plus WiFi II',price:4590,socket:'AM4',form:'ATX',ramType:'DDR4',ramSlots:4,m2:2},
+  {id:'asrock-b650m',cat:'mb',brand:'ASRock',name:'B650M Pro RS WiFi',price:4590,socket:'AM5',form:'mATX',ramType:'DDR5',ramSlots:4,m2:3},
+  {id:'gb-b650-eagle',cat:'mb',brand:'Gigabyte',name:'B650 Eagle AX',price:5690,socket:'AM5',form:'ATX',ramType:'DDR5',ramSlots:4,m2:3},
+  {id:'msi-x870-tom',cat:'mb',brand:'MSI',name:'MAG X870 Tomahawk WiFi',price:10900,socket:'AM5',form:'ATX',ramType:'DDR5',ramSlots:4,m2:4},
+  {id:'rog-b650e-i',cat:'mb',brand:'ASUS',name:'ROG Strix B650E-I Gaming WiFi',price:10500,socket:'AM5',form:'ITX',ramType:'DDR5',ramSlots:2,m2:2},
+  {id:'rog-x870e-hero',cat:'mb',brand:'ASUS',name:'ROG Crosshair X870E Hero',price:23900,socket:'AM5',form:'ATX',ramType:'DDR5',ramSlots:4,m2:5},
+  {id:'msi-h610m',cat:'mb',brand:'MSI',name:'PRO H610M-E DDR4',price:2390,socket:'LGA1700',form:'mATX',ramType:'DDR4',ramSlots:2,m2:1},
+  {id:'gb-b760-gx',cat:'mb',brand:'Gigabyte',name:'B760 Gaming X AX',price:5290,socket:'LGA1700',form:'ATX',ramType:'DDR5',ramSlots:4,m2:3},
+  {id:'rog-z790-a',cat:'mb',brand:'ASUS',name:'ROG Strix Z790-A Gaming WiFi II',price:13900,socket:'LGA1700',form:'ATX',ramType:'DDR5',ramSlots:4,m2:5},
+  {id:'msi-z790i',cat:'mb',brand:'MSI',name:'MPG Z790I Edge WiFi',price:9900,socket:'LGA1700',form:'ITX',ramType:'DDR5',ramSlots:2,m2:2},
+  {id:'asrock-b860m',cat:'mb',brand:'ASRock',name:'B860M Pro RS WiFi',price:4690,socket:'LGA1851',form:'mATX',ramType:'DDR5',ramSlots:4,m2:3},
+  {id:'rog-z890-hero',cat:'mb',brand:'ASUS',name:'ROG Maximus Z890 Hero',price:24900,socket:'LGA1851',form:'ATX',ramType:'DDR5',ramSlots:4,m2:6},
+
+  {id:'veng-16-d5-1',cat:'ram',brand:'Corsair',name:'Vengeance 16GB DDR5-5200 (single)',price:1690,type:'DDR5',cap:16,sticks:1,speed:5200},
+  {id:'fury-32-d5',cat:'ram',brand:'Kingston',name:'Fury Beast 32GB DDR5-6000',price:3490,type:'DDR5',cap:32,sticks:2,speed:6000},
+  {id:'flare-32-d5',cat:'ram',brand:'G.Skill',name:'Flare X5 32GB DDR5-6000 CL30',price:3890,type:'DDR5',cap:32,sticks:2,speed:6000},
+  {id:'dom-32-d5',cat:'ram',brand:'Corsair',name:'Dominator Titanium 32GB DDR5-6400',price:5590,type:'DDR5',cap:32,sticks:2,speed:6400},
+  {id:'tz5neo-48-d5',cat:'ram',brand:'G.Skill',name:'Trident Z5 Neo 48GB DDR5-6000',price:5290,type:'DDR5',cap:48,sticks:2,speed:6000},
+  {id:'fury-64-d5',cat:'ram',brand:'Kingston',name:'Fury Beast RGB 64GB DDR5-5600',price:6290,type:'DDR5',cap:64,sticks:2,speed:5600},
+  {id:'veng-128-d5',cat:'ram',brand:'Corsair',name:'Vengeance 128GB DDR5-5200',price:13900,type:'DDR5',cap:128,sticks:4,speed:5200},
+  {id:'vulcan-32-d4',cat:'ram',brand:'TeamGroup',name:'T-Force Vulcan 32GB DDR4-3200',price:1990,type:'DDR4',cap:32,sticks:2,speed:3200},
+  {id:'ripjaws-64-d4',cat:'ram',brand:'G.Skill',name:'Ripjaws V 64GB DDR4-3600',price:4290,type:'DDR4',cap:64,sticks:2,speed:3600},
+
+  {id:'rtx3050',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 3050 6GB',price:6990,vram:6,power:70,length:170},
+  {id:'arc-b580',cat:'gpu',brand:'Intel',name:'Arc B580 12GB',price:9490,vram:12,power:190,length:272},
+  {id:'rtx5060',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 5060 8GB',price:11500,vram:8,power:145,length:240},
+  {id:'rx9060xt',cat:'gpu',brand:'AMD',name:'Radeon RX 9060 XT 16GB',price:13900,vram:16,power:160,length:250},
+  {id:'rx7700xt',cat:'gpu',brand:'AMD',name:'Radeon RX 7700 XT 12GB',price:14900,vram:12,power:245,length:280},
+  {id:'rtx5060ti',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 5060 Ti 16GB',price:16500,vram:16,power:180,length:250},
+  {id:'rtx4070s',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 4070 Super 12GB',price:20900,vram:12,power:220,length:267},
+  {id:'rx9070',cat:'gpu',brand:'AMD',name:'Radeon RX 9070 16GB',price:21500,vram:16,power:220,length:300},
+  {id:'rtx5070ti',cat:'gpu',brand:'NVIDIA',name:'GeForce RTX 5070 Ti 16GB',price:31900,vram:16,power:300,length:320},
+  {id:'rx7900xtx',cat:'gpu',brand:'AMD',name:'Radeon RX 7900 XTX 24GB',price:34900,vram:24,power:355,length:330},
+
+  {id:'nv3-1',cat:'storage',brand:'Kingston',name:'NV3 1TB NVMe Gen4',price:1990,iface:'NVMe',capacity:'1 TB',speed:6000},
+  {id:'nv3-2',cat:'storage',brand:'Kingston',name:'NV3 2TB NVMe Gen4',price:3590,iface:'NVMe',capacity:'2 TB',speed:6000},
+  {id:'990pro-2',cat:'storage',brand:'Samsung',name:'990 Pro 2TB NVMe Gen4',price:6990,iface:'NVMe',capacity:'2 TB',speed:7450},
+  {id:'nm790-4',cat:'storage',brand:'Lexar',name:'NM790 4TB NVMe Gen4',price:8990,iface:'NVMe',capacity:'4 TB',speed:7400},
+  {id:'t705-2',cat:'storage',brand:'Crucial',name:'T705 2TB NVMe Gen5',price:9900,iface:'NVMe',capacity:'2 TB',speed:14500},
+  {id:'990evop-4',cat:'storage',brand:'Samsung',name:'990 EVO Plus 4TB NVMe',price:10900,iface:'NVMe',capacity:'4 TB',speed:7250},
+  {id:'sn850x-4',cat:'storage',brand:'WD',name:'Black SN850X 4TB NVMe Gen4',price:11900,iface:'NVMe',capacity:'4 TB',speed:7300},
+  {id:'mx500-2',cat:'storage',brand:'Crucial',name:'MX500 2TB SATA SSD',price:4690,iface:'SATA',capacity:'2 TB',speed:560},
+  {id:'wdred-4',cat:'storage',brand:'WD',name:'Red Plus 4TB NAS HDD',price:3990,iface:'SATA',capacity:'4 TB',speed:180,hdd:true},
+  {id:'ironwolf-8',cat:'storage',brand:'Seagate',name:'IronWolf 8TB NAS HDD',price:7490,iface:'SATA',capacity:'8 TB',speed:210,hdd:true},
+
+  {id:'se214xt',cat:'cooler',brand:'ID-Cooling',name:'SE-214-XT',price:590,type:'Air',height:150,maxTdp:180,sockets:ALLSOCK},
+  {id:'axp90',cat:'cooler',brand:'Thermalright',name:'AXP90-X47 Low Profile',price:990,type:'Air',height:47,maxTdp:95,sockets:ALLSOCK},
+  {id:'phantom120',cat:'cooler',brand:'Thermalright',name:'Phantom Spirit 120 SE',price:1790,type:'Air',height:154,maxTdp:260,sockets:ALLSOCK,dual:true},
+  {id:'nh-u12s',cat:'cooler',brand:'Noctua',name:'NH-U12S redux',price:1890,type:'Air',height:158,maxTdp:200,sockets:ALLSOCK},
+  {id:'ak620',cat:'cooler',brand:'DeepCool',name:'AK620',price:2290,type:'Air',height:160,maxTdp:260,sockets:ALLSOCK,dual:true},
+  {id:'drp5',cat:'cooler',brand:'be quiet!',name:'Dark Rock Pro 5',price:3990,type:'Air',height:168,maxTdp:270,sockets:ALLSOCK,dual:true},
+  {id:'le520',cat:'cooler',brand:'DeepCool',name:'LE520 240mm AIO',price:2390,type:'AIO',rad:240,maxTdp:260,sockets:ALLSOCK},
+  {id:'aqua360',cat:'cooler',brand:'Thermalright',name:'Aqua Elite 360 V3',price:2990,type:'AIO',rad:360,maxTdp:330,sockets:ALLSOCK},
+  {id:'lf3-360',cat:'cooler',brand:'ARCTIC',name:'Liquid Freezer III 360',price:4290,type:'AIO',rad:360,maxTdp:350,sockets:ALLSOCK},
+  {id:'kraken-280',cat:'cooler',brand:'NZXT',name:'Kraken 280',price:5990,type:'AIO',rad:280,maxTdp:320,sockets:ALLSOCK},
+  {id:'galahad360',cat:'cooler',brand:'Lian Li',name:'Galahad II Trinity 360',price:5990,type:'AIO',rad:360,maxTdp:350,sockets:ALLSOCK},
+  {id:'h150i',cat:'cooler',brand:'Corsair',name:'iCUE H150i Elite LCD XT',price:8900,type:'AIO',rad:360,maxTdp:350,sockets:ALLSOCK},
+
+  {id:'tt500',cat:'psu',brand:'Thermaltake',name:'Smart 500W',price:1190,watts:500,rating:'80+ White'},
+  {id:'mwe650',cat:'psu',brand:'Cooler Master',name:'MWE 650 Bronze V2',price:1890,watts:650,rating:'80+ Bronze'},
+  {id:'rm750e',cat:'psu',brand:'Corsair',name:'RM750e',price:3490,watts:750,rating:'80+ Gold'},
+  {id:'pp12m-850',cat:'psu',brand:'be quiet!',name:'Pure Power 12 M 850W',price:4290,watts:850,rating:'80+ Gold'},
+  {id:'sp850',cat:'psu',brand:'Lian Li',name:'SP850 SFX',price:5290,watts:850,rating:'80+ Gold',sfx:true},
+  {id:'a1000g',cat:'psu',brand:'MSI',name:'MPG A1000G PCIE5',price:5690,watts:1000,rating:'80+ Gold'},
+  {id:'sf750',cat:'psu',brand:'Corsair',name:'SF750 SFX',price:5990,watts:750,rating:'80+ Platinum',sfx:true},
+  {id:'vertex1200',cat:'psu',brand:'Seasonic',name:'Vertex GX-1200',price:7990,watts:1200,rating:'80+ Gold'},
+  {id:'hx1500i',cat:'psu',brand:'Corsair',name:'HX1500i',price:12900,watts:1500,rating:'80+ Platinum'},
+  {id:'primetx1600',cat:'psu',brand:'Seasonic',name:'Prime TX-1600',price:17900,watts:1600,rating:'80+ Titanium'},
+
+  {id:'lancool207',cat:'case',brand:'Lian Li',name:'Lancool 207',price:2690,forms:['ATX','mATX','ITX'],maxGpu:375,maxCooler:170,maxRad:360},
+  {id:'popair',cat:'case',brand:'Fractal Design',name:'Pop Air',price:2690,forms:['ATX','mATX','ITX'],maxGpu:405,maxCooler:170,maxRad:360},
+  {id:'montech-xr',cat:'case',brand:'Montech',name:'XR',price:2590,forms:['ATX','mATX','ITX'],maxGpu:400,maxCooler:165,maxRad:360},
+  {id:'jonsbo-d31',cat:'case',brand:'Jonsbo',name:'D31 Mesh',price:2890,forms:['mATX','ITX'],maxGpu:400,maxCooler:168,maxRad:360},
+  {id:'ch560',cat:'case',brand:'DeepCool',name:'CH560',price:2990,forms:['ATX','mATX','ITX'],maxGpu:380,maxCooler:175,maxRad:360},
+  {id:'lancool216',cat:'case',brand:'Lian Li',name:'Lancool 216',price:3490,forms:['ATX','mATX','ITX'],maxGpu:392,maxCooler:180,maxRad:360},
+  {id:'4000d',cat:'case',brand:'Corsair',name:'4000D Airflow',price:3690,forms:['ATX','mATX','ITX'],maxGpu:360,maxCooler:170,maxRad:360},
+  {id:'meshify2c',cat:'case',brand:'Fractal Design',name:'Meshify 2 Compact',price:4290,forms:['ATX','mATX','ITX'],maxGpu:360,maxCooler:169,maxRad:360},
+  {id:'a4h2o',cat:'case',brand:'Lian Li',name:'A4-H2O',price:4990,forms:['ITX'],maxGpu:322,maxCooler:55,maxRad:240,sfxOnly:true},
+  {id:'o11vision',cat:'case',brand:'Lian Li',name:'O11 Vision',price:4990,forms:['ATX','mATX','ITX'],maxGpu:455,maxCooler:167,maxRad:360},
+  {id:'terra',cat:'case',brand:'Fractal Design',name:'Terra',price:6490,forms:['ITX'],maxGpu:322,maxCooler:77,maxRad:0,sfxOnly:true},
+  {id:'hyte-y60',cat:'case',brand:'HYTE',name:'Y60',price:6490,forms:['ATX','mATX','ITX'],maxGpu:375,maxCooler:160,maxRad:360},
+  {id:'nv7',cat:'case',brand:'Phanteks',name:'NV7 Full Tower',price:7490,forms:['ATX','mATX','ITX'],maxGpu:450,maxCooler:175,maxRad:360}
+);
+const BYID=Object.fromEntries(P.map(p=>[p.id,p]));
+
+const DESC={
+  'r5-5600':"A proven 6-core AM4 chip that still punches above its price for 1080p gaming. It has no integrated graphics, so pair it with a graphics card.",
+  'r5-7600':"The smart entry point to AM5: six fast Zen 4 cores, DDR5 support and basic integrated graphics, with an upgrade path to future Ryzen chips.",
+  'r7-9700x':"Eight efficient Zen 5 cores at a modest 88 W. A strong all-rounder for gaming, streaming and creative work that runs cool on a mid-range air cooler.",
+  'r7-7800x3d':"AMD's 3D V-Cache gaming specialist. The extra L3 cache delivers very high, consistent frame rates, which makes it a favourite for high-refresh gaming.",
+  'r9-9950x':"16 cores and 32 threads for heavy rendering, compiling and video export. Give it a strong cooler: it can draw around 200 W under full load.",
+  'i5-14400f':"10 cores (6 performance + 4 efficient) at a great price for gaming builds. The F suffix means no integrated graphics, so a graphics card is required.",
+  'i7-14700k':"20 cores and an unlocked multiplier for gamers who also create. It can pull 250 W at full tilt, so plan for a 240 mm AIO or a top-tier air cooler.",
+  'u7-265k':"Intel's Arrow Lake chip on the new LGA1851 platform, with a built-in NPU for AI features and strong multi-threaded performance.",
+  'asrock-b550m':"Affordable mATX AM4 board with four DDR4 slots and two M.2 slots. A dependable base for budget Ryzen builds.",
+  'tuf-b650m':"A durable mATX AM5 board with Wi-Fi, four DDR5 slots and two M.2 slots. Great for compact gaming builds.",
+  'msi-b650-gp':"Full-size ATX AM5 board with Wi-Fi, solid power delivery and plenty of expansion. A reliable foundation for most gaming builds.",
+  'gb-b650i':"Mini-ITX AM5 board packed with three M.2 slots and Wi-Fi. Built for small-form-factor rigs where every millimetre counts.",
+  'rog-x870e':"Flagship AM5 board with PCIe 5.0, five M.2 slots, Wi-Fi 7 and premium power delivery for top-end CPUs.",
+  'msi-b550':"A popular ATX AM4 board with robust power delivery and DDR4 support. Pairs well with Ryzen 5000 chips.",
+  'prime-b760m-d4':"Budget-friendly mATX board for Intel 12th to 14th gen that uses cheaper DDR4 memory.",
+  'msi-b760m':"Feature-rich mATX Intel board with DDR5, Wi-Fi and a clean look. Well suited to Core i5 and i7 builds.",
+  'gb-z890':"ATX board for Intel Core Ultra (LGA1851) with Wi-Fi 7, four M.2 slots and overclocking support.",
+  'fury-16-d5':"A 2×8 GB DDR5 kit that covers everyday use and esports gaming. Step up to 32 GB if you multitask or play big AAA titles.",
+  'veng-32-d5':"The current sweet spot: 32 GB of DDR5-6000, a speed that pairs well with Ryzen 7000 and 9000 chips.",
+  'tz5-64-d5':"64 GB of fast DDR5 with RGB lighting for creators juggling 4K timelines, big projects and virtual machines.",
+  'veng-96-d5':"96 GB across four sticks for serious workstation loads. Needs a board with four DIMM slots.",
+  'fury-16-d4':"Budget-friendly 16 GB DDR4 kit for AM4 and DDR4 Intel boards.",
+  'lpx-32-d4':"32 GB of low-profile DDR4-3600 that fits under large air coolers. A great match for Ryzen 5000.",
+  'gpu-none':"Skip the graphics card and use the processor's integrated graphics. Fine for office work and light tasks; it requires a CPU with an iGPU.",
+  'rx7600':"An affordable 1080p card with 8 GB and a compact 204 mm length that fits almost any case.",
+  'rtx4060':"Efficient 1080p gaming with DLSS 3 frame generation at only 115 W. Easy on your power supply.",
+  'rtx5070':"NVIDIA's Blackwell mid-range card with 12 GB and DLSS 4. A great match for 1440p high-refresh gaming.",
+  'rx9070xt':"16 GB of VRAM and strong raster performance for 1440p and entry-level 4K, with FSR 4 upscaling.",
+  'rtx5080':"A 16 GB high-end card for 4K gaming and GPU-accelerated creative work. Budget for an 850 W power supply.",
+  'rtx5090':"NVIDIA's flagship with 32 GB of VRAM for 4K ultra settings, path tracing and local AI models. Needs a 1000 W+ PSU and a roomy case.",
+  't500-1':"Fast Gen4 NVMe performance at a great price. A perfect boot and game drive.",
+  '990pro-1':"One of the fastest Gen4 NVMe drives around, with excellent sustained performance.",
+  'sn850x-2':"2 TB of high-speed Gen4 storage with room for a large game library.",
+  '870evo-1':"A reliable SATA SSD for extra storage, or for boards with no free M.2 slot.",
+  'barra-2':"Low-cost 2 TB hard drive for bulk storage, backups and media. Not recommended as a boot drive.",
+  'ak400':"A clean, quiet single-tower cooler that handles most 6- and 8-core CPUs with ease.",
+  'pa120se':"Dual-tower, dual-fan performance at a budget price. A community favourite for Ryzen 7 and Core i5/i7.",
+  'nh-l9a':"A 37 mm low-profile cooler for ultra-slim builds. Best with 65 W CPUs.",
+  'nh-d15g2':"Noctua's premium dual-tower flagship: quiet, powerful and built to last. Check your case's cooler clearance first.",
+  'lf3-240':"A high-performance 240 mm AIO liquid cooler with an integrated VRM fan.",
+  'kraken-360':"A 360 mm AIO with an LCD pump display for top-end CPUs under sustained heavy load.",
+  'a550bn':"A 550 W 80+ Bronze unit for budget builds with modest graphics cards.",
+  'rm650e':"Quiet, efficient 650 W Gold PSU, fully modular. Great for mainstream builds.",
+  'a750gl':"750 W Gold with a native 12V-2x6 connector for modern graphics cards.",
+  'rm850x':"Premium 850 W Gold with a near-silent fan mode, ideal for high-end GPUs.",
+  'gx1000':"1000 W of reliable Gold-rated power for flagship graphics cards and workstation builds.",
+  'thor1200':"1200 W Platinum with an OLED power readout, for no-compromise builds.",
+  'air100':"A compact mATX case with strong airflow and ARGB fans included, at a friendly price.",
+  'nr200p':"A popular Mini-ITX case that still fits full-size graphics cards up to 330 mm.",
+  'h5flow':"A clean, airflow-focused mid-tower with easy cable management.",
+  'north':"A Scandinavian-style mid-tower with a real wood front panel and excellent airflow.",
+  'o11evo':"A dual-chamber showcase case with glass panels and room for 360 mm radiators and big GPUs."
+};
+
+Object.assign(DESC,{
+  'r7-5700x3d':"The best drop-in gaming upgrade for AM4 owners: 3D V-Cache on the platform you already have. No integrated graphics.",
+  'r5-8600g':"Six Zen 4 cores with strong Radeon 760M integrated graphics. Plays lighter games and runs a home office without a graphics card.",
+  'r7-9800x3d':"The fastest gaming CPU in our catalog. Second-gen 3D V-Cache sits under the cores, so it clocks higher and runs cooler than the 7800X3D.",
+  'r9-9950x3d':"16 cores plus 3D V-Cache: top-tier gaming and top-tier rendering in one chip. The ultimate do-everything processor.",
+  'i3-14100f':"Four fast cores for entry-level gaming and office PCs at a very low price. Needs a graphics card.",
+  'i5-14600k':"14 cores with an unlocked multiplier. A strong mid-range Intel pick for gaming and content creation.",
+  'i9-14900K':"",
+  'u9-285k':"Intel's flagship Core Ultra with 24 cores, a built-in NPU and excellent efficiency for heavy creative work.",
+  'rtx5060ti':"16 GB of VRAM with DLSS 4 at a mid-range price. A great 1440p card that won't run out of memory in new games.",
+  'rtx5070ti':"A 16 GB card that handles 1440p at very high refresh rates and 4K with DLSS 4.",
+  'rx7900xtx':"24 GB of VRAM and huge raster performance. AMD's big card for 4K gaming and memory-hungry creative work.",
+  'arc-b580':"12 GB of VRAM at a budget price. Intel's Battlemage card is a strong 1080p and entry 1440p choice.",
+  'rx9060xt':"16 GB of VRAM at a very reasonable price, with FSR 4. Excellent for 1080p and 1440p.",
+  't705-2':"One of the fastest drives you can buy, at up to 14,500 MB/s on PCIe 5.0. Needs good airflow or its heatsink.",
+  'ironwolf-8':"8 TB built for 24/7 NAS and home-server use. Great for backups, Plex libraries and archives.",
+  'phantom120':"A dual-tower cooler that rivals coolers twice its price. Quiet, strong and easy to install.",
+  'lf3-360':"One of the best-performing 360 mm AIOs available, with a built-in VRM fan and thick radiator.",
+  'axp90':"A 47 mm low-profile cooler for tiny ITX cases where tower coolers can't fit.",
+  'sf750':"A premium 750 W SFX power supply for small-form-factor builds. Platinum efficiency and a quiet fan.",
+  'hx1500i':"1500 W of Platinum power with software monitoring, for multi-GPU rigs and flagship workstations.",
+  'terra':"A premium Mini-ITX case with an aluminium shell and walnut front. Needs an SFX power supply and a low-profile cooler (77 mm max).",
+  'a4h2o':"A tiny 11-litre ITX case that fits a 240 mm AIO and full-size graphics cards up to 322 mm. SFX power supply required.",
+  'o11vision':"Three glass panels with no pillars at the corners, so it's built to show off your components.",
+  'hyte-y60':"A panoramic case with angled glass on three sides and a vertical GPU mount included.",
+  'lancool216':"A value airflow case with two 160 mm front fans included and space for big graphics cards.",
+  '4000d':"A best-selling mid-tower with great airflow and some of the easiest cable management available.",
+  'nv7':"A full tower with room for anything: GPUs up to 450 mm and a huge glass showcase."
+});
+delete DESC['i9-14900K'];
+function autoDesc(p){
+  switch(p.cat){
+    case 'cpu':return `${p.cores} cores and ${p.threads} threads on ${p.socket}, boosting to ${p.boost} GHz. ${p.igpu?'Integrated graphics included, so it can run without a graphics card.':'No integrated graphics, so pair it with a graphics card.'} ${p.power>=200?'A high-power chip: plan for a 240 mm AIO or a large dual-tower cooler.':p.power>=140?'Pair it with a solid tower cooler.':'Runs cool on a mid-range air cooler.'}`;
+    case 'mb':return `${p.form} board for ${p.socket} processors with ${p.ramSlots} ${p.ramType} slots and ${p.m2} M.2 slot${p.m2>1?'s':''}. ${p.form==='ITX'?'Built for compact small-form-factor builds.':p.form==='mATX'?'A good balance of size and expansion for most builds.':'Full-size layout with plenty of room for expansion.'}`;
+    case 'ram':return `${p.cap} GB of ${p.type}-${p.speed} as ${p.sticks} × ${p.cap/p.sticks} GB. ${p.cap<=16?'Covers everyday use and esports.':p.cap<=32?'The sweet spot for gaming and multitasking.':p.cap<=64?'Plenty for creators, big projects and virtual machines.':'Workstation capacity for huge datasets and local AI.'}`;
+    case 'gpu':return `A ${p.vram} GB graphics card drawing about ${p.power} W, ${p.length} mm long. ${p.power>=300||p.vram>=24?'Built for 4K gaming and heavy GPU work.':p.vram>=16?'Strong at 1440p, with enough memory for entry-level 4K.':p.vram>=12?'Great for high-refresh 1080p and 1440p gaming.':'A solid pick for 1080p gaming.'}`;
+    case 'storage':return p.hdd?`${p.capacity} hard drive for bulk storage, backups and media. Not recommended as a boot drive.`:p.iface==='SATA'?`${p.capacity} SATA SSD at up to ${p.speed} MB/s. Great as extra storage or for systems without free M.2 slots.`:`${p.capacity} ${p.speed>10000?'PCIe 5.0':'PCIe 4.0'} NVMe drive at up to ${p.speed.toLocaleString()} MB/s. Fast boots and quick game loads.`;
+    case 'cooler':return p.type==='AIO'?`A ${p.rad} mm all-in-one liquid cooler rated for about ${p.maxTdp} W. Needs a case with a ${p.rad} mm radiator mount.`:`A ${p.dual?'dual-tower':'single-tower'} air cooler, ${p.height} mm tall, rated for about ${p.maxTdp} W. Check your case's cooler clearance.`;
+    case 'psu':return `${p.watts} W ${p.rating} ${p.sfx?'SFX power supply for small-form-factor cases.':'ATX power supply.'} ${p.watts>=1000?'Ready for flagship graphics cards.':p.watts>=750?'Good headroom for high-end gaming builds.':'Right-sized for mainstream builds.'}`;
+    case 'case':return `Supports ${p.forms.join(', ')} motherboards, graphics cards up to ${p.maxGpu} mm and coolers up to ${p.maxCooler} mm${p.maxRad?`, with room for a ${p.maxRad} mm radiator`:''}.${p.sfxOnly?' Requires an SFX power supply.':''}`;
+  }
+}
+const descOf=id=>DESC[id]||autoDesc(BYID[id]);
+
+const BUILDS=[
+  {id:'office',tags:['budget','office'],label:['Office'],name:'Home & Office',desc:'Quiet, compact and capable. Integrated graphics handle work, study and light games.',good:['Office apps','Study','4K video'],
+   build:{cpu:'r5-8600g',mb:'asrock-b650m',ram:'fury-16-d5',gpu:'gpu-none',storage:'nv3-1',cooler:'se214xt',psu:'tt500',case:'air100'}},
+  {id:'budget',tags:['budget','gaming','1080p'],label:['Budget'],name:'Budget Starter',desc:'Solid 1080p gaming on a tight budget, with a clear upgrade path.',good:['1080p gaming','First PC','Study'],
+   build:{cpu:'r5-5600',mb:'asrock-b550m',ram:'fury-16-d4',gpu:'rx7600',storage:'t500-1',cooler:'ak400',psu:'a550bn',case:'air100'}},
+  {id:'budget-intel',tags:['budget','gaming','1080p','intel'],label:['Budget','Intel'],name:'Budget Blue',desc:'Core i3 plus Intel Arc B580 with 12 GB: the cheapest way into modern 1080p gaming.',good:['1080p gaming','12 GB VRAM','Value'],
+   build:{cpu:'i3-14100f',mb:'msi-h610m',ram:'vulcan-32-d4',gpu:'arc-b580',storage:'nv3-1',cooler:'se214xt',psu:'mwe650',case:'air100'}},
+  {id:'esports',tags:['budget','gaming','1080p'],label:['Entry','Esports'],name:'Esports 1080p',desc:'High frame rates in Valorant, CS2 and Fortnite, in a compact mATX case.',good:['Esports','1080p high refresh','Streaming-lite'],
+   build:{cpu:'r5-7600',mb:'tuf-b650m',ram:'fury-16-d5',gpu:'rtx4060',storage:'t500-1',cooler:'ak400',psu:'rm650e',case:'air100'}},
+  {id:'1080value',tags:['gaming','1080p'],label:['1080p'],name:'1080p Value',desc:'DDR5, 32 GB and an RTX 5060 for smooth 1080p in every new game.',good:['1080p ultra','DLSS 4','Upgradeable'],
+   build:{cpu:'r5-7600',mb:'asrock-b650m',ram:'fury-32-d5',gpu:'rtx5060',storage:'nv3-1',cooler:'ak400',psu:'mwe650',case:'air100'}},
+  {id:'am4',tags:['gaming','1440p'],label:['AM4 value'],name:'AM4 Gaming Value',desc:'3D V-Cache gaming on proven, affordable AM4 parts.',good:['1440p gaming','Great value','Upgrade path'],
+   build:{cpu:'r7-5700x3d',mb:'tuf-b550',ram:'lpx-32-d4',gpu:'rx7700xt',storage:'nv3-2',cooler:'pa120se',psu:'a750gl',case:'lancool207'}},
+  {id:'1440value',tags:['gaming','1440p'],label:['1440p','Value'],name:'1440p Value',desc:'A 16 GB Radeon and a fast Ryzen 5 for high-detail 1440p without overspending.',good:['1440p high','16 GB VRAM','Quiet'],
+   build:{cpu:'r5-9600x',mb:'gb-b650-eagle',ram:'fury-32-d5',gpu:'rx9070',storage:'nv3-2',cooler:'phantom120',psu:'rm750e',case:'popair'}},
+  {id:'intel1440',tags:['gaming','1440p','intel'],label:['Intel + Radeon'],name:'Team Blue 1440p',desc:'Core i5 value paired with a 16 GB Radeon for high-detail 1440p.',good:['1440p AAA','16 GB VRAM','Value'],
+   build:{cpu:'i5-14400f',mb:'msi-b760m',ram:'veng-32-d5',gpu:'rx9070xt',storage:'t500-1',cooler:'pa120se',psu:'a750gl',case:'air100'}},
+  {id:'g1440',tags:['gaming','1440p'],label:['Most popular'],name:'1440p Gaming',desc:'The sweet spot. Smooth AAA gaming at 1440p with room to upgrade.',good:['1440p AAA','High refresh','Streaming'],
+   build:{cpu:'r7-7800x3d',mb:'msi-b650-gp',ram:'veng-32-d5',gpu:'rtx5070',storage:'sn850x-2',cooler:'pa120se',psu:'a750gl',case:'h5flow'}},
+  {id:'sff',tags:['compact','gaming','1440p'],label:['Compact'],name:'Mini-ITX Powerhouse',desc:'Full 1440p gaming power in a case that fits on your desk.',good:['Small desks','LAN parties','1440p'],
+   build:{cpu:'r7-9700x',mb:'gb-b650i',ram:'veng-32-d5',gpu:'rtx5070',storage:'990pro-1',cooler:'pa120se',psu:'a750gl',case:'nr200p'}},
+  {id:'quiet',tags:['creator','1440p'],label:['Silent'],name:'Silent Studio',desc:'Tuned for low noise: efficient parts, a big be quiet! cooler and a calm airflow case.',good:['Quiet work','Music production','1440p'],
+   build:{cpu:'r7-9700x',mb:'msi-b650-gp',ram:'veng-32-d5',gpu:'rtx4070s',storage:'990pro-2',cooler:'drp5',psu:'pp12m-850',case:'north'}},
+  {id:'streamer',tags:['gaming','creator','1440p'],label:['Streaming'],name:'Game & Stream',desc:'12 cores to encode while you play, plus a 16 GB RTX 5070 Ti for high-refresh 1440p.',good:['Streaming','1440p 165 Hz','Editing'],
+   build:{cpu:'r9-9900x',mb:'msi-x870-tom',ram:'tz5neo-48-d5',gpu:'rtx5070ti',storage:'990pro-2',cooler:'ak620',psu:'pp12m-850',case:'lancool216'}},
+  {id:'4k',tags:['4k','gaming'],label:['4K'],name:'4K Gaming',desc:'High-settings 4K gaming with a top gaming CPU.',good:['4K gaming','Ray tracing','Big screens'],
+   build:{cpu:'r7-7800x3d',mb:'msi-b650-gp',ram:'veng-32-d5',gpu:'rtx5080',storage:'sn850x-2',cooler:'lf3-240',psu:'rm850x',case:'north'}},
+  {id:'sff4k',tags:['compact','4k','gaming'],label:['Compact','4K'],name:'Tiny 4K',desc:'A 9800X3D and RTX 5070 Ti in an 11-litre case with liquid cooling.',good:['Small footprint','4K with DLSS','Travel-friendly'],
+   build:{cpu:'r7-9800x3d',mb:'rog-b650e-i',ram:'flare-32-d5',gpu:'rtx5070ti',storage:'990evop-4',cooler:'lf3-240',psu:'sf750',case:'a4h2o'}},
+  {id:'panoramic',tags:['4k','gaming','intel'],label:['RGB','Intel'],name:'Panoramic RGB',desc:'Core i7 and a 24 GB Radeon in a three-sided glass showcase.',good:['4K gaming','Showpiece','24 GB VRAM'],
+   build:{cpu:'i7-14700k',mb:'rog-z790-a',ram:'veng-32-d5',gpu:'rx7900xtx',storage:'990pro-2',cooler:'aqua360',psu:'a1000g',case:'hyte-y60'}},
+  {id:'showcase',tags:['4k','gaming'],label:['Showcase'],name:'Glass Showcase',desc:'The fastest gaming CPU with an RTX 5080 in a pillarless O11 Vision.',good:['4K gaming','Show-off build','RGB'],
+   build:{cpu:'r7-9800x3d',mb:'rog-x870e',ram:'dom-32-d5',gpu:'rtx5080',storage:'990pro-2',cooler:'galahad360',psu:'a1000g',case:'o11vision'}},
+  {id:'4kultra',tags:['4k','gaming'],label:['4K','Flagship'],name:'4K Ultra',desc:'No compromises: RTX 5090, 360 mm liquid cooling and a showcase case.',good:['4K ultra','Path tracing','Local AI'],
+   build:{cpu:'r7-9800x3d',mb:'rog-x870e',ram:'veng-32-d5',gpu:'rtx5090',storage:'sn850x-2',cooler:'kraken-360',psu:'vertex1200',case:'o11evo'}},
+  {id:'intelflag',tags:['4k','gaming','intel','creator'],label:['Intel','Flagship'],name:'Intel Flagship',desc:'Core Ultra 9, RTX 5090 and a Gen5 SSD in a full tower. Intel at its fastest.',good:['4K ultra','3D rendering','Everything'],
+   build:{cpu:'u9-285k',mb:'rog-z890-hero',ram:'dom-32-d5',gpu:'rtx5090',storage:'t705-2',cooler:'h150i',psu:'hx1500i',case:'nv7'}},
+  {id:'creator',tags:['creator'],label:['Pro'],name:'Creator Workstation',desc:'16 cores and 64 GB for 4K editing, 3D rendering and local AI.',good:['Video editing','3D rendering','Code & VMs'],
+   build:{cpu:'r9-9950x',mb:'rog-x870e',ram:'tz5-64-d5',gpu:'rtx5080',storage:'sn850x-2',cooler:'kraken-360',psu:'gx1000',case:'o11evo'}},
+  {id:'ai',tags:['creator'],label:['AI','Workstation'],name:'Local AI Workstation',desc:'128 GB of RAM, 32 GB of VRAM and 16 cores for running large AI models locally.',good:['Local LLMs','Stable Diffusion','Data science'],
+   build:{cpu:'r9-9950x3d',mb:'rog-x870e-hero',ram:'veng-128-d5',gpu:'rtx5090',storage:'sn850x-4',cooler:'lf3-360',psu:'vertex1200',case:'o11evo'}},
+  {id:'server',tags:['office','creator'],label:['Home server'],name:'Home Server & NAS',desc:'Efficient 24/7 box with 64 GB and 8 TB of NAS-grade storage for backups and media.',good:['Plex / Jellyfin','Backups','Home lab'],
+   build:{cpu:'r5-8600g',mb:'gb-b650-eagle',ram:'fury-64-d5',gpu:'gpu-none',storage:'ironwolf-8',cooler:'nh-u12s',psu:'rm650e',case:'meshify2c'}}
+];
+const BUILD_FILTERS=[['all','All builds'],['budget','Budget'],['gaming','Gaming'],['1080p','1080p'],['1440p','1440p'],['4k','4K'],['creator','Creator & AI'],['compact','Compact'],['intel','Intel'],['office','Office & server']];
+
+const BEST=[
+  {cat:'cpu',id:'r7-9800x3d',award:'Best for gaming',why:'The fastest gaming CPU we carry, thanks to second-gen 3D V-Cache.'},
+  {cat:'cpu',id:'r7-7800x3d',award:'Best gaming value',why:'Nearly flagship gaming speed for a lot less.'},
+  {cat:'cpu',id:'r5-7600',award:'Best value',why:'Six fast cores on AM5 with an upgrade path, at an entry price.'},
+  {cat:'cpu',id:'r9-9950x',award:'Best for creators',why:'16 cores cut render and export times dramatically.'},
+  {cat:'cpu',id:'i5-14600k',award:'Best Intel',why:'14 cores and an unlocked multiplier at a mid-range price.'},
+  {cat:'cpu',id:'r5-8600g',award:'Best without a GPU',why:'Strong integrated graphics for office PCs and light gaming.'},
+  {cat:'cpu',id:'r7-5700x3d',award:'Best AM4 upgrade',why:'Drop-in 3D V-Cache for existing AM4 boards.'},
+  {cat:'cpu',id:'r5-5600',award:'Best budget',why:'Still a capable gaming chip at a very low price.'},
+  {cat:'mb',id:'msi-b650-gp',award:'Best overall',why:'Solid power delivery, Wi-Fi and a fair price for AM5.'},
+  {cat:'mb',id:'asrock-b650m',award:'Best value',why:'Three M.2 slots and Wi-Fi at an entry-level price.'},
+  {cat:'mb',id:'rog-x870e',award:'Best high-end',why:'PCIe 5.0, Wi-Fi 7 and five M.2 slots for flagship builds.'},
+  {cat:'mb',id:'gb-b650i',award:'Best Mini-ITX',why:'Three M.2 slots on a tiny board.'},
+  {cat:'mb',id:'gb-b760-gx',award:'Best Intel value',why:'DDR5 and three M.2 slots for 12th–14th gen Intel.'},
+  {cat:'gpu',id:'rtx5090',award:'Best for 4K',why:'The fastest card we carry, with 32 GB for 4K and AI.'},
+  {cat:'gpu',id:'rx9070xt',award:'Best value',why:'16 GB of VRAM and strong 1440p performance for the money.'},
+  {cat:'gpu',id:'rtx5070',award:'Best for 1440p',why:'High-refresh 1440p with DLSS 4 at a sensible 250 W.'},
+  {cat:'gpu',id:'rtx5060ti',award:'Best 16 GB under ฿20k',why:'Plenty of VRAM for new games at a mid-range price.'},
+  {cat:'gpu',id:'rtx5060',award:'Best for 1080p',why:'DLSS 4 and low power draw for smooth 1080p.'},
+  {cat:'gpu',id:'arc-b580',award:'Best budget',why:'12 GB of VRAM at an entry price.'},
+  {cat:'gpu',id:'rx7900xtx',award:'Best AMD flagship',why:'24 GB of VRAM and huge raster performance.'},
+  {cat:'ram',id:'veng-32-d5',award:'Best overall',why:'32 GB at DDR5-6000 is the sweet spot for gaming.'},
+  {cat:'ram',id:'flare-32-d5',award:'Best for Ryzen',why:'Low-latency CL30 at 6000 MT/s, ideal for AM5.'},
+  {cat:'ram',id:'tz5-64-d5',award:'Best for creators',why:'Room for big timelines, scenes and virtual machines.'},
+  {cat:'ram',id:'veng-128-d5',award:'Best for AI',why:'128 GB to load large datasets and local models.'},
+  {cat:'ram',id:'vulcan-32-d4',award:'Best DDR4 value',why:'32 GB for AM4 and DDR4 Intel boards at a low price.'},
+  {cat:'storage',id:'sn850x-2',award:'Best for gamers',why:'2 TB of fast Gen4 storage holds a big library.'},
+  {cat:'storage',id:'nv3-1',award:'Best value',why:'Fast NVMe boot drive at the lowest price.'},
+  {cat:'storage',id:'t705-2',award:'Fastest',why:'PCIe 5.0 speeds up to 14,500 MB/s.'},
+  {cat:'storage',id:'990evop-4',award:'Best high capacity',why:'4 TB of fast NVMe for huge libraries.'},
+  {cat:'storage',id:'ironwolf-8',award:'Best bulk storage',why:'8 TB built for 24/7 NAS use.'},
+  {cat:'cooler',id:'phantom120',award:'Best air cooler',why:'Dual-tower performance that rivals premium coolers.'},
+  {cat:'cooler',id:'pa120se',award:'Best air value',why:'Strong cooling for the price of a single tower.'},
+  {cat:'cooler',id:'lf3-360',award:'Best liquid cooler',why:'Top-tier 360 mm performance at a fair price.'},
+  {cat:'cooler',id:'drp5',award:'Quietest',why:'Big, slow fans for near-silent operation.'},
+  {cat:'cooler',id:'axp90',award:'Best low profile',why:'Only 47 mm tall for the smallest ITX cases.'},
+  {cat:'psu',id:'rm850x',award:'Best overall',why:'Quiet, efficient and ready for high-end graphics cards.'},
+  {cat:'psu',id:'rm650e',award:'Best value',why:'Fully modular Gold efficiency for mainstream builds.'},
+  {cat:'psu',id:'sf750',award:'Best SFX',why:'Premium power for small-form-factor builds.'},
+  {cat:'psu',id:'hx1500i',award:'Best high-end',why:'1500 W Platinum for flagship workstations.'},
+  {cat:'case',id:'north',award:'Best airflow',why:'Excellent cooling with a distinctive wood front.'},
+  {cat:'case',id:'lancool216',award:'Best value',why:'Two 160 mm fans and huge GPU clearance for the price.'},
+  {cat:'case',id:'o11vision',award:'Best showcase',why:'Pillarless glass to show off every component.'},
+  {cat:'case',id:'nr200p',award:'Best compact',why:'Fits full-size graphics cards in a Mini-ITX footprint.'},
+  {cat:'case',id:'terra',award:'Best premium ITX',why:'Aluminium and walnut in a tiny, beautiful shell.'}
+];
+
+/* compatibility */
+const BASE_W=60;
+const load=b=>BASE_W+(b.cpu?.power||0)+(b.gpu?.power||0);
+const recPsu=w=>Math.ceil(w*1.3/50)*50;
+const RULES=[
+  {needs:['cpu','mb'],check:b=>b.cpu.socket!==b.mb.socket&&{level:'err',msg:`Socket mismatch: CPU is ${b.cpu.socket}, board is ${b.mb.socket}.`}},
+  {needs:['ram','mb'],check:b=>b.ram.type!==b.mb.ramType&&{level:'err',msg:`Board takes ${b.mb.ramType}; this kit is ${b.ram.type}.`}},
+  {needs:['ram','mb'],check:b=>b.ram.sticks>b.mb.ramSlots&&{level:'err',msg:`${b.ram.sticks} sticks, but the board has ${b.mb.ramSlots} slots.`}},
+  {needs:['case','mb'],check:b=>!b.case.forms.includes(b.mb.form)&&{level:'err',msg:`${b.mb.form} board won't fit. Case takes ${b.case.forms.join(', ')}.`}},
+  {needs:['gpu','case'],check:b=>!b.gpu.none&&b.gpu.length>b.case.maxGpu&&{level:'err',msg:`Card is ${b.gpu.length} mm; case fits up to ${b.case.maxGpu} mm.`}},
+  {needs:['cooler','case'],check:b=>b.cooler.type==='Air'?(b.cooler.height>b.case.maxCooler&&{level:'err',msg:`Cooler is ${b.cooler.height} mm tall; case allows ${b.case.maxCooler} mm.`}):(b.cooler.rad>b.case.maxRad&&{level:'err',msg:b.case.maxRad?`${b.cooler.rad} mm radiator; case fits up to ${b.case.maxRad} mm.`:`This case has no radiator mount. Use an air cooler.`})},
+  {needs:['psu','case'],check:b=>b.case.sfxOnly&&!b.psu.sfx&&{level:'err',msg:`${b.case.name} needs an SFX power supply.`}},
+  {needs:['cooler','cpu'],check:b=>!b.cooler.sockets.includes(b.cpu.socket)&&{level:'err',msg:`Cooler doesn't support ${b.cpu.socket}.`}},
+  {needs:['cooler','cpu'],check:b=>b.cooler.sockets.includes(b.cpu.socket)&&b.cooler.maxTdp<b.cpu.power&&{level:'warn',msg:`Cooler handles ~${b.cooler.maxTdp} W; CPU can pull ${b.cpu.power} W. Expect throttling.`}},
+  {needs:['gpu','cpu'],check:b=>b.gpu.none&&!b.cpu.igpu&&{level:'err',msg:`${b.cpu.name} has no integrated graphics. Add a graphics card.`}},
+  {needs:['psu','cpu'],also:['gpu'],check:b=>{const w=load(b),r=recPsu(w);
+    if(b.psu.watts<w)return{level:'err',msg:`Estimated load ${w} W exceeds this ${b.psu.watts} W PSU.`};
+    if(b.psu.watts<r)return{level:'warn',msg:`Tight headroom at ${w} W. We recommend ${r} W or more.`};return false}}
+];
+function resolve(ids){const b={};for(const k in ids){if(ids[k]&&BYID[ids[k]])b[k]=BYID[ids[k]]}return b}
+function evaluate(ids){const b=resolve(ids),out=[];for(const r of RULES){if(!r.needs.every(k=>b[k]))continue;const res=r.check(b);if(res)out.push({...res,cats:[...r.needs,...(r.also||[])]})}return out}
+function issuesFor(cat,ids){return evaluate(ids).filter(i=>i.cats.includes(cat))}
+function worst(l){return l.some(i=>i.level==='err')?'err':l.some(i=>i.level==='warn')?'warn':'ok'}
+const total=ids=>Object.values(resolve(ids)).reduce((s,p)=>s+p.price,0);
+/* ================= DATA END ================= */
+
+/* ---------- helpers ---------- */
+function fmtIn(code,amount){const x=CUR[code];return x.s+(x.s.length>1?' ':'')+amount.toLocaleString('en-US',{minimumFractionDigits:x.d,maximumFractionDigits:x.d})}
+function convert(amount,from,to){return amount/CUR[from].r*CUR[to].r}
+function money(thb){return fmtIn(cur,thb*CUR[cur].r)}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function tags(p){switch(p.cat){
+  case 'cpu':return[p.socket,`${p.cores}C/${p.threads}T`,`${p.boost} GHz`,`${p.power} W`,p.igpu?'iGPU':'No iGPU'];
+  case 'mb':return[p.socket,p.form,p.ramType,`${p.ramSlots} DIMM`,`${p.m2}× M.2`];
+  case 'ram':return[p.type,`${p.sticks}×${p.cap/p.sticks} GB`,`${p.speed} MT/s`];
+  case 'gpu':return p.none?['0 W','Needs CPU with iGPU']:[`${p.vram} GB`,`${p.power} W`,`${p.length} mm`];
+  case 'storage':return[p.iface,p.capacity,`${p.speed.toLocaleString()} MB/s`];
+  case 'cooler':return[p.type,p.type==='Air'?`${p.height} mm`:`${p.rad} mm rad`,`~${p.maxTdp} W`];
+  case 'psu':return[`${p.watts} W`,p.rating];
+  case 'case':return[p.forms.join('/'),`GPU ≤${p.maxGpu}`,`Cooler ≤${p.maxCooler}`,`Rad ≤${p.maxRad}`];
+}}
+function specRows(p){switch(p.cat){
+  case 'cpu':return[['Socket',p.socket],['Cores / threads',`${p.cores} / ${p.threads}`],['Max boost',`${p.boost} GHz`],['Peak power',`${p.power} W`],['Integrated graphics',p.igpu?'Yes':'No']];
+  case 'mb':return[['Socket',p.socket],['Form factor',p.form],['Memory',p.ramType],['DIMM slots',p.ramSlots],['M.2 slots',p.m2]];
+  case 'ram':return[['Type',p.type],['Capacity',`${p.cap} GB`],['Configuration',`${p.sticks} × ${p.cap/p.sticks} GB`],['Speed',`${p.speed} MT/s`]];
+  case 'gpu':return p.none?[['Power','0 W'],['Requirement','CPU with integrated graphics']]:[['Memory',`${p.vram} GB`],['Board power',`${p.power} W`],['Length',`${p.length} mm`],['Recommended PSU',`${recPsu(BASE_W+120+p.power)} W+`]];
+  case 'storage':return[['Interface',p.iface],['Capacity',p.capacity],['Sequential read',`${p.speed.toLocaleString()} MB/s`]];
+  case 'cooler':return[['Type',p.type==='AIO'?'All-in-one liquid':'Air'],[p.type==='Air'?'Height':'Radiator',p.type==='Air'?`${p.height} mm`:`${p.rad} mm`],['Cooling capacity',`~${p.maxTdp} W`],['Sockets',p.sockets.join(', ')]];
+  case 'psu':return[['Wattage',`${p.watts} W`],['Efficiency',p.rating]];
+  case 'case':return[['Motherboards',p.forms.join(', ')],['Max GPU length',`${p.maxGpu} mm`],['Max cooler height',`${p.maxCooler} mm`],['Max radiator',`${p.maxRad} mm`]];
+}}
+const catLabel=k=>CATS.find(c=>c.key===k)?.label||k;
+function starStr(n){let s='';for(let i=1;i<=5;i++)s+=`<span class="${n>=i-0.25?'':'off'}">★</span>`;return `<span class="stars" aria-label="${n.toFixed(1)} out of 5">${s}</span>`}
+
+/* ---------- state ---------- */
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let build=store.get('rf-current',null), loadedPreset=null;
+if(!build){const d0=BUILDS.find(x=>x.id==='g1440');build={...d0.build};loadedPreset=d0.name}
+let cur=store.get('rf-cur','THB'); if(!CUR[cur])cur='THB';
+let view='build', step='cpu', q='', sort='rec', compatOnly=false, recFilter='all', brandF='all';
+let conv={amt:null,from:'THB',to:'USD'};
+let reviews=[], comments=[], db=null, userNs=null, myId=null, canWrite=null;
+let drawerId=null;
+
+/* ---------- ratings ---------- */
+function ratingOf(id){const rs=reviews.filter(r=>r.part===id&&r.rating>=1&&r.rating<=5);if(!rs.length)return null;return{avg:rs.reduce((s,r)=>s+r.rating,0)/rs.length,n:rs.length}}
+function ratingHtml(id){const r=ratingOf(id);return r?`<span class="rating"><b>★ ${r.avg.toFixed(1)}</b>(${r.n})</span>`:''}
+
+/* ---------- render: builder ---------- */
+function stepStatus(k){
+  if(k==='start')return'';
+  if(k==='review')return CATS.every(c=>build[c.key])?worst(evaluate(build)):'';
+  return build[k]?worst(issuesFor(k,build)):'';
+}
+function renderSteps(){
+  $('#steps').hidden=view!=='build';
+  $('#steps').innerHTML=STEPS.map((k,i)=>{
+    const c=CATS.find(c=>c.key===k), st=stepStatus(k);
+    const label=k==='start'?'Start':k==='review'?'Review':c.label;
+    const n=k==='start'?'◆':k==='review'?'✓':(st==='ok'?'✓':i);
+    return `<button class="step ${st} ${k===step?'on':''}" role="tab" aria-selected="${k===step}" data-step="${k}"><span class="n">${n}</span>${label}</button>`}).join('');
+  const on=$('#steps .on');if(on&&view==='build')on.scrollIntoView({block:'nearest',inline:'nearest'});
+}
+function buildCard(bd,compact){
+  const b=resolve(bd.build);
+  return `<article class="preset">
+    <div class="tier">${bd.label.map(l=>`<span>${l}</span>`).join('')}</div>
+    <h3>${bd.name}</h3><p>${bd.desc}</p>
+    <ul><li>${ICON.cpu}${b.cpu.name}</li><li>${ICON.gpu}${b.gpu.name}</li><li>${ICON.ram}${b.ram.cap} GB ${b.ram.type} · ${b.storage.capacity} ${b.storage.iface}</li>${compact?'':`<li>${ICON.case}${b.case.name} · ${b.psu.watts} W</li>`}</ul>
+    ${compact?'':`<div class="tags">${bd.good.map(g=>`<span class="tag">${g}</span>`).join('')}</div>`}
+    <div class="pp"><span class="num">${money(total(bd.build))}</span><span class="acts"><button class="btn sm" data-load-build="${bd.id}" data-then="3d" title="Load and view in 3D">3D</button><button class="btn sm primary" data-load-build="${bd.id}">Use build</button></span></div>
+  </article>`;
+}
+function renderStart(){
+  const saved=store.get('rf-saved',[]);
+  return `
+  <section class="hero">
+    <div class="eyebrow">Custom PC configurator</div>
+    <h1 style="margin-top:10px">Forge a rig that's <span>truly yours.</span></h1>
+    <p class="lede">Pick every part and we check it against the rest of your build in real time. See it in 3D, read what other builders think, and ask our AI anything along the way.</p>
+    <div class="hero-acts"><button class="btn primary" data-load-blank>Start from scratch</button><button class="btn" data-view="recs">Browse recommended builds</button><button class="btn" data-chat-open>Ask the AI</button></div>
+    <div class="stats"><div class="stat"><div class="v">${RULES.length}</div><div class="l">live compatibility checks</div></div><div class="stat"><div class="v">${P.length}</div><div class="l">parts in the catalog</div></div><div class="stat"><div class="v">${BUILDS.length}</div><div class="l">expert builds</div></div><div class="stat"><div class="v">${CURRENCIES.length}</div><div class="l">currencies</div></div></div>
+  </section>
+  <div class="section"><div class="section-head"><h2>Popular starting points</h2><button class="btn ghost sm" data-view="recs">See all ${BUILDS.length} builds →</button></div>
+  <div class="presets">${['esports','g1440','4k'].map(id=>buildCard(BUILDS.find(x=>x.id===id),true)).join('')}</div></div>
+  <div class="section"><div class="section-head"><h2>Saved builds</h2></div>
+    ${saved.length?`<div class="saved">${saved.map((s,i)=>`<div class="saved-row"><div><div class="nm">${esc(s.name)}</div><div class="meta num">${money(total(s.build))} · saved ${esc(s.date)}</div></div>
+      <div class="acts"><button class="btn sm" data-load="${i}">Load</button><button class="btn ghost sm" data-del="${i}">Delete</button></div></div>`).join('')}</div>`
+      :`<p class="lede">No saved builds yet. Save one from the Review step and it will show up here, in this browser.</p>`}
+  </div>`;
+}
+function renderList(cat){
+  const c=CATS.find(x=>x.key===cat), idx=STEPS.indexOf(cat), next=STEPS[idx+1];
+  let items=P.filter(p=>p.cat===cat).map(p=>{const iss=issuesFor(cat,{...build,[cat]:p.id});return{p,iss,st:worst(iss)}});
+  if(q){const s=q.toLowerCase();items=items.filter(({p})=>(p.brand+' '+p.name+' '+tags(p).join(' ')).toLowerCase().includes(s))}
+  const brands=[...new Set(P.filter(p=>p.cat===cat).map(p=>p.brand))].sort();
+  if(brandF!=='all')items=items.filter(i=>i.p.brand===brandF);
+  if(compatOnly)items=items.filter(i=>i.st!=='err');
+  if(sort==='lo')items.sort((a,b)=>a.p.price-b.p.price);
+  if(sort==='hi')items.sort((a,b)=>b.p.price-a.p.price);
+  if(sort==='top')items.sort((a,b)=>(ratingOf(b.p.id)?.avg||0)-(ratingOf(a.p.id)?.avg||0));
+  const others=Object.keys(build).some(k=>k!==cat&&build[k]);
+  return `
+  ${loadedPreset?`<div class="banner"><span>You're editing the <b>${esc(loadedPreset)}</b> build. Swap any part you like.</span><button class="btn" data-load-blank>Start from scratch</button><button class="btn ghost" data-dismiss>Dismiss</button></div>`:''}
+  <div class="main-head"><div><div class="eyebrow">Step ${idx} of 8 · ${c.label}</div><h1 style="margin-top:6px">${c.title}</h1><p class="lede">${c.hint}</p></div>
+    <div class="head-acts">${build[cat]?`<button class="btn ghost" data-clear="${cat}">Remove</button>`:''}<button class="btn primary" data-step="${next}">${next==='review'?'Review build':'Next: '+catLabel(next)} →</button></div></div>
+  <div class="tools">
+    <label class="search">${SEARCH_I}<input type="search" id="q" placeholder="Search ${c.label.toLowerCase()} by brand, model or spec" value="${esc(q)}" aria-label="Search parts"></label>
+    <div class="seg" role="group" aria-label="Sort">${[['rec','Featured'],['lo','Price ↑'],['hi','Price ↓'],['top','Top rated']].map(([v,l])=>`<button data-sort="${v}" class="${sort===v?'on':''}">${l}</button>`).join('')}</div>
+    <select class="cur-select" id="brandF" aria-label="Filter by brand"><option value="all">All brands</option>${brands.map(b=>`<option ${brandF===b?'selected':''}>${b}</option>`).join('')}</select>
+    <label class="toggle"><input type="checkbox" id="compat" ${compatOnly?'checked':''}>Compatible only</label>
+  </div>
+  <div class="grid">
+  ${(items.length?`<p class="muted" style="grid-column:1/-1;margin:0">${items.length} of ${P.filter(p=>p.cat===cat).length} parts</p>`:'')+(items.length?items.map(({p,iss,st})=>{
+    const sel=build[cat]===p.id;
+    const badge=others?`<span class="badge ${st}">${st==='ok'?'Fits':st==='warn'?'Warning':'Won’t fit'}</span>`:'';
+    const m=iss.map(i=>`<div class="msg ${i.level}"><b>${i.level==='err'?'✕':'!'}</b><span>${i.msg}</span></div>`).join('');
+    const award=BEST.find(x=>x.id===p.id);
+    return `<article class="card ${sel?'sel':''} ${st==='err'?'bad':''}">
+      ${badge}
+      <div class="card-top"><div class="thumb">${ICON[cat]}</div><div style="min-width:0"><div class="pbrand">${p.brand}${award?` · <span style="color:var(--accent)">${award.award}</span>`:''}</div><button class="link pname" data-detail="${p.id}">${p.name}</button><div data-rating-for="${p.id}">${ratingHtml(p.id)}</div></div></div>
+      <div class="tags">${tags(p).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      ${m?`<div class="msgs">${m}</div>`:''}
+      <div class="card-foot"><div class="price num">${p.price?money(p.price):'Free'}${cur!=='THB'&&p.price?`<small>${fmtIn('THB',p.price)}</small>`:''}${trendChip(p)}</div>
+        <div class="acts"><button class="btn sm ghost" data-detail="${p.id}">Details</button>${sel?`<button class="btn sm sel" data-clear="${cat}">✓ Selected</button>`:`<button class="btn sm ${st==='err'?'':'primary'}" data-pick="${p.id}">${build[cat]?'Swap in':'Add'}</button>`}</div></div>
+    </article>`}).join(''):`<div class="empty">No parts match. Clear the search or turn off “Compatible only”.</div>`)}
+  </div>
+  <p class="note">Demo catalog: prices and specs are sample data. Prices are set in Thai Baht; other currencies use rates from ${RATES_DATE}.</p>`;
+}
+function renderReview(){
+  const b=resolve(build),iss=evaluate(build),missing=CATS.filter(c=>!build[c.key]),w=load(b),passed=[];
+  if(b.cpu&&b.mb&&b.cpu.socket===b.mb.socket)passed.push(`CPU and motherboard share socket ${b.cpu.socket}`);
+  if(b.ram&&b.mb&&b.ram.type===b.mb.ramType)passed.push(`${b.ram.type} memory matches the board`);
+  if(b.case&&b.mb&&b.case.forms.includes(b.mb.form))passed.push(`${b.mb.form} board fits the ${b.case.name}`);
+  if(b.gpu&&b.case&&!b.gpu.none&&b.gpu.length<=b.case.maxGpu)passed.push(`Graphics card clears the case by ${b.case.maxGpu-b.gpu.length} mm`);
+  if(b.psu&&b.cpu&&b.psu.watts>=recPsu(w))passed.push(`${b.psu.watts} W PSU gives ${Math.round((b.psu.watts/w-1)*100)}% headroom over ~${w} W`);
+  const overall=missing.length?'idle':worst(iss);
+  const label={ok:'All checks passed',warn:'Works, with warnings',err:'Not compatible yet',idle:`${missing.length} part${missing.length>1?'s':''} missing`}[overall];
+  return `
+  <div class="main-head"><div><div class="eyebrow">Review</div><h1 style="margin-top:6px">Your build</h1><p class="lede">Final compatibility report, power estimate and price.</p></div><div class="head-acts"><span class="pill ${overall}">${label}</span><button class="btn" data-view="3d">View in 3D</button></div></div>
+  <div class="report">
+    ${missing.map(c=>`<div class="check-item"><span class="ic">○</span><span>No ${c.label.toLowerCase()} selected yet. <button class="btn ghost" style="padding:0" data-step="${c.key}">Choose one →</button></span></div>`).join('')}
+    ${iss.map(i=>`<div class="check-item ${i.level}"><span class="ic">${i.level==='err'?'✕':'!'}</span><span>${i.msg}</span></div>`).join('')}
+    ${passed.map(t=>`<div class="check-item ok"><span class="ic">✓</span><span>${t}</span></div>`).join('')}
+  </div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Part</th><th>Selection</th><th class="r">Price (${cur})</th></tr></thead>
+    <tbody>${CATS.map(c=>{const p=b[c.key];return `<tr><td>${c.label}</td><td>${p?`<button class="link" data-detail="${p.id}">${p.none?'':p.brand+' '}${p.name}</button>`:'<span style="color:var(--muted)">—</span>'}</td><td class="r num">${p?money(p.price):''}</td></tr>`}).join('')}</tbody>
+    <tfoot><tr><td colspan="2">Total</td><td class="r num">${money(total(build))}</td></tr></tfoot>
+  </table></div>
+  <div class="save-row">
+    <input id="bname" placeholder="Name this build, e.g. “Ricky's 1440p rig”" aria-label="Build name" maxlength="60">
+    <button class="btn" id="save">Save build</button>
+    <button class="btn" id="copy">Copy parts list</button>
+    <button class="btn" data-chat-ask="Review my current build. What are its strengths, and what one upgrade would help most?">Ask AI to review</button>
+    <button class="btn primary" id="cart" ${overall==='err'||overall==='idle'?'disabled':''}>Add to cart</button>
+  </div>
+  <p class="note">Want a second opinion before you order? <a href="https://www.nvk.co.th" target="_blank" rel="noopener">Consult our experts</a>. ${cur!=='THB'?`Prices converted from THB at ${RATES_DATE} rates; you'll be charged in THB.`:''}</p>`;
+}
+
+/* ---------- render: recommendations ---------- */
+function renderRecs(){
+  const list=BUILDS.filter(b=>recFilter==='all'||b.tags.includes(recFilter));
+  const groups=['cpu','gpu','ram','storage','cooler','psu','case'];
+  return `
+  <div class="main-head"><div><div class="eyebrow">RigForge picks</div><h1 style="margin-top:6px">Recommended builds</h1><p class="lede">Complete, fully compatible builds tuned by our team for each kind of player and creator. Load one, then make it yours.</p></div></div>
+  <div class="tools"><div class="seg" role="group" aria-label="Filter builds">${BUILD_FILTERS.map(([v,l])=>`<button data-recf="${v}" class="${recFilter===v?'on':''}">${l}</button>`).join('')}</div></div>
+  <div class="presets">${list.map(b=>buildCard(b,false)).join('')}</div>
+  <div class="section"><div class="section-head"><div><div class="eyebrow">Best of each spec</div><h2 style="margin-top:6px">Our top pick in every category</h2></div></div>
+  ${groups.map(g=>`<div class="picks-group"><h3>${ICON[g]}${catLabel(g)}</h3><div class="picks">${BEST.filter(x=>x.cat===g).map(x=>{const p=BYID[x.id];const inB=build[p.cat]===p.id;return `
+    <div class="pick"><span class="award">${x.award}</span><button class="link pname" data-detail="${p.id}">${p.brand} ${p.name}</button><div data-rating-for="${p.id}">${ratingHtml(p.id)}</div><div class="why">${x.why}</div>
+    <div class="row2"><span class="price num">${money(p.price)}</span>${inB?`<span class="pill ok">In your build</span>`:`<button class="btn sm" data-pick-stay="${p.id}">Add to build</button>`}</div></div>`}).join('')}</div></div>`).join('')}
+  </div>
+  <p class="note">Picks are our team's editorial recommendations from the current catalog.</p>`;
+}
+
+/* ---------- render: 3D ---------- */
+const PART_COLORS={mb:'#2E6B5E',cpu:'#C9CED6',ram:'#8C5CFF',gpu:'#FF6B2C',storage:'#3FB6FF',cooler:'#E8EDF3',psu:'#6B7480',case:'#9AA4B2'};
+let explode=false, autoRot=true;
+function render3DView(){
+  const b=resolve(build);
+  return `
+  <div class="main-head"><div><div class="eyebrow">3D preview</div><h1 style="margin-top:6px">See your rig take shape</h1><p class="lede">A to-scale model of your build. Part sizes come from real specs, so a card that's too long or a cooler that's too tall shows up here too.</p></div>
+  <div class="head-acts"><button class="btn" data-view="build" data-step-to="review">Review build</button></div></div>
+  <div class="stage-wrap">
+    <div class="stage" id="stage"><div class="tip" id="tip" hidden></div>
+      <div class="stage-hud"><span class="stage-hint">Drag to rotate · scroll or pinch to zoom · hover a part</span>
+      <div class="stage-ctrls"><button class="btn sm ${explode?'on':''}" id="tExplode">Exploded view</button><button class="btn sm ${autoRot?'on':''}" id="tRotate">Auto-rotate</button><button class="btn sm" id="tReset">Reset</button></div></div>
+    </div>
+    <div class="legend"><h2>In this build</h2>
+      ${CATS.map(c=>{const p=b[c.key];return `<button class="lg" data-hl="${c.key}"><i style="background:${PART_COLORS[c.key]}"></i><span style="min-width:0"><div class="k">${c.label}</div><div class="v ${p?'':'none'}">${p?(p.none?'Integrated graphics':p.name):'Not selected'}</div></span></button>`}).join('')}
+      <div style="padding:10px"><button class="btn" style="width:100%" data-chat-ask="Looking at my build's layout, is airflow and fit OK? Anything I should change?">Ask AI about fit & airflow</button></div>
+    </div>
+  </div>`;
+}
+
+/* ---------- console ---------- */
+function gaugeSvg(pct,cls){const r=30,c=2*Math.PI*r,off=c*(1-Math.min(pct,100)/100);
+  const col=cls==='err'?'var(--err)':cls==='warn'?'var(--warn)':'var(--accent)';
+  return `<svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="${r}" fill="none" stroke="var(--surface-3)" stroke-width="7"/><circle cx="38" cy="38" r="${r}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 38 38)"/><text x="38" y="43" text-anchor="middle" font-family="Geist Mono,monospace" font-size="14" fill="var(--ink)">${Math.round(pct)}%</text></svg>`}
+function renderSheet(){
+  const b=resolve(build),iss=evaluate(build),w=load(b),filled=CATS.filter(c=>build[c.key]).length;
+  const overall=filled===0?'idle':iss.length?worst(iss):filled<8?'idle':'ok';
+  const pill={ok:'All good',warn:'Warnings',err:'Issues',idle:`${filled}/8 parts`}[overall];
+  const cap=b.psu?.watts||recPsu(w), pct=w/cap*100;
+  const gcls=b.psu?(w>b.psu.watts?'err':b.psu.watts<recPsu(w)?'warn':''):'';
+  $('#sheet').innerHTML=`
+    <div class="c-head"><h2>Your build</h2><div style="display:flex;gap:6px;align-items:center"><span class="pill ${overall}">${pill}</span><button class="btn ghost close-sheet" id="closeSheet" aria-label="Close">✕</button></div></div>
+    <div class="gauge">${gaugeSvg(pct,gcls)}<div><div class="g-l">Estimated power draw</div><div class="g-v num">${w} W</div><div class="g-s">${b.psu?`of ${b.psu.watts} W PSU`:`Recommended PSU: ${recPsu(w)} W`}</div></div></div>
+    <ul class="rows">${CATS.map(c=>{const p=b[c.key],st=p?worst(issuesFor(c.key,build)):'';
+      return `<li><button class="row" data-view="build" data-step="${c.key}"><span class="ri ${p?'filled':''}">${ICON[c.key]}${p?`<i class="${st}"></i>`:''}</span><span style="min-width:0"><div class="k">${c.label}</div><div class="v ${p?'':'none'}">${p?p.name:'Choose…'}</div></span><span class="p num">${p&&p.price?money(p.price):''}</span></button></li>`}).join('')}</ul>
+    <div class="c-total"><div class="lab">Total</div><div><strong class="num">${money(total(build))}</strong>${cur!=='THB'?`<div class="alt num">${fmtIn('THB',total(build))}</div>`:''}</div></div>
+    <div class="c-actions"><button class="btn primary" data-view="build" data-step="review">Review build</button><button class="btn" data-view="3d">View in 3D</button><button class="btn" data-openconv>Convert total</button></div>`;
+  $('#mbar').innerHTML=`<div><div class="t num">${money(total(build))}</div><div class="s">${pill} · ${w} W</div></div><button class="btn primary sm" id="openSheet">View build</button>`;
+}
+
+function render(){
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.view===view));
+  renderSteps();
+  $('#shell').classList.toggle('full',view!=='build');
+  const main=$('#main');
+  if(view==='build')main.innerHTML=step==='start'?renderStart():step==='review'?renderReview():renderList(step);
+  else if(view==='recs')main.innerHTML=renderRecs();
+  else main.innerHTML=render3DView();
+  renderSheet();
+  store.set('rf-current',build);
+  if(view==='3d')mount3D();else unmount3D();
+}
+
+/* ---------- converter ---------- */
+function renderConv(){
+  if(conv.amt===null)conv.amt=total(build);
+  const out=convert(+conv.amt||0,conv.from,conv.to), one=convert(1,conv.from,conv.to);
+  const opts=sel=>CURRENCIES.map(x=>`<option value="${x.c}" ${x.c===sel?'selected':''}>${x.c}</option>`).join('');
+  $('#conv').innerHTML=`
+    <h3>Currency converter</h3><div class="sub">Rates from ${RATES_DATE}. For reference only.</div>
+    <div class="conv-grid">
+      <div class="conv-row"><input id="cAmt" type="number" inputmode="decimal" min="0" step="any" value="${conv.amt}" aria-label="Amount"><select id="cFrom" aria-label="From currency">${opts(conv.from)}</select></div>
+      <button class="swap" id="cSwap" aria-label="Swap currencies"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg></button>
+      <div class="conv-out"><div class="big num" id="cOut">${fmtIn(conv.to,out)}</div>
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:6px"><span class="rate num">1 ${conv.from} = ${one.toLocaleString('en-US',{maximumFractionDigits:one<1?5:3})} ${conv.to}</span><select id="cTo" aria-label="To currency" style="width:108px">${opts(conv.to)}</select></div></div>
+    </div>
+    <div class="quick">${['USD','EUR','JPY','SGD','MYR','CNY'].map(c=>`<button data-qto="${c}">${c}</button>`).join('')}</div>
+    <div class="conv-foot"><button class="btn" id="cUseTotal">Use build total</button><button class="btn primary" id="cShow">Show prices in ${conv.to}</button></div>`;
+}
+
+/* ---------- price history, forecast, demand (simulated for the demo catalog) ---------- */
+const NOW=new Date(2026,8,30);
+let priceRange='1y', fcH=6;
+function hashStr(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){let a=seed;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function ageMonths(p){const n=p.brand+' '+p.name;
+  if(/RTX 50|RX 90|RX 9060|Arc B|9[6-9]00X|9800X3D|9950X3D|Core Ultra|Z890|B860|X870|990 EVO Plus|T705|NV3|Phantom Spirit|Galahad II|Vertex|Dark Rock Pro 5|NH-D15 G2|Liquid Freezer III|Terra|O11 Vision|NV7|Lancool 207|SP850|Aqua Elite/.test(n))return 8+hashStr(p.id)%12;
+  if(/5600|5700X3D|B550|A520|DDR4|RTX 3050|H610|MX500|870 EVO|BarraCuda|AK400|NH-U12S|SE-214|MWE|Smart 500|RM850x|4000D|NR200P|RX 7600|RX 7700|Red Plus|IronWolf|RTX 4060/.test(n))return 40+hashStr(p.id)%14;
+  return 20+hashStr(p.id)%14;}
+const HIST={};
+function history(p){
+  if(HIST[p.id])return HIST[p.id];
+  const r=rng(hashStr(p.id)),age=ageMonths(p),weeks=Math.round(age*4.345),isGpu=p.cat==='gpu';
+  const prem=0.1+r()*0.22+(isGpu?0.06:0),tau=weeks*(0.3+r()*0.3),eol=age>44;
+  const raw=[];let n=0;
+  for(let i=0;i<=weeks;i++){
+    n=n*0.82+(r()-0.5)*0.028;
+    let v=1+prem*Math.exp(-i/tau);
+    if(eol&&i>weeks-22)v+=0.05*(i-(weeks-22))/22;
+    const d=new Date(NOW.getTime()-(weeks-i)*7*864e5),m=d.getMonth(),day=d.getDate();
+    if((m===10&&day>=6&&day<=17)||(m===11&&day>=7&&day<=18))v*=0.95;
+    raw.push({t:d,v:v+n*(i<weeks-1?1:0)});
+  }
+  const end=raw[raw.length-1].v;
+  const out=raw.map(x=>({t:x.t,p:Math.max(10,Math.round(p.price*x.v/end/10)*10)}));
+  out[out.length-1].p=p.price;
+  return HIST[p.id]=out;
+}
+function forecast(p,months){
+  const hs=history(p),W=Math.min(26,hs.length-1),seg=hs.slice(-W-1);
+  const xs=seg.map((_,i)=>i),ys=seg.map(x=>Math.log(x.p)),mx=xs.reduce((a,b)=>a+b,0)/xs.length,my=ys.reduce((a,b)=>a+b,0)/ys.length;
+  let num=0,den=0;xs.forEach((x,i)=>{num+=(x-mx)*(ys[i]-my);den+=(x-mx)**2});
+  let b=den?num/den*0.6:0;const res=Math.sqrt(ys.reduce((s,y,i)=>s+(y-(my+b/0.6*(xs[i]-mx)))**2,0)/Math.max(1,ys.length-2));
+  if(ageMonths(p)<14)b-=0.0012;
+  b=Math.max(-0.007,Math.min(0.007,b));
+  const weeks=Math.round(months*4.345),cur=p.price,pts=[];
+  for(let k=1;k<=weeks;k++){const mid=cur*Math.exp(b*k),z=Math.max(0.006,res)*Math.sqrt(k)*1.5+0.002*k;
+    const r10=v=>Math.round(v/10)*10;pts.push({t:new Date(NOW.getTime()+k*7*864e5),p:r10(mid),lo:r10(mid*Math.exp(-z)),hi:r10(mid*Math.exp(z)),fc:true})}
+  return pts;
+}
+function trendPct(p,weeks){const hs=history(p);if(hs.length<2)return 0;const a=hs[Math.max(0,hs.length-1-weeks)].p;return (p.price-a)/a*100}
+function trendChip(p){if(!p.price)return'';const t=trendPct(p,13);const a=Math.abs(t);
+  return `<span class="trend">${a<1?'→ Steady':t<0?`▼ ${a.toFixed(0)}%`:`▲ ${a.toFixed(0)}%`} <span>3 mo</span></span>`}
+function demand(p){
+  const r=rng(hashStr(p.id+'d'));let s=34+r()*30;
+  const inB=BUILDS.filter(b=>Object.values(b.build).includes(p.id)).length;s+=Math.min(22,inB*6);
+  const award=BEST.find(x=>x.id===p.id);if(award)s+=12;
+  const age=ageMonths(p);if(age<14)s+=8;if(age>44)s-=10;
+  const rt=ratingOf(p.id);if(rt)s+=(rt.avg-3)*5+Math.min(8,rt.n);
+  if(p.none)s=20;
+  s=Math.round(Math.max(5,Math.min(98,s)));
+  const trend=age<14?'rising':age>44?'cooling':(r()<0.55?'steady':'rising');
+  return{score:s,trend,inB,award,rt};
+}
+function demandSentence(p,d){
+  const c=catLabel(p.cat).toLowerCase(),label=d.score>=80?'Very popular':d.score>=60?'Popular':d.score>=40?'Moderate demand':'Niche pick';
+  let s=d.score>=80?`One of the most-wanted ${c} parts right now. Builders love it${d.award?` as our “${d.award.award}” pick`:''}, so stock can sell out quickly.`
+    :d.score>=60?`A well-liked choice with steady interest from builders${d.award?`, and our “${d.award.award}” pick`:''}.`
+    :d.score>=40?`A solid option that fewer builders choose, so it's usually easy to find in stock.`
+    :`A specialist part with lower demand. A great pick if it matches exactly what you need.`;
+  s+=d.trend==='rising'?' Interest is rising.':d.trend==='cooling'?' Interest is cooling as newer parts arrive.':' Interest is holding steady.';
+  if(d.inB)s+=` Featured in ${d.inB} of our recommended build${d.inB>1?'s':''}.`;
+  if(d.rt)s+=` Rated ${d.rt.avg.toFixed(1)}/5 by ${d.rt.n} RigForge builder${d.rt.n>1?'s':''}.`;
+  return{label,s};
+}
+const RANGES=[['3m','3M',13],['6m','6M',26],['1y','1Y',52],['2y','2Y',104],['all','All',1e9]];
+function fmtShort(v){const x=CUR[cur];const abs=Math.abs(v);const sp=x.s.length>1?' ':'';
+  if(abs>=1e6)return x.s+sp+(v/1e6).toFixed(abs>=1e7?0:1)+'M';if(abs>=1e4)return x.s+sp+Math.round(v/1e3)+'k';if(abs>=1e3)return x.s+sp+(v/1e3).toFixed(1)+'k';return x.s+sp+v.toFixed(abs<10?2:0)}
+function niceStep(span,n){const raw=span/n,pw=10**Math.floor(Math.log10(raw)),f=raw/pw;return (f<1.5?1:f<3?2:f<7?5:10)*pw}
+function renderPriceSec(){
+  const el=$('#priceSec');if(!el||!drawerId)return;const p=BYID[drawerId];
+  if(!p.price){el.innerHTML='';return}
+  const hs=history(p),rw=RANGES.find(r=>r[0]===priceRange)[2],seg=hs.slice(-Math.min(hs.length,rw+1)),fc=forecast(p,fcH);
+  const k=CUR[cur].r,first=seg[0].p,chg=(p.price-first)/first*100,lo=Math.min(...seg.map(x=>x.p)),hi=Math.max(...seg.map(x=>x.p));
+  const end=fc[fc.length-1],fchg=(end.p-p.price)/p.price*100;
+  const rangeName=priceRange==='all'?'since launch':`over the last ${{'3m':'3 months','6m':'6 months','1y':'year','2y':'2 years'}[priceRange]}`;
+  const dir=Math.abs(chg)<1.5?`held steady ${rangeName}`:chg<0?`fallen ${Math.abs(chg).toFixed(0)}% ${rangeName}`:`risen ${chg.toFixed(0)}% ${rangeName}`;
+  const fdir=Math.abs(fchg)<2?'stay about the same':fchg<0?`drop about ${Math.abs(fchg).toFixed(0)}%`:`rise about ${fchg.toFixed(0)}%`;
+  const advice=fchg<-4?`If you're not in a hurry, waiting could save you around ${money(p.price-end.p)}.`:fchg>3?`Prices are trending up, so buying sooner may save money.`:`Now is a reasonable time to buy.`;
+  const launched=hs[0].t.toLocaleDateString('en-GB',{month:'short',year:'numeric'});
+  el.innerHTML=`
+    <div class="sec-h"><h2>Price history & forecast</h2><span class="muted">On sale since ${launched}</span></div>
+    <div class="ph-ctrls"><div class="seg" role="group" aria-label="Timeline">${RANGES.map(([v,l])=>`<button data-prange="${v}" class="${priceRange===v?'on':''}">${l}</button>`).join('')}</div>
+      <div class="seg" role="group" aria-label="Forecast length">${[3,6,12].map(m=>`<button data-fch="${m}" class="${fcH===m?'on':''}">+${m} mo</button>`).join('')}</div></div>
+    <div class="ph-stats">
+      <div><div class="k">Now</div><div class="v num">${money(p.price)}</div></div>
+      <div><div class="k">Change</div><div class="v num">${chg<=-0.5?'▼':chg>=0.5?'▲':'→'} ${Math.abs(chg).toFixed(1)}%</div></div>
+      <div><div class="k">Low / high</div><div class="v num sm">${money(lo)} – ${money(hi)}</div></div>
+      <div><div class="k">In ${fcH} months</div><div class="v num sm">${money(end.lo)} – ${money(end.hi)}</div></div>
+    </div>
+    <div class="ph-chart" id="phChart"></div>
+    <div class="ph-legend"><span><i class="l-line"></i>Price</span><span><i class="l-dash"></i>Estimate</span><span><i class="l-band"></i>Likely range</span></div>
+    <p class="ph-sum">The price has ${dir}. We estimate it will ${fdir} over the next ${fcH} months. ${advice}${fcH>=2?' Big sales like 11.11 and 12.12 often bring short-term discounts.':''}</p>
+    <details class="ph-data"><summary>View price data</summary><div class="tbl-wrap"><table><thead><tr><th>Month</th><th class="r">Price (${cur})</th></tr></thead><tbody id="phRows"></tbody></table></div></details>
+    <p class="muted" style="margin:6px 0 0;font-size:12px">Price history and estimates are simulated for this demo catalog.</p>`;
+  drawPriceChart(p,seg,fc);
+  const months=[];const byM=new Map();seg.forEach(x=>byM.set(x.t.getFullYear()*12+x.t.getMonth(),{t:x.t,p:x.p}));fc.forEach(x=>byM.set(x.t.getFullYear()*12+x.t.getMonth(),{t:x.t,p:x.p,fc:true,lo:x.lo,hi:x.hi}));
+  byM.forEach(v=>months.push(v));
+  $('#phRows').innerHTML=months.map(m=>`<tr><td>${m.t.toLocaleDateString('en-GB',{month:'short',year:'numeric'})}${m.fc?' (est.)':''}</td><td class="r num">${m.fc?`${money(m.lo)} – ${money(m.hi)}`:money(m.p)}</td></tr>`).join('');
+}
+function drawPriceChart(p,seg,fc){
+  const box=$('#phChart');const W=Math.max(280,box.clientWidth||480),H=230,m={l:52,r:14,t:16,b:28};
+  const k=CUR[cur].r,t0=seg[0].t.getTime(),t1=fc[fc.length-1].t.getTime(),tn=NOW.getTime();
+  let ymin=Math.min(...seg.map(x=>x.p),...fc.map(x=>x.lo))*k,ymax=Math.max(...seg.map(x=>x.p),...fc.map(x=>x.hi))*k;
+  const pad=(ymax-ymin)*0.12||ymax*0.05;ymin-=pad;ymax+=pad;
+  const st=niceStep(ymax-ymin,4);ymin=Math.floor(ymin/st)*st;ymax=Math.ceil(ymax/st)*st;if(ymin<0)ymin=0;
+  const X=t=>m.l+(t-t0)/(t1-t0)*(W-m.l-m.r),Y=v=>m.t+(1-(v-ymin)/(ymax-ymin))*(H-m.t-m.b);
+  const line=pts=>pts.map((q,i)=>`${i?'L':'M'}${X(q.t.getTime()).toFixed(1)},${Y(q.p*k).toFixed(1)}`).join('');
+  const last=seg[seg.length-1],fcl=[last,...fc];
+  const band=[{t:last.t,hi:last.p,lo:last.p},...fc];
+  const bandPath=band.map((q,i)=>`${i?'L':'M'}${X(q.t.getTime()).toFixed(1)},${Y(q.hi*k).toFixed(1)}`).join('')+[...band].reverse().map(q=>`L${X(q.t.getTime()).toFixed(1)},${Y(q.lo*k).toFixed(1)}`).join('')+'Z';
+  const area=line(seg)+`L${X(tn).toFixed(1)},${Y(ymin).toFixed(1)}L${X(t0).toFixed(1)},${Y(ymin).toFixed(1)}Z`;
+  let grid='';for(let v=ymin;v<=ymax+1e-9;v+=st){const y=Y(v).toFixed(1);grid+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="var(--line)" stroke-width="1"/><text x="${m.l-8}" y="${+y+4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${fmtShort(v)}</text>`}
+  const spanM=(t1-t0)/(30.44*864e5),stepM=spanM<=5?1:spanM<=10?2:spanM<=20?3:spanM<=40?6:12;
+  let xt='';const d=new Date(seg[0].t.getFullYear(),seg[0].t.getMonth()+1,1);
+  while(d.getTime()<=t1){if(d.getMonth()%stepM===0){const x=X(d.getTime());if(x>m.l+14&&x<W-m.r-14)xt+=`<line x1="${x}" x2="${x}" y1="${H-m.b}" y2="${H-m.b+4}" stroke="var(--line)"/><text x="${x}" y="${H-8}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${d.toLocaleDateString('en-GB',{month:'short'})}${d.getMonth()===0||stepM>=6?` ’${String(d.getFullYear()).slice(2)}`:''}</text>`}d.setMonth(d.getMonth()+1)}
+  const xn=X(tn),yn=Y(p.price*k);
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Price history and forecast for ${esc(p.name)}">
+    <defs><linearGradient id="phg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".22"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
+    ${grid}${xt}
+    <path d="${area}" fill="url(#phg)"/>
+    <path d="${bandPath}" fill="var(--accent)" fill-opacity=".13"/>
+    <line x1="${xn}" x2="${xn}" y1="${m.t}" y2="${H-m.b}" stroke="var(--muted)" stroke-dasharray="2 4"/>
+    <text x="${xn+6}" y="${m.t+10}" font-size="11" fill="var(--muted)">Today</text>
+    <path d="${line(seg)}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${line(fcl)}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round"/>
+    <circle cx="${xn}" cy="${yn}" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>
+    <g id="phHover" style="display:none"><line id="phX" y1="${m.t}" y2="${H-m.b}" stroke="var(--ink)" stroke-opacity=".35"/><circle id="phDot" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/></g>
+    <rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}" fill="transparent" id="phHit"/>
+  </svg><div class="ph-tip" id="phTip" hidden></div>`;
+  const all=[...seg,...fc],hit=$('#phHit'),tip=$('#phTip');
+  const move=e=>{const r=box.querySelector('svg').getBoundingClientRect(),sx=(e.clientX-r.left)*W/r.width,t=t0+(sx-m.l)/(W-m.l-m.r)*(t1-t0);
+    let best=all[0];for(const q of all)if(Math.abs(q.t-t)<Math.abs(best.t-t))best=q;
+    const x=X(best.t.getTime()),y=Y(best.p*k);$('#phHover').style.display='';$('#phX').setAttribute('x1',x);$('#phX').setAttribute('x2',x);$('#phDot').setAttribute('cx',x);$('#phDot').setAttribute('cy',y);
+    tip.hidden=false;tip.innerHTML=`<div class="d">${best.t.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}${best.fc?' · estimate':''}</div><div class="p num">${money(best.p)}</div>${best.fc?`<div class="d">Likely ${money(best.lo)} – ${money(best.hi)}</div>`:''}`;
+    const px=x*r.width/W;tip.style.left=Math.min(Math.max(px,70),r.width-70)+'px';tip.style.top=(y*r.height/H)+'px'};
+  hit.addEventListener('pointermove',move);hit.addEventListener('pointerdown',move);
+  hit.addEventListener('pointerleave',()=>{tip.hidden=true;$('#phHover').style.display='none'});
+}
+function renderDemandSec(){
+  const el=$('#demandSec');if(!el||!drawerId)return;const p=BYID[drawerId];if(p.none){el.innerHTML='';return}
+  const d=demand(p),t=demandSentence(p,d);
+  el.innerHTML=`<div class="sec-h"><h2>Popularity & demand</h2></div>
+    <div class="dm"><div class="dm-top"><span class="dm-label">${t.label}</span><span class="dm-trend">${d.trend==='rising'?'▲ Rising':d.trend==='cooling'?'▼ Cooling':'→ Steady'}</span><span class="num dm-score">${d.score}/100</span></div>
+    <div class="dm-bar" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${d.score}" aria-label="Demand score"><i style="width:${d.score}%"></i></div>
+    <p>${t.s}</p></div>`;
+}
+
+/* ---------- detail drawer + reviews/comments ---------- */
+let reviewStars=0;
+function openDrawer(id){
+  const p=BYID[id];if(!p)return;drawerId=id;reviewStars=0;
+  const iss=issuesFor(p.cat,{...build,[p.cat]:p.id}),st=worst(iss),sel=build[p.cat]===p.id;
+  const award=BEST.filter(x=>x.id===id);
+  $('#drawer').innerHTML=`
+    <div class="d-head"><span class="eyebrow">${catLabel(p.cat)}</span><button class="btn ghost sm" id="dClose" aria-label="Close details">✕</button></div>
+    <div class="d-body">
+      <div class="d-hero"><div class="thumb">${ICON[p.cat]}</div><div style="min-width:0"><div class="pbrand">${p.brand}</div><h2>${p.name}</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">${award.map(a=>`<span class="pick" style="padding:0;border:0;background:none"><span class="award">${a.award}</span></span>`).join('')}<span id="dRating">${ratingHtml(id)}</span></div></div></div>
+      <div class="d-buy"><div class="price num">${p.price?money(p.price):'Free'}${cur!=='THB'&&p.price?`<small>${fmtIn('THB',p.price)}</small>`:''}</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${Object.keys(build).some(k=>k!==p.cat&&build[k])?`<span class="pill ${st}">${st==='ok'?'Fits your build':st==='warn'?'Fits, with a warning':'Won’t fit your build'}</span>`:''}
+        ${sel?`<span class="pill ok">In your build</span>`:`<button class="btn primary" data-pick-stay="${p.id}">${build[p.cat]?'Swap into build':'Add to build'}</button>`}</div></div>
+      ${iss.length?`<div class="msgs">${iss.map(i=>`<div class="msg ${i.level}"><b>${i.level==='err'?'✕':'!'}</b><span>${i.msg}</span></div>`).join('')}</div>`:''}
+      <div><h2 style="margin-bottom:8px">About this ${catLabel(p.cat).toLowerCase()}</h2><p class="d-desc">${descOf(id)}</p>
+        <div style="margin-top:10px"><button class="btn sm" data-chat-ask="Tell me more about the ${p.brand} ${p.name}. Who is it best for, and is it a good fit for my build?">Ask AI about this part</button></div></div>
+      <div id="priceSec"></div>
+      <div id="demandSec"></div>
+      <div><h2 style="margin-bottom:8px">Specifications</h2><div class="specs"><table><tbody>${specRows(p).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}<tr><td>Price</td><td class="num">${fmtIn('THB',p.price)}</td></tr></tbody></table></div></div>
+      <div><div class="sec-h"><h2>Reviews</h2></div><div id="revSum"></div><div id="revForm"></div><div class="rv-list" id="revList" style="margin-top:12px"></div></div>
+      <div><div class="sec-h"><h2>Questions & comments</h2></div><div id="comForm"></div><div class="rv-list" id="comList" style="margin-top:12px"></div></div>
+    </div>`;
+  renderForms();renderDrawerLists();renderPriceSec();renderDemandSec();
+  $('#drawer').classList.add('open');$('#drawer').setAttribute('aria-hidden','false');$('#dscrim').hidden=false;
+  setTimeout(()=>$('#dClose')?.focus(),50);
+}
+function closeDrawer(){drawerId=null;$('#drawer').classList.remove('open');$('#drawer').setAttribute('aria-hidden','true');$('#dscrim').hidden=true}
+function renderForms(){
+  if(!drawerId)return;
+  const unavailable=`<p class="muted">Customer reviews are coming soon.</p>`;
+  if(!db){$('#revForm').innerHTML=unavailable;$('#comForm').innerHTML='';$('#comForm').parentElement.hidden=true;return}
+  if(canWrite===false){const m=`<p class="muted">You can read reviews here. Posting needs Contributor access to this page.</p>`;$('#revForm').innerHTML=m;$('#comForm').innerHTML='';return}
+  $('#revForm').innerHTML=`<form class="form" id="fRev"><div class="frow"><span class="muted">Your rating</span><div class="star-pick" role="radiogroup" aria-label="Rating">${[1,2,3,4,5].map(n=>`<button type="button" role="radio" aria-checked="${reviewStars===n}" aria-label="${n} star${n>1?'s':''}" data-star="${n}" class="${reviewStars>=n?'on':''}">★</button>`).join('')}</div></div>
+    <label class="visually-hidden" for="revText">Your review</label><textarea id="revText" maxlength="1000" placeholder="How does it perform? Noise, temps, value, build quality…"></textarea>
+    <div class="frow"><span class="muted" id="revMsg"></span><button class="btn primary sm" type="submit">Post review</button></div></form>`;
+  $('#comForm').innerHTML=`<form class="form" id="fCom"><label class="visually-hidden" for="comText">Your question or comment</label><textarea id="comText" maxlength="1000" placeholder="Ask a question or share a tip about this part…"></textarea>
+    <div class="frow"><span class="muted" id="comMsg"></span><button class="btn sm" type="submit">Post comment</button></div></form>`;
+}
+function timeAgo(t){const s=(Date.now()-t)/1000;if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+' min ago';if(s<86400)return Math.floor(s/3600)+' h ago';if(s<86400*30)return Math.floor(s/86400)+' d ago';return new Date(t).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}
+function itemHtml(x,kind){
+  return `<div class="rv"><div class="rv-top">${x.author?`<img alt="" data-av="${esc(x.author)}" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">`:''}<span class="who" data-uid="${esc(x.author||'')}">${x.author?'':'Someone'}</span>${kind==='r'?starStr(x.rating):''}<span class="when">${timeAgo(x.at||0)}</span>
+    ${x.author&&myId&&x.author===myId?`<button class="btn ghost sm del" data-del-${kind}="${esc(x.id)}">Delete</button>`:''}</div><p></p></div>`;
+}
+async function renderDrawerLists(){
+  if(!drawerId)return;
+  const id=drawerId;
+  const rs=reviews.filter(r=>r.part===id), cs=comments.filter(c=>c.part===id);
+  const rt=ratingOf(id);
+  $('#revSum').innerHTML=rt?`<div class="rv-sum"><div class="avg num">${rt.avg.toFixed(1)}</div><div>${starStr(rt.avg)}<div class="muted">${rt.n} review${rt.n>1?'s':''}</div></div></div>`:'';
+  $('#dRating').innerHTML=ratingHtml(id);
+  const rl=$('#revList'), cl=$('#comList');
+  rl.innerHTML=rs.length?rs.map(r=>itemHtml(r,'r')).join(''):(db?`<p class="muted">No reviews yet. Own this part? Be the first to review it.</p>`:'');
+  renderDemandSec();
+  cl.innerHTML=cs.length?cs.map(c=>itemHtml(c,'c')).join(''):(db?`<p class="muted">No questions yet.</p>`:'');
+  // fill user text safely
+  rl.querySelectorAll('.rv p').forEach((el,i)=>el.textContent=rs[i].text||'');
+  cl.querySelectorAll('.rv p').forEach((el,i)=>el.textContent=cs[i].text||'');
+  const ids=[...new Set([...rs,...cs].map(x=>x.author).filter(Boolean))];
+  if(userNs&&ids.length){
+    const ps=await userNs.profiles(ids);if(drawerId!==id)return;
+    document.querySelectorAll('#drawer [data-uid]').forEach(el=>{const u=el.dataset.uid;if(!u)return;const p=ps[u];el.textContent=p?.isMe?'You':(p?.name||'RigForge builder')});
+    document.querySelectorAll('#drawer [data-av]').forEach(el=>{const p=ps[el.dataset.av];if(p?.avatarUrl)el.src=p.avatarUrl});
+  }else document.querySelectorAll('#drawer [data-uid]').forEach(el=>{if(el.dataset.uid)el.textContent=el.dataset.uid===myId?'You':'RigForge builder'});
+}
+function refreshRatings(){document.querySelectorAll('[data-rating-for]').forEach(el=>el.innerHTML=ratingHtml(el.dataset.ratingFor))}
+async function postReview(){
+  const text=$('#revText').value.trim(),msg=$('#revMsg');
+  if(!reviewStars){msg.textContent='Pick a star rating first.';return}
+  if(text.length<3){msg.textContent='Add a few words about your experience.';return}
+  msg.textContent='Posting…';
+  try{await db.collection('reviews').add({part:drawerId,rating:reviewStars,text:text.slice(0,1000),author:myId||null,at:Date.now()});
+    reviewStars=0;renderForms();toast('Review posted. Thank you!')}
+  catch(e){msg.textContent=e?.code==='invalid_argument'?'You don’t have permission to post here.':e?.code==='quota_exceeded'?'Review storage is full.':'Couldn’t post. Try again in a moment.';if(e?.code==='invalid_argument'){canWrite=false;setTimeout(renderForms,1500)}}
+}
+async function postComment(){
+  const text=$('#comText').value.trim(),msg=$('#comMsg');
+  if(text.length<2){msg.textContent='Write your question or comment first.';return}
+  msg.textContent='Posting…';
+  try{await db.collection('comments').add({part:drawerId,text:text.slice(0,1000),author:myId||null,at:Date.now()});$('#comText').value='';msg.textContent='';toast('Comment posted')}
+  catch(e){msg.textContent=e?.code==='invalid_argument'?'You don’t have permission to post here.':'Couldn’t post. Try again in a moment.';if(e?.code==='invalid_argument'){canWrite=false;setTimeout(renderForms,1500)}}
+}
+async function initData(){
+  const cl=window.claude;if(!cl||!cl.use)return;
+  try{userNs=await cl.use('user');if(userNs){myId=await userNs.id();canWrite=await userNs.can('data.write')}}catch(e){}
+  try{db=await cl.use('db')}catch(e){db=null}
+  if(!db){if(drawerId)renderForms();return}
+  const onErr=()=>{};
+  db.collection('reviews').orderBy('at','desc').limit(1000).onSnapshot(s=>{reviews=s.docs.map(d=>({id:d.id,...d.data()}));refreshRatings();renderDrawerLists()},onErr);
+  db.collection('comments').orderBy('at','desc').limit(1000).onSnapshot(s=>{comments=s.docs.map(d=>({id:d.id,...d.data()}));renderDrawerLists()},onErr);
+  if(drawerId)renderForms();
+}
+
+/* ---------- AI chat ---------- */
+let sampleFn=null, sampleState='pending', chatMsgs=[], chatBusy=false, chatCtl=null;
+const SUGGESTIONS=['Is my build good for 4K gaming?','Best GPU under ฿25,000?','How do I install a CPU cooler?','DDR4 vs DDR5: does it matter?','What should I upgrade first?'];
+function systemPrompt(){
+  const b=resolve(build),iss=evaluate(build);
+  const cat=P.map(p=>`${p.id} | ${p.cat} | ${p.brand} ${p.name} | ${p.price} | ${tags(p).join(', ')}${p.price?` | 3-mo price ${trendPct(p,13).toFixed(0)}%, demand ${demand(p).score}/100`:''}`).join('\n');
+  const cur_=CUR[cur];
+  return `You are "RigForge AI", the built-in PC-building expert on RigForge, a custom PC configurator by NVK (Thailand). Answer ANY question the visitor asks: PC hardware, compatibility, performance, upgrades, step-by-step building, troubleshooting, or their current build. Be friendly, expert and concise: aim for under 170 words unless they ask for detail. Use short paragraphs or "- " bullet lists; use **bold** sparingly; no tables, no headings.
+When you recommend a part that is in the catalog below, write its id in double square brackets, for example [[rtx5070]]. The page turns each one into an "Add to build" button, so only use ids that appear in the catalog, and write the part name in normal text next to it. You may mention parts we don't stock, but say they're not in the RigForge catalog.
+Catalog prices are Thai Baht (THB). The visitor is viewing prices in ${cur}${cur!=='THB'?` (1 THB ≈ ${cur_.r} ${cur})`:''}; quote prices in ${cur} when convenient.
+The site's compatibility rules: CPU socket must match the board; RAM type must match the board; RAM sticks ≤ board slots; case must support the board size; GPU length ≤ case max; air cooler height ≤ case max and radiator ≤ case max; cooler must support the socket; cooler capacity should cover CPU peak power; a CPU without integrated graphics needs a graphics card; cases marked SFX-only need an SFX power supply; a case with 0 mm radiator support can't take an AIO; PSU must cover estimated load (60 W base + CPU peak + GPU power), and we recommend 30% headroom.
+Never invent prices, specs or benchmark numbers for catalog parts beyond what's listed; give ranges and say they're approximate when you estimate performance. If a question is unrelated to PCs, still answer briefly and helpfully.
+
+Price trends and demand scores in the catalog are simulated demo data; if you cite them, say they're estimates.
+
+CATALOG (id | category | name | price THB | key specs | trend):
+${cat}
+
+VISITOR'S CURRENT BUILD:
+${CATS.map(c=>`${c.label}: ${b[c.key]?`${b[c.key].brand} ${b[c.key].name} [${b[c.key].id}]`:'(not selected)'}`).join('\n')}
+Estimated load: ${load(b)} W. Total: ${total(build)} THB.
+Compatibility issues: ${iss.length?iss.map(i=>i.msg).join(' | '):'none'}.`;
+}
+function mdLite(src){
+  let s=esc(src);
+  s=s.replace(/\[\[([a-z0-9\-]+)\]\]/gi,(m,id)=>{const p=BYID[id];if(!p)return'';const inB=build[p.cat]===p.id;return `<button class="chip-part ${inB?'in':''}" data-pick-ai="${p.id}">${inB?'✓ In build':'+ Add'} · ${esc(p.name)}${p.price?' · '+money(p.price):''}</button>`});
+  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>');
+  const lines=s.split('\n');let out='',list=null,para=[];
+  const flushP=()=>{if(para.length){out+=`<p>${para.join('<br>')}</p>`;para=[]}};
+  const flushL=()=>{if(list){out+=`<${list.t}>${list.items.map(i=>`<li>${i}</li>`).join('')}</${list.t}>`;list=null}};
+  for(const ln of lines){
+    const ul=ln.match(/^\s*[-*•]\s+(.*)/),ol=ln.match(/^\s*\d+[.)]\s+(.*)/),hd=ln.match(/^\s*#{1,4}\s+(.*)/);
+    if(ul||ol){flushP();const t=ul?'ul':'ol';if(!list||list.t!==t){flushL();list={t,items:[]}}list.items.push((ul||ol)[1])}
+    else if(!ln.trim()){flushP();flushL()}
+    else if(hd){flushP();flushL();out+=`<p><strong>${hd[1]}</strong></p>`}
+    else{flushL();para.push(ln)}
+  }
+  flushP();flushL();return out;
+}
+function renderChat(){
+  const body=$('#chBody');
+  if(sampleState==='off'){
+    body.innerHTML=`<div class="bub bot"><p>The AI assistant isn't available in this view. Open this page in Claude while signed in to chat with RigForge AI.</p></div>`;
+    $('#chSugg').innerHTML='';$('#chIn').disabled=true;$('#chSend').disabled=true;return;
+  }
+  const intro=`<div class="bub bot"><p>Hi! I'm <strong>RigForge AI</strong>. I can see your current build and our whole catalog. Ask me anything: compatibility, what to upgrade, how to build, or which parts suit your budget.</p></div>`;
+  body.innerHTML=intro+chatMsgs.map((m,i)=>m.role==='user'?`<div class="bub user"></div>`:`<div class="bub bot ${m.error?'err':''}" data-bi="${i}">${m.pending&&!m.content?'<span class="thinking"><span></span><span></span><span></span></span>':mdLite(m.content)}${m.note?`<p class="muted" style="margin-top:6px">${esc(m.note)}</p>`:''}</div>`).join('');
+  body.querySelectorAll('.bub.user').forEach((el,j)=>{el.textContent=chatMsgs.filter(m=>m.role==='user')[j].content});
+  $('#chSugg').innerHTML=chatMsgs.length?'':SUGGESTIONS.map(s=>`<button data-chat-ask="${esc(s)}">${esc(s)}</button>`).join('');
+  $('#chSend').textContent=chatBusy?'Stop':'Send';$('#chSend').classList.toggle('primary',!chatBusy);
+  $('#chIn').disabled=false;$('#chSend').disabled=false;
+  body.scrollTop=body.scrollHeight;
+}
+function updateBotBubble(i){const el=document.querySelector(`#chBody [data-bi="${i}"]`);if(!el)return renderChat();const m=chatMsgs[i];el.innerHTML=mdLite(m.content);const body=$('#chBody');body.scrollTop=body.scrollHeight}
+function openChat(){closeConv();$('#chat').hidden=false;$('#fab').hidden=true;renderChat();setTimeout(()=>$('#chIn').focus(),50)}
+function closeChat(){$('#chat').hidden=true;$('#fab').hidden=false}
+async function sendChat(text){
+  text=(text||'').trim();if(!text||chatBusy)return;
+  if(sampleState==='pending'){toast('The assistant is still starting. Try again in a moment.');return}
+  if(!sampleFn){sampleState='off';renderChat();return}
+  chatMsgs.push({role:'user',content:text});
+  const i=chatMsgs.push({role:'assistant',content:'',pending:true})-1;
+  chatBusy=true;renderChat();
+  const turns=chatMsgs.slice(0,-1).filter(m=>!m.error&&m.content).slice(-12).map(m=>({role:m.role,content:m.content}));
+  while(turns.length&&turns[0].role!=='user')turns.shift();
+  chatCtl=new AbortController();
+  try{
+    const r=await sampleFn([{role:'user',content:systemPrompt()},...turns],{cache:false,signal:chatCtl.signal,onText:({text})=>{chatMsgs[i].content=text;chatMsgs[i].pending=false;updateBotBubble(i)}});
+    chatMsgs[i]={role:'assistant',content:r.text,note:r.truncated?'Answer cut short. Ask a narrower question for the rest.':''};
+  }catch(e){
+    const code=e?.code;
+    if(code==='cancelled'){chatMsgs[i]={role:'assistant',content:e.text||'',note:'Stopped.'};if(!e.text)chatMsgs[i].error=true}
+    else if(code==='not_granted'||code==='sampling_disabled'||code==='not_declared'||code==='capability_disabled'||code==='capability_removed'){sampleState='off'}
+    else{
+      const copy={rate_limited:'You’re sending messages quickly. Wait a moment, then try again.',session_expired:'Please sign in to Claude again, then retry.',refused:'I can’t help with that one. Try asking a different way.',prompt_too_large:'That conversation got too long. Start a new chat.',empty_completion:'I didn’t get an answer. Try rephrasing.'}[code]||'Something went wrong reaching the assistant. Try again.';
+      chatMsgs[i]=e?.text&&code!=='refused'?{role:'assistant',content:e.text,note:copy}:{role:'assistant',content:copy,error:true};
+    }
+  }finally{chatBusy=false;chatCtl=null;renderChat()}
+}
+function initSample(){
+  const cl=window.claude;
+  if(!cl||!cl.use){sampleState='off';return}
+  cl.use('sample').then(s=>{sampleFn=s;sampleState=s?'ready':'off';if(!$('#chat').hidden)renderChat()}).catch(()=>{sampleState='off'});
+}
+
+/* ---------- 3D engine ---------- */
+let T=null; // three state
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()||'#888'}
+function mount3D(){
+  const stage=$('#stage');if(!stage)return;
+  if(!window.THREE){stage.insertAdjacentHTML('beforeend','<div class="stage-fallback">The 3D viewer couldn’t load in this browser. Your build and compatibility checks still work as normal.</div>');return}
+  if(!T){
+    let renderer;try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:true})}catch(e){stage.insertAdjacentHTML('beforeend','<div class="stage-fallback">3D needs WebGL, which isn’t available here.</div>');return}
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(38,4/3,1,2000);
+    scene.add(new THREE.HemisphereLight(0xffffff,0x303848,0.85));
+    const d=new THREE.DirectionalLight(0xffffff,0.75);d.position.set(60,90,70);scene.add(d);
+    const d2=new THREE.DirectionalLight(0xffffff,0.3);d2.position.set(-50,20,-60);scene.add(d2);
+    const glow=new THREE.PointLight(0xff6b2c,0.8,90);glow.position.set(4,4,0);scene.add(glow);
+    T={renderer,scene,camera,root:null,groups:{},orbit:{th:0.75,ph:1.15,r:120},target:new THREE.Vector3(0,0,0),raf:0,hl:null,ray:new THREE.Raycaster(),mouse:new THREE.Vector2(),hover:null,drag:null,pinch:null,t0:performance.now()};
+  }
+  stage.prepend(T.renderer.domElement);
+  buildScene();
+  const resize=()=>{const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;T.renderer.setSize(w,h,false);T.camera.aspect=w/h;T.camera.updateProjectionMatrix()};
+  resize();T.ro?.disconnect();T.ro=new ResizeObserver(resize);T.ro.observe(stage);
+  bindStage(stage);
+  cancelAnimationFrame(T.raf);loop();
+}
+function unmount3D(){if(!T)return;cancelAnimationFrame(T.raf);T.raf=0;T.ro?.disconnect()}
+function mat(color,o={}){return new THREE.MeshStandardMaterial({color,roughness:o.rough??0.55,metalness:o.metal??0.25,transparent:!!o.opacity,opacity:o.opacity??1,emissive:o.emissive||0x000000,emissiveIntensity:o.ei??0.9,side:o.side||THREE.FrontSide,depthWrite:o.opacity?false:true})}
+function box(w,h,d,m,x,y,z){const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);me.position.set(x,y,z);return me}
+function fan(r,axis,m,x,y,z){const g=new THREE.Group();const ring=new THREE.Mesh(new THREE.CylinderGeometry(r,r,2.4,32,1,true),mat(0x15181d,{side:THREE.DoubleSide}));g.add(ring);
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(r*0.3,r*0.3,2.2,20),mat(0x22262d));g.add(hub);
+  const glowR=new THREE.Mesh(new THREE.TorusGeometry(r*0.92,0.18,8,40),m);glowR.rotation.x=Math.PI/2;g.add(glowR);
+  for(let i=0;i<7;i++){const bl=box(r*0.62,0.2,r*0.36,mat(0x2a2f38),0,0,0);bl.position.set(Math.cos(i/7*Math.PI*2)*r*0.55,0,Math.sin(i/7*Math.PI*2)*r*0.55);bl.rotation.y=-i/7*Math.PI*2;bl.rotation.z=0.35;g.add(bl)}
+  if(axis==='x')g.rotation.z=Math.PI/2;if(axis==='z')g.rotation.x=Math.PI/2;g.position.set(x,y,z);return g}
+function buildScene(){
+  if(!T)return;const THREE_=THREE;
+  if(T.root){T.scene.remove(T.root);T.root.traverse(o=>{o.geometry?.dispose?.();if(o.material&&!Array.isArray(o.material))o.material.dispose?.()})}
+  const root=new THREE_.Group();T.root=root;T.groups={};
+  const b=resolve(build);
+  const accent=new THREE_.Color(css('--accent'));
+  const glowM=mat(accent,{emissive:accent,ei:1.1});
+  const forms=b.case?.forms||['ATX','mATX','ITX'];
+  const itxCase=forms.length===1&&forms[0]==='ITX', matxCase=!forms.includes('ATX')&&!itxCase;
+  const W=itxCase?19:matxCase?21:23, H=itxCase?30:matxCase?41:46, D=itxCase?38:matxCase?40:45;
+  const G=(k,ex)=>{const g=new THREE_.Group();g.userData={cat:k,ex:new THREE_.Vector3(...ex),base:new THREE_.Vector3()};T.groups[k]=g;root.add(g);return g};
+  // case
+  const cg=G('case',[0,0,0]);
+  const shell=box(W,H,D,mat(PART_COLORS.case,{opacity:b.case?0.07:0.035,side:THREE_.DoubleSide}),0,0,0);cg.add(shell);
+  const edges=new THREE_.LineSegments(new THREE_.EdgesGeometry(new THREE_.BoxGeometry(W,H,D)),new THREE_.LineBasicMaterial({color:b.case?0x9aa4b2:0x5c6573,transparent:true,opacity:b.case?0.9:0.4}));cg.add(edges);
+  if(b.case){cg.add(box(0.6,H,D,mat(0x1a1e24,{opacity:0.9}),-W/2+0.3,0,0));cg.add(box(W,0.6,D,mat(0x1a1e24,{opacity:0.9}),0,-H/2+0.3,0));
+    cg.add(box(W,H,0.5,mat(0x20252c,{opacity:0.55}),0,0,D/2-0.25));
+    for(let i=0;i<(itxCase?1:3);i++)cg.add(fan(6,'z',glowM,0,H/2-9-i*13,D/2-2));
+    if(b.case.id==='north'){cg.add(box(W*0.9,H*0.9,0.6,mat(0x8a5a33,{rough:0.8,metal:0}),0,0,D/2+0.1))}}
+  // motherboard
+  const bForm=b.mb?.form||(itxCase?'ITX':matxCase?'mATX':'ATX');
+  const bw=bForm==='ITX'?17:24.4, bh=bForm==='ATX'?30.5:bForm==='mATX'?24.4:17;
+  const xb=-W/2+1.4, yTop=H/2-(itxCase?2:3), zRear=-D/2+3;
+  const cy=yTop-7, cz=zRear+(bForm==='ITX'?7:9.5);
+  if(b.mb){const g=G('mb',[-6,0,0]);
+    g.add(box(0.2,bh,bw,mat(PART_COLORS.mb,{rough:0.7}),xb-0.1,yTop-bh/2,zRear+bw/2));
+    g.add(box(0.6,5,5,mat(0x3a4450),xb+0.3,cy,cz));
+    for(let i=0;i<Math.max(1,Math.floor(bh/10));i++)g.add(box(0.8,0.9,Math.min(9,bw-4),mat(0x0f1318),xb+0.4,cy-13-i*4.2,zRear+5.5));
+    g.add(box(1.8,6,3,mat(0x3b434e,{metal:0.6}),xb+0.9,yTop-3,zRear+1.8));
+  }
+  // cpu
+  if(b.cpu){const g=G('cpu',[5,4,0]);g.add(box(0.5,4,4,mat(PART_COLORS.cpu,{metal:0.9,rough:0.25}),xb+0.85,cy,cz))}
+  // cooler
+  if(b.cooler){const c=b.cooler,g=G('cooler',[12,6,0]);
+    if(c.type==='Air'){const h=c.height/10;
+      if(h<6){g.add(box(h-1.4,9,9,mat(PART_COLORS.cooler,{metal:0.8,rough:0.3}),xb+1.1+(h-1.4)/2,cy,cz));g.add(fan(4.5,'x',glowM,xb+h+0.2,cy,cz))}
+      else{const towers=c.dual?2:1;for(let t=0;t<towers;t++){const tz=cz+(towers===2?(t?3.2:-3.2):0);
+          for(let f=0;f<14;f++)g.add(box(h-2,12,0.12,mat(PART_COLORS.cooler,{metal:0.85,rough:0.3}),xb+1.1+(h-2)/2+0.8,cy,tz-2.2+f*0.33))}
+        g.add(fan(6,'z',glowM,xb+1+h/2,cy,cz+(towers===2?0:2.6)))}
+    }else{g.add(new THREE_.Mesh(new THREE_.CylinderGeometry(3.2,3.2,2,32),mat(0x1b1f25)).translateX(xb+2.1).translateY(cy).translateZ(cz).rotateZ(Math.PI/2));
+      const ring=new THREE_.Mesh(new THREE_.TorusGeometry(3,0.25,8,40),glowM);ring.position.set(xb+3.15,cy,cz);ring.rotation.y=Math.PI/2;g.add(ring);
+      const L=c.rad/10,rx=Math.min(W/2-7,xb+14);g.add(box(12,2.7,L,mat(0x23272e,{metal:0.5}),rx,H/2-2.2,0));
+      for(let i=0;i<Math.round(L/12);i++)g.add(fan(5.6,'y',glowM,rx,H/2-4.8,-L/2+6+i*12));
+      const tube=new THREE_.Mesh(new THREE_.CylinderGeometry(0.45,0.45,Math.abs(H/2-4-cy),12),mat(0x111418));tube.position.set(xb+3,(H/2-4+cy)/2,cz+2);g.add(tube)}
+  }
+  // ram
+  if(b.ram){const g=G('ram',[8,10,0]);const n=Math.min(b.ram.sticks,b.mb?b.mb.ramSlots:4);
+    for(let i=0;i<n;i++){const z=cz+6.5+i*1.1;g.add(box(3.2,13.3,0.7,mat(0x1c2027,{metal:0.4}),xb+1.6,cy-1,z));g.add(box(0.4,13.3,0.7,mat(PART_COLORS.ram,{emissive:new THREE_.Color(PART_COLORS.ram),ei:0.8}),xb+3.4,cy-1,z))}}
+  // gpu
+  if(b.gpu&&!b.gpu.none){const L=b.gpu.length/10,g=G('gpu',[14,-8,0]);const gy=cy-13.5, gz=zRear+L/2-1.2;
+    const th=b.gpu.power>300?6.2:b.gpu.power>200?5.4:4.2;
+    g.add(box(12,th,L,mat(0x16191e,{metal:0.6,rough:0.35}),xb+6.4,gy,gz));
+    g.add(box(0.35,0.5,L*0.9,mat(PART_COLORS.gpu,{emissive:new THREE_.Color(PART_COLORS.gpu),ei:1}),xb+12.5,gy+th/2-0.4,gz));
+    g.add(box(0.3,th,L,mat(0x2b3038,{metal:0.8}),xb+12.55,gy,gz));
+    const nf=L>28?3:2;for(let i=0;i<nf;i++)g.add(fan(4.4,'y',glowM,xb+6.4,gy-th/2-0.6,gz-L/2+L/(nf*2)+i*L/nf));
+    g.add(box(0.6,th+1,0.4,mat(0x9aa4b2,{metal:0.9}),xb+0.5,gy,zRear-0.3));
+  }
+  // storage
+  if(b.storage){const s=b.storage,g=G('storage',[10,0,6]);
+    if(s.iface==='NVMe')g.add(box(0.5,2.2,8,mat(PART_COLORS.storage,{emissive:new THREE_.Color(PART_COLORS.storage),ei:0.35}),xb+0.45,cy-8.4,cz+1));
+    else if(s.hdd)g.add(box(10.2,2.6,14.7,mat(0x6b7480,{metal:0.7}),0,-H/2+(itxCase?4:14),D/2-9.5));
+    else g.add(box(7,0.7,10,mat(PART_COLORS.storage,{metal:0.5}),0,-H/2+(itxCase?3:13),D/2-7));
+  }
+  // psu
+  if(b.psu){const g=G('psu',[6,-10,0]);const sfx=itxCase||b.psu.sfx;const pw=sfx?10:15,ph=sfx?6.4:8.6,pd=sfx?12.5:(b.psu.watts>=1000?17:14);
+    const px=-W/2+1+pw/2+0.5, py=itxCase?H/2-ph/2-1.5:-H/2+ph/2+0.7, pz=itxCase?D/2-pd/2-2:-D/2+pd/2+1.2;
+    g.add(box(pw,ph,pd,mat(0x111317,{metal:0.5,rough:0.5}),px,py,pz));
+    g.add(box(0.2,ph*0.6,pd*0.7,mat(0x2a2f38),px+pw/2+0.1,py,pz));
+  }
+  T.scene.add(root);
+  Object.values(T.groups).forEach(g=>{g.userData.base.copy(g.position)});
+  T.orbit.r=Math.max(W,H,D)*2.55;T.target.set(0,-1,0);
+  applyExplode(true);
+}
+function applyExplode(instant){if(!T)return;Object.values(T.groups).forEach(g=>{g.userData.goal=g.userData.base.clone().add(explode?g.userData.ex:new THREE.Vector3());if(instant)g.position.copy(g.userData.goal)})}
+function loop(){
+  if(!T)return;T.raf=requestAnimationFrame(loop);
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(autoRot&&!T.drag&&!reduce)T.orbit.th+=0.0035;
+  Object.values(T.groups).forEach(g=>{if(g.userData.goal)g.position.lerp(g.userData.goal,reduce?1:0.12)});
+  const o=T.orbit;o.ph=Math.max(0.35,Math.min(Math.PI-0.35,o.ph));
+  T.camera.position.set(T.target.x+o.r*Math.sin(o.ph)*Math.sin(o.th),T.target.y+o.r*Math.cos(o.ph),T.target.z+o.r*Math.sin(o.ph)*Math.cos(o.th));
+  T.camera.lookAt(T.target);
+  const t=(performance.now()-T.t0)/1000;
+  Object.entries(T.groups).forEach(([k,g])=>{const on=T.hl===k;g.traverse(m=>{if(m.isMesh&&m.material&&m.material.emissive&&!m.userData.origE){m.userData.origE=m.material.emissive.clone();m.userData.origI=m.material.emissiveIntensity}
+      if(m.isMesh&&m.userData.origE){if(on){m.material.emissive.set(css('--accent'));m.material.emissiveIntensity=0.35+0.2*Math.sin(t*5)}else{m.material.emissive.copy(m.userData.origE);m.material.emissiveIntensity=m.userData.origI}}})});
+  T.renderer.render(T.scene,T.camera);
+}
+function bindStage(stage){
+  if(stage.dataset.bound)return;stage.dataset.bound='1';
+  const cv=()=>T.renderer.domElement;
+  const pts=new Map();
+  stage.addEventListener('pointerdown',e=>{if(e.target.closest('.stage-hud'))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});stage.setPointerCapture(e.pointerId);if(pts.size===1)T.drag={x:e.clientX,y:e.clientY};else if(pts.size===2){const [a,b]=[...pts.values()];T.pinch=Math.hypot(a.x-b.x,a.y-b.y);T.drag=null}});
+  stage.addEventListener('pointermove',e=>{
+    if(pts.has(e.pointerId))pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(T.pinch&&pts.size===2){const [a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);T.orbit.r=Math.max(40,Math.min(260,T.orbit.r*T.pinch/d));T.pinch=d;return}
+    if(T.drag){T.orbit.th-=(e.clientX-T.drag.x)*0.008;T.orbit.ph-=(e.clientY-T.drag.y)*0.008;T.drag={x:e.clientX,y:e.clientY};$('#tip').hidden=true;return}
+    const r=cv().getBoundingClientRect();T.mouse.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);
+    T.ray.setFromCamera(T.mouse,T.camera);const hits=T.ray.intersectObjects(Object.entries(T.groups).filter(([k])=>k!=='case').map(([,g])=>g),true);
+    const tip=$('#tip');if(hits.length){let o=hits[0].object;while(o&&!o.userData.cat)o=o.parent;const k=o?.userData.cat;const p=resolve(build)[k];
+      if(p){T.hl=k;tip.hidden=false;tip.textContent=`${catLabel(k)} · ${p.name}`;tip.style.left=(e.clientX-stage.getBoundingClientRect().left)+'px';tip.style.top=(e.clientY-stage.getBoundingClientRect().top)+'px';syncLegend();return}}
+    tip.hidden=true;if(!T.legendHl){T.hl=null;syncLegend()}
+  });
+  const up=e=>{pts.delete(e.pointerId);if(pts.size<2)T.pinch=null;if(pts.size===0)T.drag=null};
+  stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',up);
+  stage.addEventListener('pointerleave',()=>{$('#tip').hidden=true;if(!T.legendHl){T.hl=null;syncLegend()}});
+  stage.addEventListener('wheel',e=>{e.preventDefault();T.orbit.r=Math.max(40,Math.min(260,T.orbit.r*(1+Math.sign(e.deltaY)*0.08)))},{passive:false});
+}
+function syncLegend(){document.querySelectorAll('.lg').forEach(el=>el.classList.toggle('on',T&&T.hl===el.dataset.hl))}
+
+/* ---------- events ---------- */
+$('#cur').innerHTML=CURRENCIES.map(x=>`<option value="${x.c}" ${x.c===cur?'selected':''}>${x.s.length>1?x.c:x.s+' '+x.c}</option>`).join('');
+function setCur(c){cur=c;$('#cur').value=c;store.set('rf-cur',c);render();if(drawerId)openDrawer(drawerId)}
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2200)}
+function go(s){view='build';if(s!==step)brandF='all';step=s;q='';closeSheet();render();window.scrollTo({top:0,behavior:'smooth'})}
+function setView(v){view=v;closeSheet();render();window.scrollTo({top:0,behavior:'smooth'})}
+function openSheet(){$('#sheet').classList.add('open');$('#scrim').hidden=false}
+function closeSheet(){$('#sheet').classList.remove('open');$('#scrim').hidden=true}
+function openConv(fromTotal){if(fromTotal){conv.amt=total(build);conv.from='THB';if(conv.to==='THB')conv.to='USD'}closeSheet();renderConv();$('#conv').hidden=false;$('#convBtn').classList.add('on');$('#convBtn').setAttribute('aria-expanded','true')}
+function closeConv(){$('#conv').hidden=true;$('#convBtn').classList.remove('on');$('#convBtn').setAttribute('aria-expanded','false')}
+function pick(id,stay){const p=BYID[id];if(!p)return;const had=build[p.cat];build[p.cat]=p.id;loadedPreset=null;toast(`${had?'Swapped in':'Added'} ${p.name}`);
+  if(!stay&&view==='build'&&!had){const idx=STEPS.indexOf(p.cat);if(STEPS[idx+1]!=='review'&&!build[STEPS[idx+1]]){go(STEPS[idx+1]);return}}
+  render();if(drawerId)openDrawer(drawerId);if(!$('#chat').hidden)renderChat()}
+
+document.addEventListener('click',e=>{
+  const cv=$('#conv');
+  if(!cv.hidden&&!e.target.closest('#conv')&&!e.target.closest('#convBtn')&&!e.target.closest('[data-openconv]'))closeConv();
+  const t=e.target.closest('button,a');if(!t)return;
+  const d=t.dataset;
+  if(t.id==='convBtn'){cv.hidden?openConv(false):closeConv();return}
+  if('openconv' in d){openConv(true);return}
+  if(t.id==='cSwap'){[conv.from,conv.to]=[conv.to,conv.from];renderConv();return}
+  if(d.qto){conv.to=d.qto;if(conv.from===conv.to)conv.from='THB';renderConv();return}
+  if(t.id==='cUseTotal'){conv.amt=total(build);conv.from='THB';renderConv();return}
+  if(t.id==='cShow'){setCur(conv.to);closeConv();toast(`Showing prices in ${CUR[conv.to].n}`);return}
+  if('chatOpen' in d){openChat();return}
+  if(d.chatAsk){closeDrawer();openChat();sendChat(d.chatAsk);return}
+  if(t.id==='chClose'){closeChat();return}
+  if(t.id==='chClear'){if(chatBusy)chatCtl?.abort();chatMsgs=[];renderChat();return}
+  if(t.id==='chSend'&&chatBusy){e.preventDefault();chatCtl?.abort();return}
+  if(d.pickAi){pick(d.pickAi,true);return}
+  if(d.detail){openDrawer(d.detail);return}
+  if(t.id==='dClose'){closeDrawer();return}
+  if(d.prange){priceRange=d.prange;renderPriceSec();return}
+  if(d.fch){fcH=+d.fch;renderPriceSec();return}
+  if(d.star){reviewStars=+d.star;document.querySelectorAll('[data-star]').forEach(s=>{s.classList.toggle('on',+s.dataset.star<=reviewStars);s.setAttribute('aria-checked',String(+s.dataset.star===reviewStars))});return}
+  if(d.delR){db?.doc('reviews/'+d.delR).delete().then(()=>toast('Review deleted'),()=>toast('Couldn’t delete that review'));return}
+  if(d.delC){db?.doc('comments/'+d.delC).delete().then(()=>toast('Comment deleted'),()=>toast('Couldn’t delete that comment'));return}
+  if(d.loadBuild){const bd=BUILDS.find(x=>x.id===d.loadBuild);build={...bd.build};loadedPreset=bd.name;toast(`Loaded ${bd.name}`);if(d.then==='3d')setView('3d');else go('cpu');return}
+  if('loadBlank' in d){build={};loadedPreset=null;go('cpu');toast('Started a fresh build');return}
+  if(d.recf){recFilter=d.recf;render();return}
+  if(d.pickStay){pick(d.pickStay,true);return}
+  if(d.hl){if(T){T.legendHl=T.hl===d.hl?null:d.hl;T.hl=T.legendHl;syncLegend()}return}
+  if(t.id==='tExplode'){explode=!explode;t.classList.toggle('on',explode);applyExplode(false);return}
+  if(t.id==='tRotate'){autoRot=!autoRot;t.classList.toggle('on',autoRot);return}
+  if(t.id==='tReset'){if(T){T.orbit.th=0.75;T.orbit.ph=1.15;buildScene()}return}
+  if(d.view){if(d.stepTo){view='build';go(d.stepTo);return}if(d.step){go(d.step);return}setView(d.view);return}
+  if(d.step){go(d.step);return}
+  if(d.sort){sort=d.sort;render();return}
+  if(d.pick){pick(d.pick,false);return}
+  if(d.clear){delete build[d.clear];render();return}
+  if('dismiss' in d){loadedPreset=null;render();return}
+  if(d.load){const s=store.get('rf-saved',[])[+d.load];if(s){build={...s.build};loadedPreset=null;go('review');toast(`Loaded “${s.name}”`)}return}
+  if(d.del){const arr=store.get('rf-saved',[]);const[r]=arr.splice(+d.del,1);store.set('rf-saved',arr);render();toast(`Deleted “${r.name}”`);return}
+  if(t.id==='openSheet'){openSheet();return}
+  if(t.id==='closeSheet'){closeSheet();return}
+  if(t.id==='save'){const name=($('#bname').value||'').trim()||'My build';const arr=store.get('rf-saved',[]);
+    arr.unshift({name,build:{...build},date:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'})});store.set('rf-saved',arr.slice(0,20));toast(`Saved “${name}” in this browser`);return}
+  if(t.id==='copy'){const b=resolve(build);const txt='RigForge build\n'+CATS.map(c=>`${c.label}: ${b[c.key]?b[c.key].name+' — '+money(b[c.key].price):'—'}`).join('\n')+`\nTotal: ${money(total(build))}`;
+    const done=()=>toast('Parts list copied');try{navigator.clipboard.writeText(txt).then(done,()=>fallbackCopy(txt,done))}catch(err){fallbackCopy(txt,done)}return}
+  if(t.id==='cart'){toast(`Added ${Object.keys(build).length} parts to cart (demo)`);return}
+});
+function fallbackCopy(txt,done){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){toast('Select and copy the list manually')}ta.remove()}
+$('#scrim').addEventListener('click',closeSheet);
+$('#dscrim').addEventListener('click',closeDrawer);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeConv();closeSheet();closeDrawer();if(!$('#chat').hidden&&!chatBusy)closeChat()}});
+document.addEventListener('submit',e=>{
+  if(e.target.id==='chForm'){e.preventDefault();if(chatBusy){chatCtl?.abort();return}const v=$('#chIn').value;$('#chIn').value='';autoGrow();sendChat(v)}
+  if(e.target.id==='fRev'){e.preventDefault();postReview()}
+  if(e.target.id==='fCom'){e.preventDefault();postComment()}
+});
+function autoGrow(){const el=$('#chIn');el.style.height='auto';el.style.height=Math.min(120,el.scrollHeight)+'px'}
+$('#chIn').addEventListener('input',autoGrow);
+$('#chIn').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('#chForm').requestSubmit()}});
+document.addEventListener('input',e=>{
+  if(e.target.id==='q'){q=e.target.value;const pos=e.target.selectionStart;render();const el=$('#q');el.focus();try{el.setSelectionRange(pos,pos)}catch(_){}}
+  if(e.target.id==='cAmt'){conv.amt=e.target.value;$('#cOut').textContent=fmtIn(conv.to,convert(+conv.amt||0,conv.from,conv.to))}
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='cur')setCur(e.target.value);
+  if(e.target.id==='compat'){compatOnly=e.target.checked;render()}
+  if(e.target.id==='brandF'){brandF=e.target.value;render()}
+  if(e.target.id==='cFrom'){conv.from=e.target.value;renderConv()}
+  if(e.target.id==='cTo'){conv.to=e.target.value;renderConv()}
+});
+
+if(!window.claude)document.documentElement.classList.add('no-claude');
+render();
+initSample();
+initData();
+</script>
+
+</body>
+</html>

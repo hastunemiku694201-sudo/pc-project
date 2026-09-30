@@ -1,0 +1,1339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="RigForge Gear: gaming keyboards, mice, headsets, monitors and accessories explained, compared and linked to stores.">
+<title>RigForge Gear</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Unbounded:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500&display=swap">
+<style>
+/* Layout: forge workbench — glass header (views + currency + AI), card grid of parts, floating build console; 3D stage, picks page, detail drawer, chat panel. Dark-first, ember accent. */
+:root{
+  --bg:#0A0C0F; --surface:#12161C; --surface-2:#1A2029; --surface-3:#222A35; --ink:#ECEFF3; --muted:#8B95A3; --line:#252C36;
+  --accent:#FF6B2C; --accent-2:#FFB547; --accent-ink:#160A03; --glow:rgba(255,107,44,.16); --head:rgba(10,12,15,.74); --scrim:rgba(0,0,0,.55);
+  --ok:#3DD68C; --ok-soft:rgba(61,214,140,.12); --warn:#F5B544; --warn-soft:rgba(245,181,68,.13); --err:#FF6464; --err-soft:rgba(255,100,100,.13);
+  --star:#FFB547; --shadow:0 10px 40px rgba(0,0,0,.45);
+  --f-brand:"Unbounded","Geist",system-ui,sans-serif;
+  --f-body:"Geist","IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:16px; color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#F3F4F6; --surface:#FFFFFF; --surface-2:#F1F3F6; --surface-3:#E4E8EE; --ink:#0E1116; --muted:#5C6573; --line:#E1E5EA;
+  --accent:#E8541A; --accent-2:#F59E0B; --accent-ink:#FFFFFF; --glow:rgba(232,84,26,.10); --head:rgba(243,244,246,.8); --scrim:rgba(14,17,22,.35);
+  --ok:#138A4F; --ok-soft:#E3F5EB; --warn:#A96300; --warn-soft:#FDF1DC; --err:#CF3434; --err-soft:#FCE6E6;
+  --star:#E08A00; --shadow:0 10px 40px rgba(14,17,22,.10); color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#F3F4F6; --surface:#FFFFFF; --surface-2:#F1F3F6; --surface-3:#E4E8EE; --ink:#0E1116; --muted:#5C6573; --line:#E1E5EA;
+  --accent:#E8541A; --accent-2:#F59E0B; --accent-ink:#FFFFFF; --glow:rgba(232,84,26,.10); --head:rgba(243,244,246,.8); --scrim:rgba(14,17,22,.35);
+  --ok:#138A4F; --ok-soft:#E3F5EB; --warn:#A96300; --warn-soft:#FDF1DC; --err:#CF3434; --err-soft:#FCE6E6;
+  --star:#E08A00; --shadow:0 10px 40px rgba(14,17,22,.10); color-scheme:light}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);background-image:radial-gradient(900px 420px at 85% -120px,var(--glow),transparent 70%),radial-gradient(700px 360px at -10% 10%,var(--glow),transparent 70%);background-attachment:fixed;color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;margin:0;min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.num{font-variant-numeric:tabular-nums}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--head);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border-bottom:1px solid var(--line)}
+.top-in{max-width:1320px;margin:0 auto;padding-block:12px;padding-inline:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-brand);font-weight:700;font-size:18px;letter-spacing:-.01em;color:var(--ink);background:none;border:0;padding:0}
+.logo{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:var(--accent-ink);box-shadow:0 4px 18px var(--glow)}
+.logo svg{width:18px;height:18px}
+.brand em{font-style:normal;color:var(--accent)}
+.tabs{display:flex;gap:2px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:3px}
+.tabs button{border:0;background:none;padding:7px 14px;border-radius:9px;font-weight:600;font-size:14px;color:var(--muted);white-space:nowrap}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.top-tools{margin-left:auto;display:flex;align-items:center;gap:8px}
+.cur-select{appearance:none;-webkit-appearance:none;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 30px 8px 12px;font-weight:600;font-size:14px;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+.icon-btn{display:inline-flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-weight:600;font-size:14px}
+.icon-btn:hover,.cur-select:hover{border-color:var(--muted)}
+.icon-btn svg{width:16px;height:16px}
+.icon-btn.on{border-color:var(--accent);color:var(--accent)}
+.icon-btn.ai{background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent;color:var(--accent-ink)}
+@media (max-width:820px){.tabs{order:3;width:100%}.tabs button{flex:1}}
+@media (max-width:560px){.icon-btn .lbl{display:none}.brand span.w{display:none}}
+
+/* steps */
+.steps{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:0 12px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.steps::-webkit-scrollbar{display:none}
+.step{flex:0 0 auto;display:flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--line);padding:6px 12px 6px 6px;border-radius:999px;font-size:13.5px;font-weight:500;color:var(--muted);white-space:nowrap;transition:.15s}
+.step .n{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-mono);font-size:11px;background:var(--surface-2);color:var(--muted)}
+.step.ok .n{background:var(--ok-soft);color:var(--ok)}
+.step.warn .n{background:var(--warn-soft);color:var(--warn)}
+.step.err .n{background:var(--err-soft);color:var(--err)}
+.step:hover{color:var(--ink);border-color:var(--muted)}
+.step.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.step.on .n{background:var(--bg);color:var(--ink)}
+
+/* converter popover */
+.conv{position:absolute;right:20px;top:calc(100% + 8px);width:min(380px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;z-index:50}
+.conv h3{margin:0 0 2px;font-size:16px;font-weight:600}
+.conv .sub{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.conv-grid{display:grid;gap:10px}
+.conv-row{display:grid;grid-template-columns:minmax(0,1fr) 108px;gap:8px}
+.conv input,.conv select{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;width:100%}
+.conv input{font-family:var(--f-mono);font-size:16px}
+.swap{justify-self:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);display:grid;place-items:center;transition:transform .2s}
+.swap:hover{transform:rotate(180deg);border-color:var(--accent)}
+.swap svg{width:16px;height:16px}
+.conv-out{background:linear-gradient(135deg,var(--glow),transparent);border:1px solid var(--line);border-radius:12px;padding:14px}
+.conv-out .big{font-family:var(--f-mono);font-size:26px;font-weight:500;letter-spacing:-.02em;overflow-wrap:anywhere}
+.conv-out .rate{font-size:12.5px;color:var(--muted)}
+.conv-foot{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.quick button{font-family:var(--f-mono);font-size:12px;padding:5px 9px;border-radius:8px;border:1px solid var(--line);background:none;color:var(--muted)}
+.quick button:hover{color:var(--ink);border-color:var(--muted)}
+@media (max-width:560px){.conv{right:16px}}
+
+/* shell */
+.shell{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:28px 60px;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:28px;align-items:start}
+.shell.full{grid-template-columns:minmax(0,1fr)}
+.shell.full .console{display:none}
+@media (max-width:980px){.shell{grid-template-columns:minmax(0,1fr);padding-bottom:120px}}
+@media (max-width:560px){.shell,.top-in,.steps{padding-inline:16px}}
+
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.02em}
+h1{font-size:clamp(26px,3.2vw,34px);font-weight:700;line-height:1.1}
+h2{font-size:19px;font-weight:600}
+.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.lede{color:var(--muted);max-width:62ch;margin:8px 0 0}
+.main-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
+.head-acts{display:flex;gap:8px;flex-wrap:wrap}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:9px 16px;font-weight:600;font-size:14px;white-space:nowrap;transition:.15s}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent;color:var(--accent-ink);box-shadow:0 6px 20px var(--glow)}
+.btn.primary:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.btn.ghost{background:none;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--ink)}
+.btn.sel{background:var(--ok-soft);border-color:transparent;color:var(--ok)}
+.btn.sm{padding:6px 11px;font-size:13px;border-radius:9px}
+.btn[disabled]{opacity:.4;cursor:not-allowed;transform:none;filter:none}
+.link{background:none;border:0;padding:0;color:inherit;text-align:left;font:inherit}
+.link:hover{color:var(--accent)}
+
+/* toolbar */
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.search{flex:1 1 240px;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 12px;min-width:0}
+.search svg{width:16px;height:16px;color:var(--muted);flex:none}
+.search input{border:0;background:none;padding:10px 0;width:100%;min-width:0;outline:none}
+.search:focus-within{border-color:var(--accent)}
+.seg{display:flex;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:9px;font-size:13.5px;font-weight:500;color:var(--muted)}
+.seg button.on{background:var(--surface-3);color:var(--ink)}
+.toggle{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:500;padding:6px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer}
+.toggle input{appearance:none;-webkit-appearance:none;width:34px;height:20px;border-radius:99px;background:var(--surface-3);position:relative;margin:0;cursor:pointer;transition:.2s;flex:none}
+.toggle input::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:.2s}
+.toggle input:checked{background:var(--accent)}
+.toggle input:checked::after{left:17px;background:var(--accent-ink)}
+
+/* part cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.card{position:relative;display:flex;flex-direction:column;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;transition:border-color .15s,transform .15s,box-shadow .15s}
+.card:hover{border-color:var(--surface-3);transform:translateY(-2px);box-shadow:var(--shadow)}
+.card.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 10px 40px var(--glow)}
+.card.bad{opacity:.62}
+.card.bad:hover{opacity:.92}
+.card-top{display:flex;gap:12px;align-items:flex-start;padding-right:64px}
+.thumb{width:48px;height:48px;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;color:var(--accent);flex:none}
+.thumb svg{width:26px;height:26px}
+.pbrand{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.02em}
+.pname{font-weight:600;font-size:15.5px;line-height:1.3;letter-spacing:-.01em}
+.badge{position:absolute;top:14px;right:14px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px}
+.badge.ok{background:var(--ok-soft);color:var(--ok)}.badge.warn{background:var(--warn-soft);color:var(--warn)}.badge.err{background:var(--err-soft);color:var(--err)}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-family:var(--f-mono);font-size:11.5px;padding:3px 8px;border-radius:7px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.rating{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--muted)}
+.rating b{color:var(--star);font-weight:600}
+.msgs{display:grid;gap:4px;font-size:13px}
+.msg{display:flex;gap:7px;align-items:flex-start}
+.msg b{font-family:var(--f-mono)}
+.msg.warn{color:var(--warn)}.msg.err{color:var(--err)}
+.card-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;border-top:1px dashed var(--line);flex-wrap:wrap}
+.card-foot .acts{display:flex;gap:6px}
+.price{font-weight:700;font-size:18px;letter-spacing:-.02em}
+.price small{display:block;font-size:11.5px;font-weight:500;color:var(--muted);letter-spacing:0}
+.empty{padding:40px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+
+/* build console */
+.console{position:sticky;top:calc(env(safe-area-inset-top,0px) + 128px);background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+.c-head{padding:18px 18px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pill{font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}.pill.warn{background:var(--warn-soft);color:var(--warn)}.pill.err{background:var(--err-soft);color:var(--err)}.pill.idle{background:var(--surface-2);color:var(--muted)}
+.gauge{display:flex;align-items:center;gap:16px;margin:0 18px 12px;padding:14px;border-radius:14px;background:var(--surface-2)}
+.gauge svg{width:76px;height:76px;flex:none}
+.gauge .g-l{font-size:12px;color:var(--muted)}
+.gauge .g-v{font-family:var(--f-mono);font-size:20px;font-weight:500}
+.gauge .g-s{font-size:12.5px;color:var(--muted)}
+.rows{list-style:none;margin:0;padding:0 8px 6px}
+.row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;cursor:pointer;width:100%;text-align:left;background:none;border:0}
+.row:hover{background:var(--surface-2)}
+.row .ri{width:30px;height:30px;border-radius:8px;background:var(--surface-2);display:grid;place-items:center;color:var(--muted);position:relative}
+.row:hover .ri{background:var(--surface-3)}
+.row .ri svg{width:16px;height:16px}
+.row .ri i{position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;border:2px solid var(--surface)}
+.row .ri i.ok{background:var(--ok)}.row .ri i.warn{background:var(--warn)}.row .ri i.err{background:var(--err)}
+.row .ri.filled{color:var(--accent)}
+.row .k{font-size:11px;color:var(--muted);font-family:var(--f-mono);letter-spacing:.06em;text-transform:uppercase}
+.row .v{font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .v.none{color:var(--muted);font-weight:400}
+.row .p{font-size:13px;color:var(--muted)}
+.c-total{margin:4px 18px 0;padding:16px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.c-total .lab{font-size:13px;color:var(--muted)}
+.c-total strong{font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.c-total .alt{font-size:12px;color:var(--muted);text-align:right;margin-top:4px}
+.c-actions{padding:0 18px 18px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.c-actions .btn.primary{grid-column:1/-1}
+.close-sheet{display:none}
+
+/* mobile */
+.mbar{display:none}
+.scrim{display:none}
+@media (max-width:980px){
+  .console{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:60;border-radius:22px 22px 0 0;max-height:85vh;overflow:auto;transform:translateY(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .console.open{transform:none}
+  .shell.full .console{display:block}
+  .close-sheet{display:inline-flex}
+  .mbar{display:flex;position:fixed;left:12px;right:84px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 10px 10px 16px;align-items:center;gap:12px;box-shadow:var(--shadow)}
+  .mbar .t{font-weight:700;font-size:18px;letter-spacing:-.02em}
+  .mbar .s{font-size:12px;color:var(--muted)}
+  .mbar .btn{margin-left:auto}
+  .scrim{display:block;position:fixed;inset:0;background:var(--scrim);z-index:55}
+}
+
+/* start + hero */
+.hero{position:relative;overflow:hidden;border-radius:24px;padding:clamp(24px,4vw,44px);background:var(--surface);border:1px solid var(--line)}
+.hero::before{content:"";position:absolute;inset:auto -10% -60% 40%;height:120%;background:radial-gradient(closest-side,var(--glow),transparent);pointer-events:none}
+.hero h1{font-family:var(--f-brand);font-size:clamp(30px,5vw,52px);font-weight:700;line-height:1.02;letter-spacing:-.03em;max-width:14ch}
+.hero h1 span{background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .lede{font-size:16px;position:relative}
+.hero-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;position:relative}
+.stats{display:flex;flex-wrap:wrap;gap:24px;margin-top:24px;position:relative}
+.stat .v{font-family:var(--f-mono);font-size:22px;font-weight:500}
+.stat .l{font-size:12.5px;color:var(--muted)}
+.presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-top:16px}
+.preset{position:relative;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:12px;transition:.15s}
+.preset:hover{border-color:var(--accent);box-shadow:0 10px 40px var(--glow)}
+.preset .tier{display:flex;gap:6px;flex-wrap:wrap}
+.preset .tier span{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:var(--glow);padding:3px 7px;border-radius:6px}
+.preset h3{font-size:19px;font-weight:600}
+.preset p{margin:0;color:var(--muted);font-size:14px}
+.preset ul{margin:0;padding:0;list-style:none;display:grid;gap:6px;font-size:13px}
+.preset li{display:flex;gap:8px;align-items:center}
+.preset li svg{width:14px;height:14px;color:var(--muted);flex:none}
+.preset .pp{font-size:21px;font-weight:700;letter-spacing:-.02em;margin-top:auto;padding-top:12px;border-top:1px dashed var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.preset .pp .acts{display:flex;gap:6px}
+.section{margin-top:36px}
+.section-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.saved{display:grid;gap:8px;margin-top:12px}
+.saved-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.saved-row .nm{font-weight:600}
+.saved-row .meta{font-size:13px;color:var(--muted)}
+.saved-row .acts{margin-left:auto;display:flex;gap:6px}
+
+/* best picks */
+.picks-group{margin-top:22px}
+.picks-group h3{font-size:14px;font-family:var(--f-mono);font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.picks-group h3 svg{width:16px;height:16px;color:var(--accent)}
+.picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.pick{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.pick .award{align-self:flex-start;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:99px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--accent-ink)}
+.pick .why{font-size:13.5px;color:var(--muted)}
+.pick .row2{margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:8px}
+
+/* review page */
+.report{display:grid;gap:8px;margin-bottom:22px}
+.check-item{display:flex;gap:10px;align-items:flex-start;padding:12px 16px;border-radius:12px;font-size:14px;background:var(--surface);border:1px solid var(--line)}
+.check-item.err{background:var(--err-soft);border-color:transparent}
+.check-item.warn{background:var(--warn-soft);border-color:transparent}
+.check-item.ok{background:var(--ok-soft);border-color:transparent}
+.check-item .ic{font-family:var(--f-mono);font-weight:600;min-width:16px}
+.check-item.err .ic{color:var(--err)}.check-item.warn .ic{color:var(--warn)}.check-item.ok .ic{color:var(--ok)}
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+td.r,th.r{text-align:right;white-space:nowrap}
+tfoot td{font-weight:700;border-bottom:0;font-size:18px;letter-spacing:-.02em}
+.save-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.save-row input{flex:1 1 220px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 14px;min-width:0}
+.note{font-size:12.5px;color:var(--muted);margin-top:24px}
+.note a{color:var(--accent)}
+.banner{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:10px 14px;font-size:14px;margin-bottom:18px}
+.banner .btn{padding:5px 10px;font-size:13px}
+.banner span{flex:1 1 220px}
+
+/* 3D */
+.stage-wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.stage-wrap{grid-template-columns:minmax(0,1fr)}}
+.stage{position:relative;background:radial-gradient(ellipse at 50% 40%,var(--surface-2),var(--surface));border:1px solid var(--line);border-radius:22px;overflow:hidden;aspect-ratio:4/3;max-width:100%;touch-action:none;cursor:grab}
+.stage:active{cursor:grabbing}
+.stage canvas{display:block;width:100%;height:100%}
+.stage-hud{position:absolute;left:14px;right:14px;bottom:14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:flex-end;pointer-events:none}
+.stage-hud > *{pointer-events:auto}
+.stage-hint{font-size:12px;color:var(--muted);background:var(--head);backdrop-filter:blur(8px);padding:6px 10px;border-radius:8px}
+.stage-ctrls{display:flex;gap:6px;flex-wrap:wrap}
+.stage-ctrls .btn{background:var(--head);backdrop-filter:blur(8px)}
+.stage-ctrls .btn.on{border-color:var(--accent);color:var(--accent)}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12.5px;font-weight:500;padding:6px 10px;border-radius:8px;transform:translate(-50%,-130%);white-space:nowrap;z-index:2}
+.stage-fallback{position:absolute;inset:0 0 60px 0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted)}
+.legend{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:8px}
+.legend h2{padding:10px 10px 6px}
+.lg{display:grid;grid-template-columns:12px minmax(0,1fr);gap:10px;align-items:center;padding:8px 10px;border-radius:10px;width:100%;text-align:left;background:none;border:0}
+.lg:hover,.lg.on{background:var(--surface-2)}
+.lg i{width:12px;height:12px;border-radius:4px}
+.lg .k{font-size:11px;font-family:var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lg .v{font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lg .v.none{color:var(--muted);font-weight:400}
+
+/* drawer */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);z-index:90;background:var(--surface);border-left:1px solid var(--line);box-shadow:var(--shadow);overflow-y:auto;transform:translateX(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);padding-bottom:env(safe-area-inset-bottom,0px);padding-top:env(safe-area-inset-top,0px)}
+.drawer.open{transform:none}
+.dscrim{position:fixed;inset:0;background:var(--scrim);z-index:85}
+.d-head{position:sticky;top:0;z-index:2;background:var(--surface);display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.d-body{padding:20px;display:grid;gap:22px}
+.d-hero{display:flex;gap:16px;align-items:flex-start}
+.d-hero .thumb{width:72px;height:72px;border-radius:18px}
+.d-hero .thumb svg{width:40px;height:40px}
+.d-hero h2{font-size:22px;line-height:1.2}
+.d-buy{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--surface-2);border-radius:14px;padding:14px 16px}
+.d-desc{margin:0;font-size:15px;line-height:1.6}
+.specs{width:100%;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.specs td{padding:9px 14px;font-size:14px}
+.specs td:first-child{color:var(--muted);width:42%}
+.specs tr:last-child td{border-bottom:0}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.stars{display:inline-flex;gap:1px;color:var(--star);letter-spacing:0}
+.stars .off{color:var(--surface-3)}
+.rv-sum{display:flex;align-items:center;gap:14px;background:var(--surface-2);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.rv-sum .avg{font-size:32px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.rv-list{display:grid;gap:10px}
+.rv{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.rv-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rv-top img{width:26px;height:26px;border-radius:50%}
+.rv-top .who{font-weight:600;font-size:14px}
+.rv-top .when{font-size:12px;color:var(--muted)}
+.rv-top .del{margin-left:auto}
+.rv p{margin:8px 0 0;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.form{display:grid;gap:8px;margin-top:12px;border:1px dashed var(--line);border-radius:12px;padding:12px}
+.form textarea{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:72px;resize:vertical;width:100%}
+.form textarea:focus{outline:none;border-color:var(--accent)}
+.form .frow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.star-pick{display:flex;gap:2px}
+.star-pick button{background:none;border:0;padding:2px;font-size:22px;line-height:1;color:var(--surface-3)}
+.star-pick button.on{color:var(--star)}
+.muted{color:var(--muted);font-size:13.5px}
+
+.trend{display:block;font-size:11.5px;font-weight:500;color:var(--muted);letter-spacing:0;margin-top:2px}.trend span{opacity:.75}
+.ph-ctrls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.ph-ctrls .seg button{padding:5px 10px;font-size:13px}
+.ph-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
+@media (max-width:480px){.ph-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ph-stats>div{background:var(--surface-2);border-radius:12px;padding:10px 12px;min-width:0}
+.ph-stats .k{font-size:11px;font-family:var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ph-stats .v{font-weight:700;font-size:16px;letter-spacing:-.01em}
+.ph-stats .v.sm{font-size:13px;font-weight:600}
+.ph-chart{position:relative;border:1px solid var(--line);border-radius:14px;padding:8px 4px 0;touch-action:pan-y}
+.ph-chart svg{display:block}
+.ph-tip{position:absolute;transform:translate(-50%,-120%);background:var(--ink);color:var(--bg);padding:7px 10px;border-radius:8px;font-size:12px;pointer-events:none;white-space:nowrap;z-index:2}
+.ph-tip .p{font-weight:700;font-size:14px}
+.ph-tip .d{opacity:.8}
+.ph-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:8px 2px 0}
+.ph-legend span{display:inline-flex;align-items:center;gap:6px}
+.ph-legend i{display:inline-block;width:18px;height:0}
+.l-line{border-top:2px solid var(--accent)}.l-dash{border-top:2px dashed var(--accent)}.l-band{height:10px!important;background:var(--accent);opacity:.2;border-radius:3px}
+.ph-sum{margin:10px 0 0;font-size:14.5px;line-height:1.55}
+.ph-data{margin-top:10px;font-size:13.5px}.ph-data summary{cursor:pointer;color:var(--muted)}.ph-data .tbl-wrap{margin-top:8px;max-height:220px;overflow:auto}
+.dm{background:var(--surface-2);border-radius:14px;padding:14px 16px}
+.dm-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dm-label{font-weight:700;font-size:16px}
+.dm-trend{font-size:12.5px;color:var(--muted);font-weight:500}
+.dm-score{margin-left:auto;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.dm-bar{height:8px;border-radius:99px;background:var(--surface-3);margin:10px 0;overflow:hidden}
+.dm-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.dm p{margin:0;font-size:14.5px;line-height:1.55}
+/* chat */
+.fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:70;width:58px;height:58px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--accent-ink);display:grid;place-items:center;box-shadow:0 10px 30px var(--glow),var(--shadow);transition:transform .15s}
+.fab:hover{transform:scale(1.06)}
+.fab svg{width:26px;height:26px}
+@media (max-width:980px){.fab{right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:62px;height:62px}}
+.chat{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:95;width:min(420px,calc(100vw - 32px));height:min(640px,calc(100vh - 110px));background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+@media (max-width:560px){.chat{inset:0;width:100%;height:100%;border-radius:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}}
+.ch-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.ch-head .logo{width:34px;height:34px}
+.ch-head .t{font-weight:600}
+.ch-head .s{font-size:12px;color:var(--muted)}
+.ch-head .btn{margin-left:auto}
+.ch-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.bub{max-width:88%;padding:10px 14px;border-radius:16px;font-size:14.5px;line-height:1.55;overflow-wrap:anywhere}
+.bub.user{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--accent-ink);border-bottom-right-radius:6px;white-space:pre-wrap}
+.bub.bot{align-self:flex-start;background:var(--surface-2);border-bottom-left-radius:6px}
+.bub.bot p{margin:0 0 8px}.bub.bot p:last-child{margin:0}
+.bub.bot ul,.bub.bot ol{margin:4px 0 8px;padding-left:20px}
+.bub.bot code{font-family:var(--f-mono);font-size:13px;background:var(--surface-3);padding:1px 5px;border-radius:5px}
+.bub.err{background:var(--err-soft);color:var(--err)}
+.thinking span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);margin-right:4px;animation:blink 1.2s infinite}
+.thinking span:nth-child(2){animation-delay:.2s}.thinking span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.chip-part{display:inline-flex;align-items:center;gap:6px;margin:3px 2px;padding:4px 10px;border-radius:99px;border:1px solid var(--accent);background:var(--glow);color:var(--ink);font-size:13px;font-weight:600;vertical-align:middle}
+.chip-part:hover{background:var(--accent);color:var(--accent-ink)}
+.chip-part.in{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.sugg{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px}
+.sugg button{font-size:12.5px;padding:6px 10px;border-radius:99px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink)}
+.sugg button:hover{border-color:var(--accent)}
+.ch-foot{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);align-items:flex-end}
+.ch-foot textarea{flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:10px 14px;resize:none;max-height:120px;min-height:44px}
+.ch-foot textarea:focus{outline:none;border-color:var(--accent)}
+.ch-foot .btn{height:44px}
+.ch-note{font-size:11.5px;color:var(--muted);text-align:center;padding:0 12px 10px}
+
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(16px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:.2s;z-index:120;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media (min-width:981px){.toast{bottom:28px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.no-claude [data-chat-open],.no-claude .fab,.no-claude [data-chat-ask]{display:none!important}
+.catbar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:22px 0 12px;padding-bottom:2px}
+.catbar::-webkit-scrollbar{display:none}
+.catbtn{flex:0 0 auto;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px;font-weight:600;font-size:14px;color:var(--ink)}
+.catbtn svg{width:20px;height:20px;color:var(--accent)}
+.catbtn em{font-style:normal;font-family:var(--f-mono);font-size:11.5px;color:var(--muted);background:var(--surface-2);padding:1px 7px;border-radius:99px}
+.catbtn:hover{border-color:var(--muted)}
+.catbtn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}.catbtn.on svg{color:var(--accent-2)}.catbtn.on em{background:rgba(127,127,127,.25);color:inherit}
+.subseg{margin-bottom:12px;display:inline-flex}
+.meta-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.dm-chip{font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted)}
+.dm-chip.hot{background:var(--glow);color:var(--accent)}
+.card-desc{margin:0;font-size:13.5px;color:var(--muted);line-height:1.45}
+.btn.on-c{color:var(--ok)}
+.setup-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.setup-list li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13.5px}
+.setup-list .si{color:var(--accent);display:grid}.setup-list .si svg{width:18px;height:18px}
+.setup-list .link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.cmp table{min-width:640px}
+.cmp th[scope=row]{width:150px;color:var(--muted);font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:500}
+.cmp thead th{text-transform:none;letter-spacing:0;font-family:var(--f-body);font-size:14px;color:var(--ink);vertical-align:bottom}
+.cmp-h{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.thumb.sm{width:34px;height:34px;border-radius:10px}.thumb.sm svg{width:20px;height:20px}
+.cmp td{font-size:13.5px}
+ul.pc{margin:0;padding-left:18px;display:grid;gap:4px}
+ul.pc li::marker{content:"+  ";color:var(--ok);font-weight:700}
+ul.pc.con li::marker{content:"–  ";color:var(--warn)}
+.guides{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.guide{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:14px}
+.guide-h{display:flex;gap:12px;align-items:center}
+.guide dl{margin:0;display:grid;gap:12px}
+.guide dt{font-weight:600;font-size:14.5px}
+.guide dd{margin:2px 0 0;color:var(--muted);font-size:14px;line-height:1.5}
+.guide-f{margin-top:auto;display:flex;gap:8px;flex-wrap:wrap}
+.shops{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.shop{display:grid;grid-template-columns:34px minmax(0,1fr) 16px;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;color:var(--ink);text-decoration:none;background:var(--surface)}
+.shop:hover{border-color:var(--accent)}
+.shop-i{width:34px;height:34px;border-radius:9px;background:var(--glow);color:var(--accent);display:grid;place-items:center;font-weight:700}
+.shop b{display:block;font-size:14px}.shop small{display:block;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shop svg{width:16px;height:16px;color:var(--muted)}
+.proscons{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:520px){.proscons{grid-template-columns:1fr}}
+.proscons>div{background:var(--surface-2);border-radius:14px;padding:14px 16px}
+.proscons h3{font-size:14px;margin-bottom:8px}
+.bestfor{margin:10px 0 0;font-size:14.5px}
+.award-b{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:99px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--accent-ink)}
+.d-buy .price small{display:block}
+.cmpbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:65;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:16px;padding:10px 12px 10px 16px;max-width:calc(100% - 110px);font-size:14px}
+.cmp-chips{display:flex;gap:4px;flex-wrap:wrap;min-width:0}
+@media (max-width:700px){.cmp-chips{display:none}.cmpbar{left:12px;transform:none;max-width:calc(100% - 96px)}}
+.hero{margin-bottom:4px}
+.card-foot{flex-wrap:nowrap}.card-foot .price{min-width:0}
+</style>
+<style>[hidden]{display:none!important}</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <button class="brand" data-view="browse" aria-label="RigForge Gear home"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><span class="w">Rig<em>Forge</em> Gear</span></button>
+    <a class="icon-btn" href="index.html" style="text-decoration:none;color:inherit">PC Builder</a>
+    <nav class="tabs" id="tabs" aria-label="Sections"><button data-view="browse">Browse</button><button data-view="setups">Setups</button><button data-view="compare">Compare<span id="cmpCount"></span></button><button data-view="guides">Guides</button></nav>
+    <div class="top-tools">
+      <select class="cur-select" id="cur" aria-label="Display currency"></select>
+      <button class="icon-btn" id="convBtn" aria-expanded="false" aria-controls="conv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 7h13l-4-4M17 17H4l4 4"/></svg><span class="lbl">Converter</span></button>
+      <button class="icon-btn ai" data-chat-open><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18 9.4l-4.2 1.8L12 16l-1.8-4.8L6 9.4l4.2-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg><span class="lbl">Ask AI</span></button>
+    </div>
+  </div>
+  <div class="conv" id="conv" hidden></div>
+</header>
+
+<div class="shell full"><main id="main" aria-live="polite"></main></div>
+<div class="cmpbar" id="cmpBar" hidden></div>
+<div class="dscrim" id="dscrim" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Product details" aria-hidden="true"></aside>
+
+<button class="fab" id="fab" data-chat-open aria-label="Ask the RigForge AI"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9 11h.01M12 11h.01M15 11h.01"/></svg></button>
+<section class="chat" id="chat" hidden aria-label="RigForge AI assistant">
+  <div class="ch-head"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><div><div class="t">RigForge AI</div><div class="s">Knows every product in the guide</div></div><button class="btn ghost sm" id="chClear">New chat</button><button class="btn ghost sm" id="chClose" aria-label="Close chat">✕</button></div>
+  <div class="ch-body" id="chBody"></div>
+  <div class="sugg" id="chSugg"></div>
+  <form class="ch-foot" id="chForm"><label for="chIn" class="visually-hidden">Message</label><textarea id="chIn" rows="1" placeholder="Ask anything about gaming gear…" maxlength="2000"></textarea><button class="btn primary" id="chSend" type="submit">Send</button></form>
+  <div class="ch-note">AI answers can be wrong. Double-check before you buy.</div>
+</section>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const CATS=[
+  {key:'keyboard',label:'Keyboards',one:'keyboard',subs:['Full size','TKL','75%','65%','60%']},
+  {key:'mouse',label:'Mice',one:'mouse',subs:['Ultralight','Ergonomic','Multi-button','Budget']},
+  {key:'headset',label:'Headsets',one:'headset',subs:['Wireless','Wired','Earbuds / IEM','Studio']},
+  {key:'monitor',label:'Monitors',one:'monitor',subs:['1080p','1440p','4K','Ultrawide']},
+  {key:'accessory',label:'Accessories',one:'accessory',subs:['Mouse pad','Controller','Microphone','Webcam','Stream control','Chair']}
+];
+const SITES={'Logitech G':'https://www.logitechg.com','Logitech':'https://www.logitech.com','Razer':'https://www.razer.com','SteelSeries':'https://steelseries.com','HyperX':'https://hyperx.com','Corsair':'https://www.corsair.com','ASUS ROG':'https://rog.asus.com','ASUS':'https://www.asus.com','Keychron':'https://www.keychron.com','Wooting':'https://wooting.io','Akko':'https://en.akkogear.com','Redragon':'https://redragonshop.com','Zowie':'https://zowie.benq.com','Pulsar':'https://www.pulsar.gg','Glorious':'https://www.gloriousgaming.com','Sony':'https://www.sony.co.th','Audeze':'https://www.audeze.com','Astro':'https://www.astrogaming.com','Moondrop':'https://moondroplab.com','beyerdynamic':'https://www.beyerdynamic.com','AOC':'https://aoc.com','LG':'https://www.lg.com/th/','Samsung':'https://www.samsung.com/th/','Alienware':'https://www.dell.com','MSI':'https://www.msi.com','Xbox':'https://www.xbox.com','PlayStation':'https://www.playstation.com','8BitDo':'https://www.8bitdo.com','Shure':'https://www.shure.com','Elgato':'https://www.elgato.com','Secretlab':'https://secretlab.co','Royal Kludge':'','SkyPAD':''};
+
+/* approximate Thai street prices (THB) for this demo; check stores for today's price */
+const P=[
+/* ---------- keyboards ---------- */
+{id:'gprox-tkl',cat:'keyboard',sub:'TKL',brand:'Logitech G',name:'PRO X TKL Lightspeed',price:6990,wl:true,
+ spec:[['Size','Tenkeyless (TKL)'],['Switches','GX Brown tactile, GX Red linear or GX Blue clicky'],['Connection','Lightspeed 2.4 GHz, Bluetooth, USB-C wired'],['Battery','Up to 50 hours with lighting'],['Lighting','Per-key RGB'],['Extras','Media keys, volume roller, game mode']],
+ desc:"Logitech's tournament keyboard, built with esports pros. A compact TKL layout frees up mouse space, and Lightspeed wireless is as responsive as a cable.",
+ pros:['Lag-free Lightspeed wireless plus Bluetooth','Compact TKL layout for low-sens players','Solid build and dedicated media controls'],cons:['Pricey for a non-analog board','Switches are not hot-swappable'],best:'Competitive players who want a reliable wireless TKL.'},
+{id:'huntsman-v3pro-tkl',cat:'keyboard',sub:'TKL',brand:'Razer',name:'Huntsman V3 Pro TKL',price:8490,wl:false,
+ spec:[['Size','Tenkeyless (TKL)'],['Switches','Razer Analog Optical Gen-2'],['Actuation','Adjustable 0.1–4.0 mm, Rapid Trigger'],['Connection','USB-C wired'],['Lighting','Per-key RGB'],['Extras','Magnetic wrist rest, multi-function dial']],
+ desc:"An analog optical keyboard with adjustable actuation and Rapid Trigger, so keys reset the instant you lift. Built for fast counter-strafing in FPS games.",
+ pros:['Rapid Trigger for faster movement','Actuation adjustable per key','Comfortable magnetic wrist rest'],cons:['Wired only','Software needed to tune settings'],best:'Valorant and CS2 players chasing every millisecond.'},
+{id:'apex-pro-tkl',cat:'keyboard',sub:'TKL',brand:'SteelSeries',name:'Apex Pro TKL (2023)',price:7490,wl:false,
+ spec:[['Size','Tenkeyless (TKL)'],['Switches','OmniPoint 2.0 adjustable (Hall effect)'],['Actuation','0.1–4.0 mm, Rapid Trigger'],['Connection','USB-C wired'],['Lighting','Per-key RGB'],['Extras','OLED smart display, 2-in-1 action keys']],
+ desc:"The keyboard that made adjustable magnetic switches mainstream. Set a hair-trigger for games and a deeper press for typing, all on one board.",
+ pros:['Very fast OmniPoint 2.0 switches','OLED screen for settings and info','Premium aluminium top plate'],cons:['Stock keycaps are ABS','Expensive'],best:'Players who want Rapid Trigger with a polished, premium feel.'},
+{id:'wooting-60he',cat:'keyboard',sub:'60%',brand:'Wooting',name:'60HE+',price:6490,wl:false,
+ spec:[['Size','60%'],['Switches','Lekker Hall effect (hot-swap)'],['Actuation','0.1–4.0 mm, Rapid Trigger'],['Connection','USB-C wired'],['Lighting','Per-key RGB'],['Extras','Analog input, web-based Wootility software']],
+ desc:"The enthusiast favourite for analog gaming. Lekker magnetic switches, Rapid Trigger and superb browser-based software in a tiny 60% board.",
+ pros:['Industry-leading Rapid Trigger tuning','Hot-swappable magnetic switches','Excellent software, no install needed'],cons:['60% layout has no arrow or F-row keys','Mostly sold online'],best:'Tactical FPS players who want the best analog keyboard.'},
+{id:'k70-pro',cat:'keyboard',sub:'Full size',brand:'Corsair',name:'K70 RGB PRO',price:5490,wl:false,
+ spec:[['Size','Full size'],['Switches','Cherry MX (Red, Speed or Brown)'],['Connection','USB-C wired'],['Polling rate','Up to 8,000 Hz'],['Lighting','Per-key RGB'],['Extras','PBT double-shot keycaps, detachable wrist rest, tournament switch']],
+ desc:"A classic full-size gaming keyboard with genuine Cherry MX switches, PBT keycaps and 8,000 Hz polling.",
+ pros:['Durable PBT keycaps included','Dedicated media keys and volume roller','Full layout with numpad'],cons:['Large footprint','Wired only'],best:'Players who also need a numpad for work or MMOs.'},
+{id:'bwv4-pro',cat:'keyboard',sub:'Full size',brand:'Razer',name:'BlackWidow V4 Pro',price:8990,wl:false,
+ spec:[['Size','Full size'],['Switches','Razer Green clicky or Yellow linear'],['Connection','USB-C wired'],['Lighting','Per-key and underglow RGB'],['Extras','Command dial, 8 macro keys, magnetic wrist rest']],
+ desc:"A feature-packed command centre: dedicated macro keys, a command dial and full RGB. Great for MMO and creative workflows.",
+ pros:['8 dedicated macro keys','Command dial for quick controls','Plush wrist rest'],cons:['Very large','Heavy'],best:'MMO players and creators who love macros.'},
+{id:'origins-core',cat:'keyboard',sub:'TKL',brand:'HyperX',name:'Alloy Origins Core',price:2990,wl:false,
+ spec:[['Size','Tenkeyless (TKL)'],['Switches','HyperX Red, Aqua or Blue'],['Connection','USB-C wired (detachable)'],['Lighting','Per-key RGB'],['Build','Full aircraft-grade aluminium body']],
+ desc:"A sturdy aluminium TKL at a friendly price. Simple, reliable and built to last.",
+ pros:['Solid aluminium frame','Great value','Detachable USB-C cable'],cons:['ABS keycaps','No media keys'],best:'Anyone wanting a durable first mechanical keyboard.'},
+{id:'keychron-k2',cat:'keyboard',sub:'75%',brand:'Keychron',name:'K2 (Version 2)',price:2990,wl:true,
+ spec:[['Size','75%'],['Switches','Gateron G Pro (hot-swap option)'],['Connection','Bluetooth (3 devices), USB-C wired'],['Battery','4,000 mAh'],['Compatibility','Mac and Windows keycaps included'],['Lighting','White or RGB backlight']],
+ desc:"A compact wireless mechanical keyboard that switches between your PC, laptop and phone. A great work-and-play board.",
+ pros:['Pairs with 3 devices','Mac and Windows layouts','Compact 75% with arrow keys'],cons:['Tall profile, may need a wrist rest','Bluetooth adds latency for competitive play'],best:'Work-from-home gamers who switch between devices.'},
+{id:'keychron-q1pro',cat:'keyboard',sub:'75%',brand:'Keychron',name:'Q1 Pro',price:6490,wl:true,
+ spec:[['Size','75%'],['Switches','Keychron K Pro (hot-swap)'],['Mount','Gasket mount, full CNC aluminium'],['Connection','Bluetooth, USB-C wired'],['Software','QMK / VIA remapping'],['Extras','Rotary knob']],
+ desc:"A heavy aluminium custom-style keyboard with a gasket mount for a soft, satisfying typing feel, and fully remappable with VIA.",
+ pros:['Premium typing feel and sound','Hot-swap and fully programmable','Wireless and wired'],cons:['Heavy (about 1.7 kg)','Not aimed at esports'],best:'Enthusiasts who type a lot and game casually.'},
+{id:'rog-azoth',cat:'keyboard',sub:'75%',brand:'ASUS ROG',name:'Azoth',price:8490,wl:true,
+ spec:[['Size','75%'],['Switches','ROG NX (hot-swap)'],['Mount','Gasket mount, three-layer damping'],['Connection','2.4 GHz, Bluetooth, USB-C wired'],['Display','2-inch OLED'],['Extras','Switch lube kit included']],
+ desc:"A premium gaming custom keyboard with an OLED screen, tri-mode wireless and an included DIY lube kit.",
+ pros:['Gasket-mounted with great acoustics','OLED screen and control knob','Tri-mode wireless'],cons:['Expensive','Software can be fiddly'],best:'Gamers who want a custom-keyboard feel out of the box.'},
+{id:'akko-5075b',cat:'keyboard',sub:'75%',brand:'Akko',name:'5075B Plus',price:2790,wl:true,
+ spec:[['Size','75%'],['Switches','Akko V3 (hot-swap)'],['Mount','Gasket mount'],['Connection','2.4 GHz, Bluetooth, USB-C wired'],['Extras','Rotary knob, PBT keycaps']],
+ desc:"Amazing value: gasket mount, hot-swap switches, PBT keycaps and tri-mode wireless for under ฿3,000.",
+ pros:['Tri-mode wireless at a budget price','Hot-swappable','Nice PBT keycaps'],cons:['Software is basic','Plastic case'],best:'Budget buyers who want a modern custom-style board.'},
+{id:'rk61',cat:'keyboard',sub:'60%',brand:'Royal Kludge',name:'RK61',price:1290,wl:true,
+ spec:[['Size','60%'],['Switches','RK or Gateron (hot-swap versions)'],['Connection','Bluetooth, USB-C wired'],['Lighting','RGB backlight']],
+ desc:"A tiny, affordable wireless mechanical keyboard. Frees up lots of desk space for low-sensitivity aiming.",
+ pros:['Very affordable','Small and portable','Wireless'],cons:['60% layout takes getting used to','Basic build quality'],best:'Students and first-time mechanical keyboard buyers.'},
+{id:'k552',cat:'keyboard',sub:'TKL',brand:'Redragon',name:'K552 Kumara',price:890,wl:false,
+ spec:[['Size','Tenkeyless (TKL)'],['Switches','Outemu Blue or Red'],['Connection','USB wired'],['Lighting','Red or RGB backlight'],['Build','Metal top plate']],
+ desc:"The classic budget mechanical keyboard. A metal plate, real mechanical switches and a TKL layout for the price of a membrane board.",
+ pros:['Extremely affordable','Surprisingly sturdy','Real mechanical switches'],cons:['Fixed cable','Switches are loud and not premium'],best:'Anyone on a tight budget.'},
+{id:'g213',cat:'keyboard',sub:'Full size',brand:'Logitech G',name:'G213 Prodigy',price:1490,wl:false,
+ spec:[['Size','Full size'],['Switches','Mech-Dome (membrane)'],['Connection','USB wired'],['Lighting','5-zone RGB'],['Extras','Spill resistant, media keys, built-in palm rest']],
+ desc:"A quiet, spill-resistant membrane keyboard with RGB and media keys. Ideal for shared spaces and casual gaming.",
+ pros:['Quiet keys','Spill resistant','Media controls and palm rest'],cons:['Not mechanical','Zone lighting only'],best:'Casual gamers and shared rooms where noise matters.'},
+
+/* ---------- mice ---------- */
+{id:'gpx-sl2',cat:'mouse',sub:'Ultralight',brand:'Logitech G',name:'PRO X Superlight 2',price:5290,wl:true,
+ spec:[['Weight','60 g'],['Sensor','HERO 2, up to 32,000 DPI'],['Connection','Lightspeed 2.4 GHz, USB-C charging'],['Polling rate','Up to 8,000 Hz'],['Battery','Up to 95 hours'],['Shape','Symmetrical, right-handed buttons']],
+ desc:"One of the most popular esports mice in the world. Featherlight, very reliable and a safe shape for most hand sizes.",
+ pros:['Extremely light for a wireless mouse','Hybrid optical-mechanical switches','Great battery life'],cons:['No RGB or extra buttons','Premium price'],best:'FPS players who want a proven, no-nonsense wireless mouse.'},
+{id:'da-v3pro',cat:'mouse',sub:'Ergonomic',brand:'Razer',name:'DeathAdder V3 Pro',price:5290,wl:true,
+ spec:[['Weight','63 g'],['Sensor','Focus Pro 30K optical'],['Connection','HyperSpeed 2.4 GHz, USB-C wired'],['Polling rate','Up to 4,000 Hz (8,000 Hz with HyperPolling dongle)'],['Battery','Up to 90 hours'],['Shape','Ergonomic, right-handed']],
+ desc:"The iconic DeathAdder shape, slimmed down to 63 g. A comfortable ergonomic mouse used by many pros.",
+ pros:['Very comfortable ergonomic shape','Light for its size','Top-tier sensor'],cons:['Right-handed only','Only two side buttons'],best:'Palm and claw grip players who like ergonomic mice.'},
+{id:'viper-v3pro',cat:'mouse',sub:'Ultralight',brand:'Razer',name:'Viper V3 Pro',price:5990,wl:true,
+ spec:[['Weight','54 g'],['Sensor','Focus Pro 35K optical Gen-2'],['Connection','HyperSpeed 2.4 GHz'],['Polling rate','Up to 8,000 Hz'],['Battery','Up to 95 hours'],['Shape','Symmetrical, right-handed buttons']],
+ desc:"Razer's flagship esports mouse: 54 g, 8,000 Hz out of the box and a fast, flat shape.",
+ pros:['Extremely light','8K polling included','Excellent sensor'],cons:['Expensive','Low shape may not suit palm grip'],best:'Competitive FPS players with a claw or fingertip grip.'},
+{id:'g502x-plus',cat:'mouse',sub:'Multi-button',brand:'Logitech G',name:'G502 X Plus',price:5490,wl:true,
+ spec:[['Weight','106 g'],['Sensor','HERO 25K'],['Connection','Lightspeed 2.4 GHz, USB-C'],['Buttons','13 programmable controls'],['Battery','Up to 130 hours (lighting off)'],['Extras','Hyper-fast scroll wheel, RGB lighting']],
+ desc:"The legendary G502 reimagined with hybrid switches, wireless and RGB. Tons of buttons for games and productivity.",
+ pros:['13 programmable controls','Infinite-scroll wheel','Excellent build and battery'],cons:['Heavy','Large for small hands'],best:'MMO, MOBA and productivity users who want lots of buttons.'},
+{id:'g305',cat:'mouse',sub:'Budget',brand:'Logitech G',name:'G305 Lightspeed',price:1190,wl:true,
+ spec:[['Weight','99 g (with AA battery)'],['Sensor','HERO, up to 12,000 DPI'],['Connection','Lightspeed 2.4 GHz'],['Battery','Up to 250 hours on one AA'],['Shape','Symmetrical, compact']],
+ desc:"The best-selling budget wireless gaming mouse. Lag-free Lightspeed and months of use on a single AA battery.",
+ pros:['Real gaming wireless at a budget price','Very long battery life','Compact and portable'],cons:['Heavier with the battery','No rechargeable battery'],best:'Budget gamers and laptop users.'},
+{id:'zowie-ec2c',cat:'mouse',sub:'Ergonomic',brand:'Zowie',name:'EC2-C',price:2590,wl:false,
+ spec:[['Weight','73 g'],['Sensor','3360 optical'],['Connection','USB wired (paracord-style cable)'],['Polling rate','Up to 1,000 Hz'],['Shape','Ergonomic, right-handed'],['Software','None needed (driverless)']],
+ desc:"A pro-proven ergonomic shape with plug-and-play simplicity. No software, just consistent performance.",
+ pros:['Trusted ergonomic shape','No software required','Flexible cable'],cons:['Wired only','No DPI customisation beyond presets'],best:'Players who value a consistent shape over features.'},
+{id:'aerox5-wl',cat:'mouse',sub:'Multi-button',brand:'SteelSeries',name:'Aerox 5 Wireless',price:4290,wl:true,
+ spec:[['Weight','74 g'],['Sensor','TrueMove Air, up to 18,000 CPI'],['Connection','2.4 GHz, Bluetooth, USB-C'],['Buttons','9 programmable'],['Battery','Up to 180 hours'],['Extras','IP54 water and dust resistance']],
+ desc:"A lightweight mouse with 9 buttons, making it one of the few ultralight mice that also suits MMOs and battle royales.",
+ pros:['Light yet feature-rich','Huge battery life','Dual wireless modes'],cons:['Holey shell collects dust','Side buttons take practice'],best:'Battle royale and MOBA players who want extra buttons without the weight.'},
+{id:'pulsar-x2v2',cat:'mouse',sub:'Ultralight',brand:'Pulsar',name:'X2 V2',price:3290,wl:true,
+ spec:[['Weight','52 g (Medium)'],['Sensor','PAW3395, up to 26,000 DPI'],['Connection','2.4 GHz, USB-C'],['Polling rate','1,000 Hz (4,000 Hz with 4K dongle)'],['Shape','Symmetrical, low hump'],['Sizes','Mini, Medium']],
+ desc:"An enthusiast-favourite flat, symmetrical shape at a very low weight and a fair price.",
+ pros:['Very light','Available in two sizes','Great value for the specs'],cons:['4K dongle sold separately','Flat shape suits claw/fingertip more than palm'],best:'Claw and fingertip grip FPS players.'},
+{id:'glorious-o2wl',cat:'mouse',sub:'Ultralight',brand:'Glorious',name:'Model O 2 Wireless',price:3290,wl:true,
+ spec:[['Weight','68 g'],['Sensor','BAMF 2.0, up to 26,000 DPI'],['Connection','2.4 GHz, Bluetooth, USB-C'],['Shape','Ambidextrous'],['Lighting','RGB']],
+ desc:"A light ambidextrous mouse with both 2.4 GHz and Bluetooth, plus RGB, at a mid-range price.",
+ pros:['Ambidextrous shape','Two wireless modes','Good value'],cons:['Side buttons only on the left','Honeycomb shell design is divisive'],best:'All-round gamers who want wireless on a budget.'},
+{id:'basilisk-v3',cat:'mouse',sub:'Multi-button',brand:'Razer',name:'Basilisk V3',price:2290,wl:false,
+ spec:[['Weight','101 g'],['Sensor','Focus+ 26K'],['Connection','USB wired'],['Buttons','11 programmable'],['Extras','HyperScroll tilt wheel, Chroma RGB']],
+ desc:"A comfortable ergonomic mouse with a free-spinning scroll wheel and 11 buttons at a great price.",
+ pros:['Very comfortable for long sessions','Free-spin tilt wheel','Excellent value'],cons:['Heavy for FPS','Wired only'],best:'Work-and-play users who want comfort and buttons.'},
+{id:'m75-air',cat:'mouse',sub:'Ultralight',brand:'Corsair',name:'M75 Air Wireless',price:4590,wl:true,
+ spec:[['Weight','60 g'],['Sensor','Marksman 26K'],['Connection','Slipstream 2.4 GHz, Bluetooth, USB-C'],['Polling rate','Up to 2,000 Hz'],['Battery','Up to 100 hours'],['Shape','Symmetrical, right-handed buttons']],
+ desc:"Corsair's featherweight esports mouse with both 2.4 GHz and Bluetooth and a safe symmetrical shape.",
+ pros:['Light with dual wireless','Comfortable safe shape','Long battery'],cons:['Pricier than rivals','Only two side buttons'],best:'FPS players who also want Bluetooth for laptops.'},
+{id:'g102',cat:'mouse',sub:'Budget',brand:'Logitech G',name:'G102 Lightsync',price:690,wl:false,
+ spec:[['Weight','85 g'],['Sensor','Up to 8,000 DPI'],['Connection','USB wired'],['Buttons','6 programmable'],['Lighting','Lightsync RGB']],
+ desc:"The go-to budget gaming mouse: comfortable, reliable and colourful for under ฿700.",
+ pros:['Very affordable','Comfortable classic shape','RGB lighting'],cons:['Stiff cable','Basic sensor'],best:'First gaming mouse or a spare.'},
+
+/* ---------- headsets ---------- */
+{id:'nova-pro-wl',cat:'headset',sub:'Wireless',brand:'SteelSeries',name:'Arctis Nova Pro Wireless',price:12990,wl:true,
+ spec:[['Drivers','40 mm neodymium'],['Connection','2.4 GHz + Bluetooth at the same time'],['Battery','Two hot-swappable batteries (infinite power)'],['Noise cancelling','Active (ANC)'],['Microphone','Retractable, AI noise cancelling'],['Extras','Base station with OLED and DAC, PC + console']],
+ desc:"A flagship wireless headset with swappable batteries, ANC and a base station that controls everything.",
+ pros:['Never runs out of battery','Excellent ANC and sound','Connects to PC and phone at once'],cons:['Very expensive','Base station takes desk space'],best:'Players who want one premium headset for everything.'},
+{id:'cloud3',cat:'headset',sub:'Wired',brand:'HyperX',name:'Cloud III',price:3490,wl:false,
+ spec:[['Drivers','53 mm angled'],['Connection','3.5 mm, USB-C, USB-A adapter'],['Microphone','Detachable, noise cancelling'],['Weight','About 310 g'],['Extras','DTS Headphone:X spatial audio']],
+ desc:"The famously comfortable Cloud, updated with bigger drivers and USB-C. Works with PC, consoles and phones.",
+ pros:['Outstanding comfort','Great mic for the price','Works with almost everything'],cons:['Wired only','Bass is modest'],best:'Anyone who wants a comfortable, reliable wired headset.'},
+{id:'cloud-alpha-wl',cat:'headset',sub:'Wireless',brand:'HyperX',name:'Cloud Alpha Wireless',price:5990,wl:true,
+ spec:[['Drivers','50 mm dual chamber'],['Connection','2.4 GHz'],['Battery','Up to 300 hours'],['Microphone','Detachable'],['Extras','DTS Headphone:X spatial audio']],
+ desc:"A wireless headset famous for its record-breaking battery life of up to 300 hours.",
+ pros:['Incredible battery life','Comfortable and sturdy','Clear dual-chamber sound'],cons:['No Bluetooth','Mic is average'],best:'Players who hate charging.'},
+{id:'gprox2',cat:'headset',sub:'Wireless',brand:'Logitech G',name:'PRO X 2 Lightspeed',price:8990,wl:true,
+ spec:[['Drivers','50 mm graphene'],['Connection','Lightspeed 2.4 GHz, Bluetooth, 3.5 mm'],['Battery','Up to 50 hours'],['Microphone','Detachable 6 mm, Blue VO!CE'],['Weight','345 g']],
+ desc:"A pro-grade wireless headset with graphene drivers for clean, detailed sound and three ways to connect.",
+ pros:['Detailed graphene drivers','Three connection modes','Durable aluminium build'],cons:['Heavier than rivals','Premium price'],best:'Competitive players who want detailed audio for footsteps.'},
+{id:'bsv2pro',cat:'headset',sub:'Wireless',brand:'Razer',name:'BlackShark V2 Pro (2023)',price:6990,wl:true,
+ spec:[['Drivers','50 mm TriForce Titanium'],['Connection','HyperSpeed 2.4 GHz, Bluetooth'],['Battery','Up to 70 hours'],['Microphone','Detachable HyperClear super-wideband'],['Weight','320 g']],
+ desc:"An esports-favourite wireless headset with a broadcast-quality mic and great passive noise isolation.",
+ pros:['Excellent microphone','Light and comfortable','Long battery'],cons:['No ANC','Plain design'],best:'Competitive players and streamers who need a great mic.'},
+{id:'bsv2x',cat:'headset',sub:'Wired',brand:'Razer',name:'BlackShark V2 X',price:1690,wl:false,
+ spec:[['Drivers','50 mm TriForce'],['Connection','3.5 mm'],['Microphone','Cardioid, fixed'],['Weight','240 g'],['Extras','7.1 surround (Windows software)']],
+ desc:"A lightweight budget esports headset with surprisingly good sound for the price.",
+ pros:['Very light','Great value','Works with PC and consoles'],cons:['Mic cannot be removed','Basic build'],best:'Budget gamers who want solid footstep audio.'},
+{id:'inzone-h9',cat:'headset',sub:'Wireless',brand:'Sony',name:'INZONE H9',price:9990,wl:true,
+ spec:[['Drivers','40 mm'],['Connection','2.4 GHz + Bluetooth'],['Battery','Up to 32 hours'],['Noise cancelling','Active (ANC)'],['Extras','360 Spatial Sound, PS5 integration']],
+ desc:"Sony's premium gaming headset with industry-leading-style noise cancelling and deep PS5 integration.",
+ pros:['Strong noise cancelling','Very comfortable','Great for PS5 and PC'],cons:['Mic is average','Shorter battery than rivals'],best:'PS5 and PC players in noisy homes.'},
+{id:'maxwell',cat:'headset',sub:'Wireless',brand:'Audeze',name:'Maxwell',price:11990,wl:true,
+ spec:[['Drivers','90 mm planar magnetic'],['Connection','2.4 GHz, Bluetooth, USB-C'],['Battery','80+ hours'],['Microphone','Detachable boom + AI noise removal'],['Weight','490 g']],
+ desc:"Audiophile planar magnetic drivers in a wireless gaming headset. The sound quality is in a different league.",
+ pros:['Exceptional sound quality','Huge battery life','Great for music too'],cons:['Heavy','Expensive'],best:'Players who care most about sound quality.'},
+{id:'a50x',cat:'headset',sub:'Wireless',brand:'Astro',name:'A50 X',price:13990,wl:true,
+ spec:[['Drivers','40 mm PRO-G graphene'],['Connection','Base station with HDMI passthrough, Bluetooth'],['Battery','Up to 24 hours'],['Extras','Switch between PS5, Xbox and PC with one button']],
+ desc:"The ultimate multi-console headset: one button switches audio and video between PS5, Xbox and PC.",
+ pros:['Switch consoles instantly','Premium sound','Charging base station'],cons:['Very expensive','Shorter battery'],best:'Players with several consoles and a PC.'},
+{id:'nova1',cat:'headset',sub:'Wired',brand:'SteelSeries',name:'Arctis Nova 1',price:1790,wl:false,
+ spec:[['Drivers','40 mm'],['Connection','3.5 mm'],['Microphone','Retractable'],['Extras','Works with PC, PlayStation, Xbox, Switch, mobile']],
+ desc:"A light, comfortable budget headset with a retractable mic that works with every platform.",
+ pros:['Light and comfortable','Retractable mic','Affordable'],cons:['Plastic build','No surround'],best:'Budget buyers and younger gamers.'},
+{id:'chu2',cat:'headset',sub:'Earbuds / IEM',brand:'Moondrop',name:'Chu II (IEM)',price:690,wl:false,
+ spec:[['Drivers','10 mm dynamic'],['Connection','3.5 mm, detachable cable'],['Microphone','None (add a clip-on or desk mic)'],['Fit','In-ear with multiple tip sizes']],
+ desc:"Tiny in-ear monitors with clear, balanced sound. Popular with competitive players for excellent footstep clarity.",
+ pros:['Superb sound for the price','Very light, no headset hair','Great positional audio'],cons:['No microphone','Wired only'],best:'FPS players who want precise audio on a budget.'},
+{id:'dt770',cat:'headset',sub:'Studio',brand:'beyerdynamic',name:'DT 770 PRO 80 Ω',price:5490,wl:false,
+ spec:[['Drivers','45 mm dynamic'],['Type','Closed-back studio headphones'],['Connection','3.5 mm (6.35 mm adapter)'],['Microphone','None'],['Comfort','Velour ear pads']],
+ desc:"A studio classic loved by gamers for wide soundstage and all-day comfort. Pair it with a desk mic.",
+ pros:['Very comfortable velour pads','Wide, detailed sound','Built to last for years'],cons:['No microphone','Fixed coiled cable'],best:'Players who also produce music or stream.'},
+
+/* ---------- monitors ---------- */
+{id:'aoc-24g2sp',cat:'monitor',sub:'1080p',brand:'AOC',name:'24G2SP',price:4590,wl:false,
+ spec:[['Size','23.8"'],['Resolution','1920 × 1080'],['Refresh rate','165 Hz'],['Panel','IPS'],['Response time','1 ms MPRT'],['Extras','Adaptive-Sync, height adjustable stand']],
+ desc:"A great first high-refresh monitor: sharp IPS colours, 165 Hz and a stand that adjusts properly.",
+ pros:['Excellent value','Good IPS colours','Height-adjustable stand'],cons:['1080p only','HDR is basic'],best:'Budget esports setups.'},
+{id:'vg249q1a',cat:'monitor',sub:'1080p',brand:'ASUS',name:'TUF Gaming VG249Q1A',price:4290,wl:false,
+ spec:[['Size','23.8"'],['Resolution','1920 × 1080'],['Refresh rate','165 Hz (OC)'],['Panel','IPS'],['Response time','1 ms MPRT'],['Extras','FreeSync Premium, ELMB']],
+ desc:"A reliable 165 Hz IPS monitor with motion-blur reduction at an entry-level price.",
+ pros:['Affordable','Smooth 165 Hz','FreeSync Premium'],cons:['Tilt-only stand','Average brightness'],best:'First gaming monitor on a tight budget.'},
+{id:'xl2566k',cat:'monitor',sub:'1080p',brand:'Zowie',name:'XL2566K',price:17900,wl:false,
+ spec:[['Size','24.5"'],['Resolution','1920 × 1080'],['Refresh rate','360 Hz'],['Panel','Fast TN'],['Extras','DyAc⁺ motion clarity, S-Switch controller, shields']],
+ desc:"The esports tournament standard. DyAc⁺ gives outstanding motion clarity for tracking targets.",
+ pros:['Incredible motion clarity','360 Hz','Built for tournaments'],cons:['TN colours and viewing angles','Expensive for 1080p'],best:'Serious CS2 and Valorant players.'},
+{id:'lg-27gp850',cat:'monitor',sub:'1440p',brand:'LG',name:'UltraGear 27GP850-B',price:10990,wl:false,
+ spec:[['Size','27"'],['Resolution','2560 × 1440'],['Refresh rate','165 Hz (180 Hz OC)'],['Panel','Nano IPS'],['Response time','1 ms GtG'],['Extras','HDR400, G-Sync compatible']],
+ desc:"A fast Nano IPS 1440p monitor with rich colours. A long-time sweet spot for gaming and work.",
+ pros:['Vivid, wide colours','Fast response','Sharp 1440p'],cons:['IPS glow in dark rooms','HDR400 is entry-level'],best:'1440p gamers who also edit photos or video.'},
+{id:'274qrf',cat:'monitor',sub:'1440p',brand:'MSI',name:'MAG 274QRF QD E2',price:7990,wl:false,
+ spec:[['Size','27"'],['Resolution','2560 × 1440'],['Refresh rate','180 Hz'],['Panel','Rapid IPS with quantum dot'],['Response time','1 ms GtG'],['Extras','Adaptive-Sync, height adjustable']],
+ desc:"Excellent value 1440p: quantum-dot colours and 180 Hz for less than many 1080p premium monitors.",
+ pros:['Great price for 1440p 180 Hz','Wide colour gamut','Adjustable stand'],cons:['Average contrast','Basic HDR'],best:'Value-focused 1440p gaming.'},
+{id:'q27g3xmn',cat:'monitor',sub:'1440p',brand:'AOC',name:'Q27G3XMN',price:9490,wl:false,
+ spec:[['Size','27"'],['Resolution','2560 × 1440'],['Refresh rate','180 Hz'],['Panel','VA with Mini-LED backlight'],['HDR','HDR1000 with local dimming']],
+ desc:"Real HDR on a budget thanks to Mini-LED local dimming. Deep contrast and bright highlights.",
+ pros:['Bright HDR for the price','Deep VA contrast','180 Hz'],cons:['Some VA smearing in dark scenes','Blooming around bright objects'],best:'Single-player and HDR on a budget.'},
+{id:'g6-oled',cat:'monitor',sub:'1440p',brand:'Samsung',name:'Odyssey OLED G6 (G60SD)',price:24900,wl:false,
+ spec:[['Size','27"'],['Resolution','2560 × 1440'],['Refresh rate','360 Hz'],['Panel','QD-OLED'],['Response time','0.03 ms GtG'],['Extras','Glare-free coating, burn-in protection features']],
+ desc:"QD-OLED at 360 Hz: perfect blacks, incredible colours and near-instant response for competitive and cinematic play.",
+ pros:['Instant response and 360 Hz','Perfect blacks','Stunning colours'],cons:['OLED burn-in risk with static images','Expensive'],best:'Players who want both esports speed and cinematic image quality.'},
+{id:'aw2725df',cat:'monitor',sub:'1440p',brand:'Alienware',name:'AW2725DF',price:26900,wl:false,
+ spec:[['Size','26.7"'],['Resolution','2560 × 1440'],['Refresh rate','360 Hz'],['Panel','QD-OLED'],['Response time','0.03 ms GtG'],['Extras','3-year warranty including burn-in (varies by region)']],
+ desc:"A 360 Hz QD-OLED with Alienware's premium design and strong warranty support.",
+ pros:['360 Hz OLED speed','Excellent HDR','Premium build'],cons:['Glossy coating reflects in bright rooms','Expensive'],best:'High-end competitive and single-player gaming.'},
+{id:'pg27aqdm',cat:'monitor',sub:'1440p',brand:'ASUS ROG',name:'Swift PG27AQDM',price:25900,wl:false,
+ spec:[['Size','26.5"'],['Resolution','2560 × 1440'],['Refresh rate','240 Hz'],['Panel','WOLED'],['Response time','0.03 ms GtG'],['Extras','Custom heatsink, anti-glare coating']],
+ desc:"A WOLED 1440p monitor with a custom heatsink for brighter, longer-lasting OLED.",
+ pros:['Anti-glare coating','Excellent motion clarity','Good OLED brightness'],cons:['WOLED colours slightly less vivid than QD-OLED','Burn-in risk'],best:'OLED in brighter rooms.'},
+{id:'32gs95ue',cat:'monitor',sub:'4K',brand:'LG',name:'UltraGear 32GS95UE',price:44900,wl:false,
+ spec:[['Size','31.5"'],['Resolution','3840 × 2160'],['Refresh rate','240 Hz (4K) / 480 Hz (1080p Dual-Mode)'],['Panel','WOLED'],['Response time','0.03 ms GtG'],['Extras','Built-in speakers (Pixel Sound)']],
+ desc:"Two monitors in one: 4K 240 Hz for immersive games, or switch to 1080p 480 Hz for esports.",
+ pros:['Dual-Mode 4K 240 Hz / 1080p 480 Hz','Superb OLED picture','Built-in sound'],cons:['Very expensive','Needs a powerful GPU for 4K'],best:'Players who want 4K beauty and esports speed in one screen.'},
+{id:'pg32ucdm',cat:'monitor',sub:'4K',brand:'ASUS ROG',name:'Swift PG32UCDM',price:42900,wl:false,
+ spec:[['Size','31.5"'],['Resolution','3840 × 2160'],['Refresh rate','240 Hz'],['Panel','QD-OLED'],['Response time','0.03 ms GtG'],['Extras','Custom heatsink, USB-C 90 W, KVM']],
+ desc:"A flagship 4K QD-OLED with 240 Hz, gorgeous colour and a USB-C hub for laptops.",
+ pros:['4K sharpness with OLED contrast','240 Hz','USB-C 90 W and KVM'],cons:['Expensive','Needs a high-end GPU'],best:'4K gaming with an RTX 5080 or 5090.'},
+{id:'g9-oled',cat:'monitor',sub:'Ultrawide',brand:'Samsung',name:'Odyssey OLED G9 (G95SC)',price:44900,wl:false,
+ spec:[['Size','49"'],['Resolution','5120 × 1440 (32:9)'],['Refresh rate','240 Hz'],['Panel','QD-OLED, 1800R curve'],['Response time','0.03 ms GtG']],
+ desc:"A giant 49-inch super-ultrawide OLED. Wraps around your view for racing, flight sims and multitasking.",
+ pros:['Incredibly immersive','Replaces two monitors','Fast OLED'],cons:['Needs a big desk','Some games do not support 32:9'],best:'Sim racing, flight sims and multitaskers.'},
+{id:'34gp83a',cat:'monitor',sub:'Ultrawide',brand:'LG',name:'UltraGear 34GP83A-B',price:13990,wl:false,
+ spec:[['Size','34"'],['Resolution','3440 × 1440 (21:9)'],['Refresh rate','160 Hz (OC)'],['Panel','Nano IPS, 1900R curve'],['Response time','1 ms GtG']],
+ desc:"A popular 34-inch ultrawide that balances immersion, speed and price. Great for gaming and work side by side.",
+ pros:['Immersive 21:9','Fast Nano IPS','Great for productivity'],cons:['Limited HDR','Some esports titles do not support ultrawide'],best:'Work-and-play desks and RPGs.'},
+
+/* ---------- accessories ---------- */
+{id:'qck-heavy',cat:'accessory',sub:'Mouse pad',brand:'SteelSeries',name:'QcK Heavy (Large)',price:890,wl:false,
+ spec:[['Size','450 × 400 mm'],['Thickness','6 mm'],['Surface','Cloth, balanced'],['Base','Non-slip rubber']],
+ desc:"A thick, cushioned cloth pad with a balanced glide. A long-time pro favourite.",
+ pros:['Thick and comfortable','Balanced speed and control','Affordable'],cons:['Edges are not stitched','Can take a day to flatten'],best:'All-round gaming.'},
+{id:'gigantus-v2',cat:'accessory',sub:'Mouse pad',brand:'Razer',name:'Gigantus V2 XXL',price:1090,wl:false,
+ spec:[['Size','940 × 410 mm'],['Thickness','4 mm'],['Surface','Textured micro-weave cloth'],['Base','Non-slip rubber']],
+ desc:"A desk-sized mouse pad that fits your keyboard and mouse with room to spare.",
+ pros:['Covers the whole desk','Consistent glide','Good value'],cons:['Needs a large desk'],best:'Low-sensitivity players and clean desk setups.'},
+{id:'gsr-se',cat:'accessory',sub:'Mouse pad',brand:'Zowie',name:'G-SR-SE',price:1990,wl:false,
+ spec:[['Size','470 × 390 mm'],['Thickness','3.5 mm'],['Surface','Cloth, control-focused'],['Base','Non-slip rubber']],
+ desc:"A control pad with a smooth, slightly slower surface for precise micro-adjustments.",
+ pros:['Excellent stopping power','Consistent surface','Esports-proven'],cons:['Pricey for cloth','Colours vary by edition'],best:'Tactical FPS players who favour control.'},
+{id:'g640',cat:'accessory',sub:'Mouse pad',brand:'Logitech G',name:'G640 Large Cloth',price:990,wl:false,
+ spec:[['Size','460 × 400 mm'],['Thickness','3 mm'],['Surface','Cloth, moderate friction'],['Base','Rubber']],
+ desc:"A tournament-favourite cloth pad with moderate friction for a mix of speed and control.",
+ pros:['Consistent surface','Good size','Proven in esports'],cons:['Thin'],best:'Any mouse, any game.'},
+{id:'skypad3',cat:'accessory',sub:'Mouse pad',brand:'SkyPAD',name:'Glass 3.0 XL',price:3990,wl:false,
+ spec:[['Size','400 × 300 mm'],['Surface','Tempered glass'],['Speed','Very fast'],['Base','Rubber feet']],
+ desc:"A glass mouse pad with an incredibly fast, smooth glide that never wears out.",
+ pros:['Extremely fast and smooth','Lasts for years','Easy to clean'],cons:['Loud and cold to touch','Wears mouse feet faster'],best:'Players who love fast, low-friction aim.'},
+{id:'xbox-ctrl',cat:'accessory',sub:'Controller',brand:'Xbox',name:'Wireless Controller',price:2090,wl:true,
+ spec:[['Connection','Xbox Wireless, Bluetooth, USB-C'],['Power','2 × AA batteries (or rechargeable pack)'],['Compatibility','Xbox, Windows PC, mobile'],['Extras','Share button, textured grips']],
+ desc:"The standard PC controller: plug and play on Windows with support in almost every game.",
+ pros:['Works with nearly every PC game','Comfortable','Reliable'],cons:['Uses AA batteries by default'],best:'PC and Xbox players.'},
+{id:'dualsense',cat:'accessory',sub:'Controller',brand:'PlayStation',name:'DualSense Wireless Controller',price:2790,wl:true,
+ spec:[['Connection','Bluetooth, USB-C'],['Battery','Built-in rechargeable'],['Compatibility','PS5, PC, mobile'],['Extras','Haptic feedback, adaptive triggers']],
+ desc:"Sony's controller with haptic feedback and adaptive triggers. Many PC games support its features too.",
+ pros:['Immersive haptics and triggers','Rechargeable','Built-in mic and speaker'],cons:['Battery life is average','Some PC games need Steam Input'],best:'PS5 owners and PC players who love immersion.'},
+{id:'8bitdo-ult',cat:'accessory',sub:'Controller',brand:'8BitDo',name:'Ultimate Bluetooth Controller',price:1990,wl:true,
+ spec:[['Connection','Bluetooth, 2.4 GHz, USB-C'],['Battery','Rechargeable, charging dock included'],['Compatibility','Nintendo Switch, PC, mobile'],['Extras','Hall effect sticks, back paddles']],
+ desc:"A great-value controller with drift-resistant Hall effect sticks, back paddles and a charging dock.",
+ pros:['Hall effect sticks resist drift','Charging dock included','Back paddles'],cons:['No adaptive triggers'],best:'Switch and PC players who want value and durability.'},
+{id:'quadcast-s',cat:'accessory',sub:'Microphone',brand:'HyperX',name:'QuadCast S',price:5490,wl:false,
+ spec:[['Type','Condenser, USB'],['Polar patterns','Cardioid, stereo, omni, bidirectional'],['Extras','Tap-to-mute, RGB, anti-vibration mount, pop filter']],
+ desc:"A plug-and-play USB streaming mic with RGB lighting, tap-to-mute and four pickup patterns.",
+ pros:['Easy USB setup','Tap-to-mute','Looks great on stream'],cons:['Picks up keyboard noise (condenser)'],best:'New streamers and Discord users.'},
+{id:'mv7plus',cat:'accessory',sub:'Microphone',brand:'Shure',name:'MV7+',price:9990,wl:false,
+ spec:[['Type','Dynamic, USB-C and XLR'],['Polar pattern','Cardioid'],['Extras','Auto-level, digital pop filter, touch panel, LED']],
+ desc:"A broadcast-quality dynamic mic that rejects background noise. USB for easy setup, XLR for pro gear later.",
+ pros:['Rejects keyboard and room noise','USB and XLR','Pro broadcast sound'],cons:['Expensive','Needs to be close to your mouth'],best:'Serious streamers and podcasters.'},
+{id:'yeti',cat:'accessory',sub:'Microphone',brand:'Logitech G',name:'Yeti',price:4290,wl:false,
+ spec:[['Type','Condenser, USB'],['Polar patterns','Cardioid, stereo, omni, bidirectional'],['Extras','Headphone monitoring, gain knob']],
+ desc:"The classic USB microphone, formerly Blue Yeti. Versatile for streaming, calls and recording.",
+ pros:['Versatile pickup patterns','Easy to use','Widely supported'],cons:['Large and heavy','Picks up room noise'],best:'Streaming and content creation starters.'},
+{id:'c920',cat:'accessory',sub:'Webcam',brand:'Logitech',name:'C920 HD Pro',price:2290,wl:false,
+ spec:[['Resolution','1080p at 30 fps'],['Field of view','78°'],['Focus','Autofocus'],['Microphones','Dual stereo']],
+ desc:"The world's go-to webcam for streaming and calls. Simple, reliable and sharp.",
+ pros:['Reliable 1080p','Works everywhere','Affordable'],cons:['30 fps only','Average in low light'],best:'Video calls and starter streams.'},
+{id:'facecam-mk2',cat:'accessory',sub:'Webcam',brand:'Elgato',name:'Facecam MK.2',price:5990,wl:false,
+ spec:[['Resolution','1080p at 60 fps'],['Extras','HDR, pan-tilt-zoom, manual camera controls'],['Connection','USB-C']],
+ desc:"A premium streaming webcam with 1080p60, HDR and DSLR-style manual controls.",
+ pros:['Smooth 60 fps','Excellent image control','Great in mixed lighting'],cons:['No built-in microphone','Pricier than basic webcams'],best:'Streamers who want a sharp facecam.'},
+{id:'streamdeck-mk2',cat:'accessory',sub:'Stream control',brand:'Elgato',name:'Stream Deck MK.2',price:5490,wl:false,
+ spec:[['Keys','15 customisable LCD keys'],['Connection','USB-C'],['Extras','Swappable faceplates, huge plugin library']],
+ desc:"Fifteen customisable LCD keys to control scenes, audio, apps and smart home with one tap.",
+ pros:['Makes streaming effortless','Huge plugin ecosystem','Useful for work too'],cons:['Luxury rather than essential'],best:'Streamers and productivity fans.'},
+{id:'titan-evo',cat:'accessory',sub:'Chair',brand:'Secretlab',name:'TITAN Evo',price:19900,wl:false,
+ spec:[['Sizes','S, R, XL'],['Materials','NEO Hybrid Leatherette or SoftWeave Plus fabric'],['Ergonomics','Built-in adjustable lumbar support, 4D armrests'],['Recline','Up to 165°']],
+ desc:"One of the most popular gaming chairs, with built-in adjustable lumbar support and magnetic memory-foam head pillow.",
+ pros:['Excellent ergonomics','Premium materials','Three sizes to fit most people'],cons:['Expensive','Firm seat takes getting used to'],best:'Long gaming and work sessions.'}
+];
+const BYID=Object.fromEntries(P.map(p=>[p.id,p]));
+
+const SETUPS=[
+  {id:'budget',name:'Budget Esports',tag:'Starter',desc:'Everything you need to start competing, for about ฿10,000.',items:['k552','g305','bsv2x','aoc-24g2sp','qck-heavy']},
+  {id:'fps',name:'Pro FPS',tag:'Competitive',desc:'The fastest gear for Valorant and CS2: analog keys, an ultralight mouse and a 360 Hz display.',items:['wooting-60he','viper-v3pro','chu2','xl2566k','gsr-se']},
+  {id:'allround',name:'1440p All-Rounder',tag:'Most popular',desc:'A balanced setup that looks great, plays everything and works well for study too.',items:['akko-5075b','gpx-sl2','cloud3','274qrf','g640']},
+  {id:'oled',name:'OLED Competitive',tag:'Premium',desc:'Esports speed with cinematic image quality from a 360 Hz QD-OLED.',items:['apex-pro-tkl','da-v3pro','gprox2','g6-oled','gigantus-v2']},
+  {id:'stream',name:'Streamer Studio',tag:'Streaming',desc:'Sound and look professional on stream with a broadcast mic, 60 fps facecam and Stream Deck.',items:['gprox-tkl','da-v3pro','dt770','aw2725df','mv7plus','facecam-mk2','streamdeck-mk2']},
+  {id:'immersive',name:'Immersive 4K',tag:'Single-player',desc:'Big, beautiful 4K OLED and audiophile sound for story games and exploring worlds.',items:['rog-azoth','g502x-plus','maxwell','pg32ucdm','dualsense']},
+  {id:'sim',name:'Ultrawide Sim & Work',tag:'Productivity',desc:'A super-ultrawide for racing and flight sims that doubles as a work powerhouse.',items:['keychron-q1pro','basilisk-v3','nova-pro-wl','g9-oled','titan-evo']},
+  {id:'console',name:'Couch & Console',tag:'Console',desc:'Relaxed play across PS5, Xbox and PC with one headset that switches between them.',items:['a50x','dualsense','xbox-ctrl','32gs95ue']}
+];
+const BEST=[
+  {id:'wooting-60he',award:'Best for FPS'},{id:'gprox-tkl',award:'Best wireless'},{id:'akko-5075b',award:'Best value'},{id:'keychron-q1pro',award:'Best typing feel'},{id:'k552',award:'Best budget'},
+  {id:'gpx-sl2',award:'Best overall'},{id:'viper-v3pro',award:'Best for esports'},{id:'da-v3pro',award:'Best ergonomic'},{id:'g502x-plus',award:'Best multi-button'},{id:'g305',award:'Best budget'},
+  {id:'nova-pro-wl',award:'Best overall'},{id:'cloud3',award:'Best wired'},{id:'bsv2pro',award:'Best mic'},{id:'maxwell',award:'Best sound'},{id:'chu2',award:'Best budget'},
+  {id:'g6-oled',award:'Best overall'},{id:'xl2566k',award:'Best for esports'},{id:'274qrf',award:'Best value 1440p'},{id:'32gs95ue',award:'Best 4K'},{id:'aoc-24g2sp',award:'Best budget'},{id:'34gp83a',award:'Best ultrawide value'},
+  {id:'qck-heavy',award:'Best mouse pad'},{id:'8bitdo-ult',award:'Best value controller'},{id:'mv7plus',award:'Best microphone'},{id:'facecam-mk2',award:'Best webcam'},{id:'titan-evo',award:'Best chair'}
+];
+
+const GUIDES={
+ keyboard:{title:'How to choose a gaming keyboard',tips:[
+  ['Pick a size','Full size has a numpad. TKL drops the numpad. 75% keeps arrows and F-keys in a tighter layout. 60% is the smallest and gives your mouse the most room.'],
+  ['Switch types','Linear switches are smooth and fast. Tactile switches have a bump you can feel. Clicky switches add a loud click. Most gamers choose linear.'],
+  ['Hall effect and Rapid Trigger','Magnetic (Hall effect) switches let you set how deep a key press registers. Rapid Trigger resets the key the instant you lift, which helps with fast movement in FPS games.'],
+  ['Hot-swap','Hot-swap boards let you pull and replace switches without soldering, so you can try new feels later.'],
+  ['Wireless','Modern 2.4 GHz wireless (Lightspeed, HyperSpeed) is as fast as a cable. Bluetooth is great for work but adds delay for competitive games.']]},
+ mouse:{title:'How to choose a gaming mouse',tips:[
+  ['Shape first','Comfort matters more than specs. Ergonomic mice suit palm grip; symmetrical mice suit claw and fingertip grip.'],
+  ['Weight','Under 65 g feels effortless for fast flicks. Heavier mice (90 g+) feel steadier and usually have more buttons.'],
+  ['Sensor and DPI','Every modern gaming sensor is accurate. Most pros use 400–1,600 DPI, so a 30,000+ DPI rating is mostly marketing.'],
+  ['Polling rate','1,000 Hz is great. 4,000–8,000 Hz can feel smoother on high-refresh monitors but uses more CPU and battery.'],
+  ['Wireless','Gaming wireless has no noticeable lag now. It just needs charging.']]},
+ headset:{title:'How to choose a gaming headset',tips:[
+  ['Wired or wireless','Wireless gives freedom but needs charging. Wired is cheaper and never runs out of power.'],
+  ['Open or closed','Closed-back blocks outside noise. Open-back sounds wider and more natural but leaks sound.'],
+  ['Microphone','If you stream or play with a team, look for a detachable or broadcast-quality mic, or add a desk mic.'],
+  ['IEMs','In-ear monitors are tiny, light and often have excellent positional audio, but need a separate mic.'],
+  ['Surround sound','Good stereo is usually better for footsteps than virtual 7.1. Try both and see what you prefer.']]},
+ monitor:{title:'How to choose a gaming monitor',tips:[
+  ['Match your graphics card','1080p suits budget GPUs. 1440p is the sweet spot for mid-range cards. 4K needs a high-end GPU.'],
+  ['Refresh rate','144–180 Hz is a big upgrade from 60 Hz. 240–360 Hz helps competitive players who hit those frame rates.'],
+  ['Panel types','IPS: good colours and speed. VA: deep contrast, slower in dark scenes. TN: fastest, weaker colours. OLED: perfect blacks and near-instant response.'],
+  ['OLED burn-in','OLED can burn in with static images over time. Use built-in care features, hide static taskbars and check the warranty.'],
+  ['HDR','HDR400 is entry-level. For real HDR look for OLED or Mini-LED with local dimming.']]},
+ accessory:{title:'Choosing accessories',tips:[
+  ['Mouse pads','Control pads are slower for precise aim. Speed pads and glass are faster for tracking. Larger pads suit low sensitivity.'],
+  ['Microphones','Dynamic mics reject keyboard and room noise. Condenser mics sound fuller but pick up more of the room.'],
+  ['Webcams','1080p at 60 fps looks smoother on stream. Good lighting matters more than the camera.'],
+  ['Controllers','Hall effect sticks resist stick drift. Back paddles help in shooters.'],
+  ['Chairs','Choose the right size, adjustable lumbar support and 4D armrests for long sessions.']]}
+};
+
+/* ---------- icons ---------- */
+const ICON={
+  keyboard:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2.5" y="8" width="27" height="16" rx="3"/><path d="M7 12.5h.01M11 12.5h.01M15 12.5h.01M19 12.5h.01M23 12.5h.01M25 16h.01M7 16h.01M11 16h.01M15 16h.01M19 16h.01M10 20h12"/></svg>',
+  mouse:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3.5" width="14" height="25" rx="7"/><path d="M16 3.5v8M16 7.5v2"/></svg>',
+  headset:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 19v-3a11 11 0 0 1 22 0v3"/><rect x="4" y="18" width="6" height="9" rx="2.5"/><rect x="22" y="18" width="6" height="9" rx="2.5"/><path d="M10 25c2 2.5 5 3 8 3"/></svg>',
+  monitor:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="26" height="17" rx="2.5"/><path d="M12 27h8M16 22v5"/></svg>',
+  accessory:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 13h16a5 5 0 0 1 4.8 6.4l-1.2 4.2a3 3 0 0 1-5.1 1.2L19.5 22h-7l-3 2.8a3 3 0 0 1-5.1-1.2l-1.2-4.2A5 5 0 0 1 8 13z"/><path d="M10 16.5v3M8.5 18h3M21 17h.01M23.5 19.5h.01"/></svg>',
+  all:'<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="4" width="10" height="10" rx="2.5"/><rect x="18" y="4" width="10" height="10" rx="2.5"/><rect x="4" y="18" width="10" height="10" rx="2.5"/><rect x="18" y="18" width="10" height="10" rx="2.5"/></svg>'
+};
+const SEARCH_I='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+const EXT_I='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+
+/* ---------- currency (rates per 1 THB, open.er-api.com, 29 Sep 2026) ---------- */
+const RATES_DATE='29 Sep 2026';
+const CURRENCIES=[
+  {c:'THB',s:'฿',d:0,n:'Thai Baht',r:1},{c:'USD',s:'$',d:2,n:'US Dollar',r:0.02977},{c:'EUR',s:'€',d:2,n:'Euro',r:0.026173},
+  {c:'GBP',s:'£',d:2,n:'British Pound',r:0.022448},{c:'JPY',s:'¥',d:0,n:'Japanese Yen',r:4.680186},{c:'CNY',s:'CN¥',d:2,n:'Chinese Yuan',r:0.200622},
+  {c:'SGD',s:'S$',d:2,n:'Singapore Dollar',r:0.038067},{c:'MYR',s:'RM',d:2,n:'Malaysian Ringgit',r:0.121552},{c:'KRW',s:'₩',d:0,n:'Korean Won',r:40.455473},
+  {c:'AUD',s:'A$',d:2,n:'Australian Dollar',r:0.042417},{c:'HKD',s:'HK$',d:2,n:'Hong Kong Dollar',r:0.233522},{c:'VND',s:'₫',d:0,n:'Vietnamese Dong',r:771.491935},
+  {c:'IDR',s:'Rp',d:0,n:'Indonesian Rupiah',r:534.518277},{c:'PHP',s:'₱',d:2,n:'Philippine Peso',r:1.859811},{c:'INR',s:'₹',d:2,n:'Indian Rupee',r:2.859152}
+];
+const CUR=Object.fromEntries(CURRENCIES.map(x=>[x.c,x]));
+function fmtIn(code,amount){const x=CUR[code];return x.s+(x.s.length>1?' ':'')+amount.toLocaleString('en-US',{minimumFractionDigits:x.d,maximumFractionDigits:x.d})}
+function convert(a,f,t){return a/CUR[f].r*CUR[t].r}
+function money(thb){return fmtIn(cur,thb*CUR[cur].r)}
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const catOf=k=>CATS.find(c=>c.key===k);
+const specVal=(p,l)=>(p.spec.find(s=>s[0]===l)||[])[1]||'';
+function keyTags(p){
+  const t=[];
+  if(p.cat==='keyboard'){t.push(p.sub);const sw=specVal(p,'Switches');t.push(/Hall|Analog|OmniPoint|Lekker/i.test(sw+specVal(p,'Actuation'))?'Rapid Trigger':/membrane|Mech-Dome/i.test(sw)?'Membrane':'Mechanical');t.push(p.wl?'Wireless':'Wired')}
+  else if(p.cat==='mouse'){t.push(specVal(p,'Weight').split(' (')[0]);t.push(p.wl?'Wireless':'Wired');const pr=specVal(p,'Polling rate');if(/8,000/.test(pr))t.push('8K Hz');else t.push(p.sub)}
+  else if(p.cat==='headset'){t.push(p.sub);const b=specVal(p,'Battery');if(b)t.push(b.replace('Up to ','').replace(/ \(.*/,''));const nc=specVal(p,'Noise cancelling');if(nc)t.push('ANC');else t.push(specVal(p,'Drivers').split(' ').slice(0,2).join(' '))}
+  else if(p.cat==='monitor'){t.push(specVal(p,'Size'));t.push(p.sub);t.push(specVal(p,'Refresh rate').split(' ')[0]+' Hz');t.push(specVal(p,'Panel').split(/[ ,]/)[0].replace('Rapid','IPS').replace('Nano','Nano IPS').replace('Fast','TN'))}
+  else{t.push(p.sub);if(p.wl)t.push('Wireless')}
+  return t.filter(Boolean).slice(0,4);
+}
+function shops(p){
+  const q=encodeURIComponent(p.brand+' '+p.name.replace(/\s*\(.*?\)\s*/g,' ').trim());
+  const L=[
+    {n:'Shopee',d:'shopee.co.th',u:`https://shopee.co.th/search?keyword=${q}`},
+    {n:'Lazada',d:'lazada.co.th',u:`https://www.lazada.co.th/catalog/?q=${q}`},
+    {n:'Advice',d:'advice.co.th',u:`https://www.advice.co.th/product/search?keyword=${q}`},
+    {n:'Amazon',d:'amazon.com',u:`https://www.amazon.com/s?k=${q}`},
+    {n:'Google Shopping',d:'Compare prices',u:`https://www.google.com/search?tbm=shop&q=${q}`}
+  ];
+  if(SITES[p.brand])L.push({n:`${p.brand} official`,d:SITES[p.brand].replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,''),u:SITES[p.brand]});
+  return L;
+}
+
+/* ---------- state ---------- */
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let cur=store.get('rg-cur','THB');if(!CUR[cur])cur='THB';
+let view='browse',cat='all',sub='all',q='',sort='rec',brandF='all',wlOnly=false,maxP=0;
+let compare=store.get('rg-compare',[]).filter(id=>BYID[id]);
+let conv={amt:null,from:'THB',to:'USD'};
+let reviews=[],comments=[],db=null,userNs=null,myId=null,canWrite=null,drawerId=null,reviewStars=0;
+const maxPrice=Math.max(...P.map(p=>p.price));
+
+/* ---------- ratings ---------- */
+function ratingOf(id){const rs=reviews.filter(r=>r.part===id&&r.rating>=1&&r.rating<=5);if(!rs.length)return null;return{avg:rs.reduce((s,r)=>s+r.rating,0)/rs.length,n:rs.length}}
+function ratingHtml(id){const r=ratingOf(id);return r?`<span class="rating"><b>★ ${r.avg.toFixed(1)}</b>(${r.n})</span>`:''}
+function starStr(n){let s='';for(let i=1;i<=5;i++)s+=`<span class="${n>=i-0.25?'':'off'}">★</span>`;return `<span class="stars" aria-label="${n.toFixed(1)} out of 5">${s}</span>`}
+
+/* ---------- price history, forecast, demand (simulated) ---------- */
+const NOW=new Date(2026,8,30);
+let priceRange='1y',fcH=6;
+function hashStr(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){let a=seed;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function ageMonths(p){const n=p.brand+' '+p.name;
+  if(/Superlight 2|Viper V3|DeathAdder V3|PRO X 2|PRO X TKL|Huntsman V3|60HE|Cloud III|G60SD|AW2725DF|32GS95UE|PG32UCDM|MV7\+|Facecam MK.2|Maxwell|A50 X|Nova Pro|M75|X2 V2|Model O 2|5075B|Q1 Pro|274QRF|Q27G3XMN|Chu II|Ultimate Bluetooth|BlackShark V2 Pro/.test(n))return 10+hashStr(p.id)%16;
+  if(/K552|G305|G102|G213|RK61|K2|24G2SP|VG249Q1A|QcK|G640|DT 770|C920|Yeti|Alloy Origins|BlackShark V2 X|Basilisk V3|EC2-C|Wireless Controller|27GP850|34GP83A/.test(n))return 40+hashStr(p.id)%14;
+  return 22+hashStr(p.id)%14;}
+const HIST={};
+function history(p){
+  if(HIST[p.id])return HIST[p.id];
+  const r=rng(hashStr(p.id)),age=ageMonths(p),weeks=Math.round(age*4.345);
+  const prem=0.08+r()*0.2+(p.cat==='monitor'?0.08:0),tau=weeks*(0.3+r()*0.35),eol=age>44;
+  const raw=[];let n=0;
+  for(let i=0;i<=weeks;i++){
+    n=n*0.8+(r()-0.5)*0.03;
+    let v=1+prem*Math.exp(-i/tau);
+    if(eol&&i>weeks-20)v+=0.03*(i-(weeks-20))/20;
+    const d=new Date(NOW.getTime()-(weeks-i)*7*864e5),m=d.getMonth(),day=d.getDate();
+    if((m===10&&day>=6&&day<=17)||(m===11&&day>=7&&day<=18)||(m===2&&day>=1&&day<=10)||(m===5&&day>=1&&day<=10))v*=0.93;
+    raw.push({t:d,v:v+n*(i<weeks-1?1:0)});
+  }
+  const end=raw[raw.length-1].v;
+  const out=raw.map(x=>({t:x.t,p:Math.max(10,Math.round(p.price*x.v/end/10)*10)}));
+  out[out.length-1].p=p.price;
+  return HIST[p.id]=out;
+}
+function forecast(p,months){
+  const hs=history(p),W=Math.min(26,hs.length-1),seg=hs.slice(-W-1);
+  const xs=seg.map((_,i)=>i),ys=seg.map(x=>Math.log(x.p)),mx=xs.reduce((a,b)=>a+b,0)/xs.length,my=ys.reduce((a,b)=>a+b,0)/ys.length;
+  let num=0,den=0;xs.forEach((x,i)=>{num+=(x-mx)*(ys[i]-my);den+=(x-mx)**2});
+  const raw=den?num/den:0;const res=Math.sqrt(ys.reduce((s,y,i)=>s+(y-(my+raw*(xs[i]-mx)))**2,0)/Math.max(1,ys.length-2));
+  let b=raw*0.6;if(ageMonths(p)<16)b-=0.0012;b=Math.max(-0.007,Math.min(0.007,b));
+  const weeks=Math.round(months*4.345),pts=[],r10=v=>Math.round(v/10)*10;
+  for(let k=1;k<=weeks;k++){const mid=p.price*Math.exp(b*k),z=Math.max(0.006,res)*Math.sqrt(k)*1.5+0.002*k;
+    pts.push({t:new Date(NOW.getTime()+k*7*864e5),p:r10(mid),lo:r10(mid*Math.exp(-z)),hi:r10(mid*Math.exp(z)),fc:true})}
+  return pts;
+}
+function trendPct(p,weeks){const hs=history(p);if(hs.length<2)return 0;const a=hs[Math.max(0,hs.length-1-weeks)].p;return (p.price-a)/a*100}
+function trendChip(p){const t=trendPct(p,13),a=Math.abs(t);return `<span class="trend">${a<1?'→ Steady':t<0?`▼ ${a.toFixed(0)}%`:`▲ ${a.toFixed(0)}%`} <span>3 mo</span></span>`}
+function demand(p){
+  const r=rng(hashStr(p.id+'d'));let s=34+r()*30;
+  const inS=SETUPS.filter(x=>x.items.includes(p.id)).length;s+=Math.min(20,inS*7);
+  const award=BEST.find(x=>x.id===p.id);if(award)s+=12;
+  const age=ageMonths(p);if(age<18)s+=8;if(age>44)s-=6;
+  const rt=ratingOf(p.id);if(rt)s+=(rt.avg-3)*5+Math.min(8,rt.n);
+  s=Math.round(Math.max(5,Math.min(98,s)));
+  const trend=age<18?'rising':age>48?'cooling':(r()<0.55?'steady':'rising');
+  return{score:s,trend,inS,award,rt};
+}
+function demandLabel(sc){return sc>=80?'Very popular':sc>=60?'Popular':sc>=40?'Moderate demand':'Niche pick'}
+function demandSentence(p,d){
+  const c=catOf(p.cat).one;
+  let s=d.score>=80?`One of the most-wanted ${c}s right now. Gamers love it${d.award?` as our “${d.award.award}” pick`:''}, so popular colours can sell out quickly.`
+    :d.score>=60?`A well-liked ${c} with steady interest from gamers${d.award?`, and our “${d.award.award}” pick`:''}.`
+    :d.score>=40?`A solid option that fewer people choose, so it's usually easy to find in stock.`
+    :`A specialist ${c} with lower demand. A great pick if it matches exactly what you need.`;
+  s+=d.trend==='rising'?' Interest is rising.':d.trend==='cooling'?' Interest is cooling as newer models arrive.':' Interest is holding steady.';
+  if(d.inS)s+=` Featured in ${d.inS} of our recommended setup${d.inS>1?'s':''}.`;
+  if(d.rt)s+=` Rated ${d.rt.avg.toFixed(1)}/5 by ${d.rt.n} RigForge member${d.rt.n>1?'s':''}.`;
+  return s;
+}
+const RANGES=[['3m','3M',13],['6m','6M',26],['1y','1Y',52],['2y','2Y',104],['all','All',1e9]];
+function fmtShort(v){const x=CUR[cur],abs=Math.abs(v),sp=x.s.length>1?' ':'';
+  if(abs>=1e6)return x.s+sp+(v/1e6).toFixed(abs>=1e7?0:1)+'M';if(abs>=1e4)return x.s+sp+Math.round(v/1e3)+'k';if(abs>=1e3)return x.s+sp+(v/1e3).toFixed(1)+'k';return x.s+sp+v.toFixed(abs<10?2:0)}
+function niceStep(span,n){const raw=span/n,pw=10**Math.floor(Math.log10(raw)),f=raw/pw;return (f<1.5?1:f<3?2:f<7?5:10)*pw}
+function renderPriceSec(){
+  const el=$('#priceSec');if(!el||!drawerId)return;const p=BYID[drawerId];
+  const hs=history(p),rw=RANGES.find(r=>r[0]===priceRange)[2],seg=hs.slice(-Math.min(hs.length,rw+1)),fc=forecast(p,fcH);
+  const first=seg[0].p,chg=(p.price-first)/first*100,lo=Math.min(...seg.map(x=>x.p)),hi=Math.max(...seg.map(x=>x.p));
+  const end=fc[fc.length-1],fchg=(end.p-p.price)/p.price*100;
+  const rangeName=priceRange==='all'?'since launch':`over the last ${{'3m':'3 months','6m':'6 months','1y':'year','2y':'2 years'}[priceRange]}`;
+  const dir=Math.abs(chg)<1.5?`held steady ${rangeName}`:chg<0?`fallen ${Math.abs(chg).toFixed(0)}% ${rangeName}`:`risen ${chg.toFixed(0)}% ${rangeName}`;
+  const fdir=Math.abs(fchg)<2?'stay about the same':fchg<0?`drop about ${Math.abs(fchg).toFixed(0)}%`:`rise about ${fchg.toFixed(0)}%`;
+  const advice=fchg<-4?`If you're not in a hurry, waiting could save you around ${money(p.price-end.p)}.`:fchg>3?`Prices are trending up, so buying sooner may save money.`:`Now is a reasonable time to buy.`;
+  el.innerHTML=`
+    <div class="sec-h"><h2>Price history & forecast</h2><span class="muted">On sale since ${hs[0].t.toLocaleDateString('en-GB',{month:'short',year:'numeric'})}</span></div>
+    <div class="ph-ctrls"><div class="seg" role="group" aria-label="Timeline">${RANGES.map(([v,l])=>`<button data-prange="${v}" class="${priceRange===v?'on':''}">${l}</button>`).join('')}</div>
+      <div class="seg" role="group" aria-label="Forecast length">${[3,6,12].map(m=>`<button data-fch="${m}" class="${fcH===m?'on':''}">+${m} mo</button>`).join('')}</div></div>
+    <div class="ph-stats">
+      <div><div class="k">Now</div><div class="v num">${money(p.price)}</div></div>
+      <div><div class="k">Change</div><div class="v num">${chg<=-0.5?'▼':chg>=0.5?'▲':'→'} ${Math.abs(chg).toFixed(1)}%</div></div>
+      <div><div class="k">Low / high</div><div class="v num sm">${money(lo)} – ${money(hi)}</div></div>
+      <div><div class="k">In ${fcH} months</div><div class="v num sm">${money(end.lo)} – ${money(end.hi)}</div></div>
+    </div>
+    <div class="ph-chart" id="phChart"></div>
+    <div class="ph-legend"><span><i class="l-line"></i>Price</span><span><i class="l-dash"></i>Estimate</span><span><i class="l-band"></i>Likely range</span></div>
+    <p class="ph-sum">The price has ${dir}. We estimate it will ${fdir} over the next ${fcH} months. ${advice} Big sales like 3.3, 6.6, 11.11 and 12.12 often bring short-term discounts.</p>
+    <details class="ph-data"><summary>View price data</summary><div class="tbl-wrap"><table><thead><tr><th>Month</th><th class="r">Price (${cur})</th></tr></thead><tbody id="phRows"></tbody></table></div></details>
+    <p class="muted" style="margin:6px 0 0;font-size:12px">Price history and estimates are simulated for this demo. Check the stores below for today's real prices.</p>`;
+  drawPriceChart(p,seg,fc);
+  const byM=new Map();seg.forEach(x=>byM.set(x.t.getFullYear()*12+x.t.getMonth(),{t:x.t,p:x.p}));fc.forEach(x=>byM.set(x.t.getFullYear()*12+x.t.getMonth(),{t:x.t,p:x.p,fc:true,lo:x.lo,hi:x.hi}));
+  $('#phRows').innerHTML=[...byM.values()].map(m=>`<tr><td>${m.t.toLocaleDateString('en-GB',{month:'short',year:'numeric'})}${m.fc?' (est.)':''}</td><td class="r num">${m.fc?`${money(m.lo)} – ${money(m.hi)}`:money(m.p)}</td></tr>`).join('');
+}
+function drawPriceChart(p,seg,fc){
+  const box=$('#phChart'),W=Math.max(280,box.clientWidth||480),H=230,m={l:52,r:14,t:16,b:28};
+  const k=CUR[cur].r,t0=seg[0].t.getTime(),t1=fc[fc.length-1].t.getTime(),tn=NOW.getTime();
+  let ymin=Math.min(...seg.map(x=>x.p),...fc.map(x=>x.lo))*k,ymax=Math.max(...seg.map(x=>x.p),...fc.map(x=>x.hi))*k;
+  const pad=(ymax-ymin)*0.12||ymax*0.05;ymin-=pad;ymax+=pad;
+  const st=niceStep(ymax-ymin,4);ymin=Math.floor(ymin/st)*st;ymax=Math.ceil(ymax/st)*st;if(ymin<0)ymin=0;
+  const X=t=>m.l+(t-t0)/(t1-t0)*(W-m.l-m.r),Y=v=>m.t+(1-(v-ymin)/(ymax-ymin))*(H-m.t-m.b);
+  const line=pts=>pts.map((q,i)=>`${i?'L':'M'}${X(q.t.getTime()).toFixed(1)},${Y(q.p*k).toFixed(1)}`).join('');
+  const last=seg[seg.length-1],fcl=[last,...fc],band=[{t:last.t,hi:last.p,lo:last.p},...fc];
+  const bandPath=band.map((q,i)=>`${i?'L':'M'}${X(q.t.getTime()).toFixed(1)},${Y(q.hi*k).toFixed(1)}`).join('')+[...band].reverse().map(q=>`L${X(q.t.getTime()).toFixed(1)},${Y(q.lo*k).toFixed(1)}`).join('')+'Z';
+  const area=line(seg)+`L${X(tn).toFixed(1)},${Y(ymin).toFixed(1)}L${X(t0).toFixed(1)},${Y(ymin).toFixed(1)}Z`;
+  let grid='';for(let v=ymin;v<=ymax+1e-9;v+=st){const y=Y(v).toFixed(1);grid+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${m.l-8}" y="${+y+4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${fmtShort(v)}</text>`}
+  const spanM=(t1-t0)/(30.44*864e5),stepM=spanM<=5?1:spanM<=10?2:spanM<=20?3:spanM<=40?6:12;
+  let xt='';const d=new Date(seg[0].t.getFullYear(),seg[0].t.getMonth()+1,1);
+  while(d.getTime()<=t1){if(d.getMonth()%stepM===0){const x=X(d.getTime());if(x>m.l+14&&x<W-m.r-14)xt+=`<text x="${x}" y="${H-8}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${d.toLocaleDateString('en-GB',{month:'short'})}${d.getMonth()===0||stepM>=6?` ’${String(d.getFullYear()).slice(2)}`:''}</text>`}d.setMonth(d.getMonth()+1)}
+  const xn=X(tn),yn=Y(p.price*k);
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Price history and forecast for ${esc(p.name)}">
+    <defs><linearGradient id="phg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".22"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
+    ${grid}${xt}<path d="${area}" fill="url(#phg)"/><path d="${bandPath}" fill="var(--accent)" fill-opacity=".13"/>
+    <line x1="${xn}" x2="${xn}" y1="${m.t}" y2="${H-m.b}" stroke="var(--muted)" stroke-dasharray="2 4"/><text x="${xn+6}" y="${m.t+10}" font-size="11" fill="var(--muted)">Today</text>
+    <path d="${line(seg)}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${line(fcl)}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round"/>
+    <circle cx="${xn}" cy="${yn}" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>
+    <g id="phHover" style="display:none"><line id="phX" y1="${m.t}" y2="${H-m.b}" stroke="var(--ink)" stroke-opacity=".35"/><circle id="phDot" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/></g>
+    <rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}" fill="transparent" id="phHit"/></svg><div class="ph-tip" id="phTip" hidden></div>`;
+  const all=[...seg,...fc],hit=$('#phHit'),tip=$('#phTip');
+  const move=e=>{const r=box.querySelector('svg').getBoundingClientRect(),sx=(e.clientX-r.left)*W/r.width,t=t0+(sx-m.l)/(W-m.l-m.r)*(t1-t0);
+    let best=all[0];for(const q of all)if(Math.abs(q.t-t)<Math.abs(best.t-t))best=q;
+    const x=X(best.t.getTime()),y=Y(best.p*k);$('#phHover').style.display='';$('#phX').setAttribute('x1',x);$('#phX').setAttribute('x2',x);$('#phDot').setAttribute('cx',x);$('#phDot').setAttribute('cy',y);
+    tip.hidden=false;tip.innerHTML=`<div class="d">${best.t.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}${best.fc?' · estimate':''}</div><div class="p num">${money(best.p)}</div>${best.fc?`<div class="d">Likely ${money(best.lo)} – ${money(best.hi)}</div>`:''}`;
+    tip.style.left=Math.min(Math.max(x*r.width/W,70),r.width-70)+'px';tip.style.top=(y*r.height/H)+'px'};
+  hit.addEventListener('pointermove',move);hit.addEventListener('pointerdown',move);
+  hit.addEventListener('pointerleave',()=>{tip.hidden=true;$('#phHover').style.display='none'});
+}
+function renderDemandSec(){
+  const el=$('#demandSec');if(!el||!drawerId)return;const p=BYID[drawerId],d=demand(p);
+  el.innerHTML=`<div class="sec-h"><h2>Popularity & demand</h2></div>
+    <div class="dm"><div class="dm-top"><span class="dm-label">${demandLabel(d.score)}</span><span class="dm-trend">${d.trend==='rising'?'▲ Rising':d.trend==='cooling'?'▼ Cooling':'→ Steady'}</span><span class="num dm-score">${d.score}/100</span></div>
+    <div class="dm-bar" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${d.score}" aria-label="Demand score"><i style="width:${d.score}%"></i></div>
+    <p>${demandSentence(p,d)}</p></div>`;
+}
+
+/* ---------- views ---------- */
+function filtered(){
+  let items=P.filter(p=>(cat==='all'||p.cat===cat)&&(sub==='all'||p.sub===sub));
+  if(brandF!=='all')items=items.filter(p=>p.brand===brandF);
+  if(wlOnly)items=items.filter(p=>p.wl);
+  if(maxP)items=items.filter(p=>p.price<=maxP);
+  if(q){const s=q.toLowerCase();items=items.filter(p=>(p.brand+' '+p.name+' '+p.sub+' '+p.spec.map(x=>x[1]).join(' ')+' '+p.desc).toLowerCase().includes(s))}
+  if(sort==='lo')items.sort((a,b)=>a.price-b.price);
+  if(sort==='hi')items.sort((a,b)=>b.price-a.price);
+  if(sort==='pop')items.sort((a,b)=>demand(b).score-demand(a).score);
+  if(sort==='top')items.sort((a,b)=>(ratingOf(b.id)?.avg||0)-(ratingOf(a.id)?.avg||0));
+  return items;
+}
+function card(p){
+  const award=BEST.find(x=>x.id===p.id),inC=compare.includes(p.id),d=demand(p);
+  return `<article class="card">
+    <div class="card-top" style="padding-right:0"><div class="thumb">${ICON[p.cat]}</div><div style="min-width:0;flex:1"><div class="pbrand">${esc(p.brand)}${award?` · <span style="color:var(--accent)">${award.award}</span>`:''}</div><button class="link pname" data-detail="${p.id}">${esc(p.name)}</button><div class="meta-row"><span class="dm-chip ${d.score>=80?'hot':''}">${demandLabel(d.score)}</span><span data-rating-for="${p.id}">${ratingHtml(p.id)}</span></div></div></div>
+    <p class="card-desc">${esc(p.best)}</p>
+    <div class="tags">${keyTags(p).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
+    <div class="card-foot"><div class="price num">${money(p.price)}${cur!=='THB'?`<small>${fmtIn('THB',p.price)}</small>`:''}${trendChip(p)}</div>
+      <div class="acts"><button class="btn sm ghost ${inC?'on-c':''}" data-compare="${p.id}" aria-pressed="${inC}">${inC?'✓ Comparing':'+ Compare'}</button><button class="btn sm primary" data-detail="${p.id}">Details</button></div></div>
+  </article>`;
+}
+function renderBrowse(){
+  const pool=P.filter(p=>cat==='all'||p.cat===cat),brands=[...new Set(pool.map(p=>p.brand))].sort(),items=filtered();
+  const c=catOf(cat);
+  return `
+  ${cat==='all'&&!q?`<section class="hero"><div class="eyebrow">Gaming gear guide</div><h1 style="margin-top:10px">Find gear that plays <span>like you do.</span></h1>
+    <p class="lede">${P.length} keyboards, mice, headsets, monitors and accessories, explained in plain language. Compare specs side by side, see price trends, and jump to trusted stores to buy.</p>
+    <div class="hero-acts"><button class="btn primary" data-view="setups">See recommended setups</button><button class="btn" data-view="guides">Read buying guides</button><button class="btn" data-chat-open>Ask the AI</button></div></section>`:''}
+  <div class="catbar" role="group" aria-label="Categories">
+    <button class="catbtn ${cat==='all'?'on':''}" data-cat="all">${ICON.all}<span>All gear</span><em>${P.length}</em></button>
+    ${CATS.map(k=>`<button class="catbtn ${cat===k.key?'on':''}" data-cat="${k.key}">${ICON[k.key]}<span>${k.label}</span><em>${P.filter(p=>p.cat===k.key).length}</em></button>`).join('')}
+  </div>
+  ${c?`<div class="seg subseg" role="group" aria-label="Type"><button data-sub="all" class="${sub==='all'?'on':''}">All ${c.label.toLowerCase()}</button>${c.subs.map(s=>`<button data-sub="${esc(s)}" class="${sub===s?'on':''}">${s}</button>`).join('')}</div>`:''}
+  <div class="tools">
+    <label class="search">${SEARCH_I}<input type="search" id="q" placeholder="Search by name, brand or feature (e.g. OLED, 8K, Hall effect)" value="${esc(q)}" aria-label="Search gear"></label>
+    <select class="cur-select" id="brandF" aria-label="Brand"><option value="all">All brands</option>${brands.map(b=>`<option ${brandF===b?'selected':''}>${esc(b)}</option>`).join('')}</select>
+    <select class="cur-select" id="maxP" aria-label="Maximum price"><option value="0">Any price</option>${[1000,3000,5000,10000,20000].map(v=>`<option value="${v}" ${maxP===v?'selected':''}>Under ${money(v)}</option>`).join('')}</select>
+    <div class="seg" role="group" aria-label="Sort">${[['rec','Featured'],['pop','Popular'],['lo','Price ↑'],['hi','Price ↓'],['top','Top rated']].map(([v,l])=>`<button data-sort="${v}" class="${sort===v?'on':''}">${l}</button>`).join('')}</div>
+    <label class="toggle"><input type="checkbox" id="wlOnly" ${wlOnly?'checked':''}>Wireless only</label>
+  </div>
+  <p class="muted" style="margin:0 0 12px">${items.length} product${items.length===1?'':'s'}</p>
+  <div class="grid">${items.length?items.map(card).join(''):`<div class="empty">Nothing matches those filters. Try clearing the search or price limit.</div>`}</div>
+  <p class="note">Prices are approximate Thai prices for this demo. Use the store links on each product for today's price.</p>`;
+}
+function renderSetups(){
+  return `<div class="main-head"><div><div class="eyebrow">RigForge picks</div><h1 style="margin-top:6px">Recommended setups</h1><p class="lede">Complete gear combinations for different players and budgets. Click any item for details and store links.</p></div></div>
+  <div class="presets">${SETUPS.map(s=>{const items=s.items.map(id=>BYID[id]),tot=items.reduce((a,p)=>a+p.price,0);return `
+    <article class="preset"><div class="tier"><span>${s.tag}</span></div><h3>${s.name}</h3><p>${s.desc}</p>
+      <ul class="setup-list">${items.map(p=>`<li><span class="si">${ICON[p.cat]}</span><button class="link" data-detail="${p.id}">${esc(p.brand)} ${esc(p.name)}</button><span class="num muted">${money(p.price)}</span></li>`).join('')}</ul>
+      <div class="pp"><span class="num">${money(tot)}</span><span class="acts"><button class="btn sm" data-chat-ask="Tell me about the ${esc(s.name)} setup. Who is it for, and what would you swap to save money or go higher-end?">Ask AI</button></span></div></article>`}).join('')}</div>
+  <div class="section"><div class="section-head"><div><div class="eyebrow">Best of each category</div><h2 style="margin-top:6px">Our top picks</h2></div></div>
+  ${CATS.map(c=>`<div class="picks-group"><h3>${ICON[c.key]}${c.label}</h3><div class="picks">${BEST.filter(b=>BYID[b.id].cat===c.key).map(b=>{const p=BYID[b.id];return `
+    <div class="pick"><span class="award">${b.award}</span><button class="link pname" data-detail="${p.id}">${esc(p.brand)} ${esc(p.name)}</button><div class="why">${esc(p.best)}</div>
+    <div class="row2"><span class="price num">${money(p.price)}</span><button class="btn sm" data-detail="${p.id}">Where to buy</button></div></div>`}).join('')}</div></div>`).join('')}</div>`;
+}
+function renderCompare(){
+  if(!compare.length)return `<div class="main-head"><div><div class="eyebrow">Compare</div><h1 style="margin-top:6px">Compare gear side by side</h1><p class="lede">Add up to 4 products from the same category using “+ Compare” on any product card.</p></div></div><div class="empty">Nothing to compare yet. <button class="btn sm" data-view="browse">Browse gear</button></div>`;
+  const items=compare.map(id=>BYID[id]),labels=[];items.forEach(p=>p.spec.forEach(([l])=>{if(!labels.includes(l))labels.push(l)}));
+  const cheapest=Math.min(...items.map(p=>p.price));
+  const row=(label,fn,cls='')=>`<tr><th scope="row">${label}</th>${items.map(p=>`<td class="${cls}">${fn(p)}</td>`).join('')}</tr>`;
+  return `<div class="main-head"><div><div class="eyebrow">Compare · ${catOf(items[0].cat).label}</div><h1 style="margin-top:6px">Side-by-side comparison</h1></div><div class="head-acts"><button class="btn ghost" data-clear-compare>Clear all</button><button class="btn" data-chat-ask="Compare these ${catOf(items[0].cat).label.toLowerCase()} for me and tell me which to buy and why: ${items.map(p=>p.brand+' '+p.name).join(', ')}.">Ask AI which to buy</button></div></div>
+  <div class="tbl-wrap cmp"><table><thead><tr><th></th>${items.map(p=>`<th><div class="cmp-h"><span class="thumb sm">${ICON[p.cat]}</span><div><div class="pbrand">${esc(p.brand)}</div><button class="link pname" data-detail="${p.id}">${esc(p.name)}</button></div></div><button class="btn ghost sm" data-compare="${p.id}">Remove</button></th>`).join('')}</tr></thead><tbody>
+    ${row('Price',p=>`<b class="num">${money(p.price)}</b>${p.price===cheapest&&items.length>1?' <span class="pill ok">Lowest</span>':''}`)}
+    ${row('3-month trend',p=>trendChip(p))}
+    ${row('Popularity',p=>{const d=demand(p);return `${demandLabel(d.score)} <span class="muted num">(${d.score}/100)</span>`})}
+    ${row('Rating',p=>ratingHtml(p.id)||'<span class="muted">No reviews yet</span>')}
+    ${row('Type',p=>esc(p.sub))}
+    ${labels.map(l=>row(esc(l),p=>esc(specVal(p,l))||'<span class="muted">—</span>')).join('')}
+    ${row('Pros',p=>`<ul class="pc">${p.pros.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`)}
+    ${row('Cons',p=>`<ul class="pc con">${p.cons.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`)}
+    ${row('Best for',p=>esc(p.best))}
+    ${row('Buy',p=>`<button class="btn sm primary" data-detail="${p.id}">Store links</button>`)}
+  </tbody></table></div>`;
+}
+function renderGuides(){
+  return `<div class="main-head"><div><div class="eyebrow">Buying guides</div><h1 style="margin-top:6px">Know what you're buying</h1><p class="lede">The key things to understand before choosing each type of gear, explained simply.</p></div></div>
+  <div class="guides">${CATS.map(c=>{const g=GUIDES[c.key];return `<section class="guide"><div class="guide-h"><span class="thumb">${ICON[c.key]}</span><h2>${g.title}</h2></div>
+    <dl>${g.tips.map(([t,d])=>`<div><dt>${t}</dt><dd>${d}</dd></div>`).join('')}</dl>
+    <div class="guide-f"><button class="btn sm" data-cat-go="${c.key}">Browse ${c.label.toLowerCase()}</button><button class="btn sm ghost" data-chat-ask="Help me choose a ${c.one}. Ask me a couple of quick questions about my budget and how I play first.">Help me choose</button></div></section>`}).join('')}</div>`;
+}
+function renderCmpBar(){
+  const bar=$('#cmpBar');
+  if(!compare.length||view==='compare'){bar.hidden=true;return}
+  bar.hidden=false;bar.innerHTML=`<span><b>${compare.length}</b> selected to compare</span><span class="cmp-chips">${compare.map(id=>`<span class="tag">${esc(BYID[id].name)}</span>`).join('')}</span><button class="btn sm ghost" data-clear-compare>Clear</button><button class="btn sm primary" data-view="compare">Compare now</button>`;
+}
+function render(){
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.view===view));
+  $('#cmpCount').textContent=compare.length?` (${compare.length})`:'';
+  $('#main').innerHTML=view==='browse'?renderBrowse():view==='setups'?renderSetups():view==='compare'?renderCompare():renderGuides();
+  renderCmpBar();
+}
+
+/* ---------- drawer ---------- */
+function openDrawer(id){
+  const p=BYID[id];if(!p)return;drawerId=id;reviewStars=0;
+  const award=BEST.find(x=>x.id===id),inC=compare.includes(id);
+  $('#drawer').innerHTML=`
+    <div class="d-head"><span class="eyebrow">${catOf(p.cat).label} · ${esc(p.sub)}</span><button class="btn ghost sm" id="dClose" aria-label="Close details">✕</button></div>
+    <div class="d-body">
+      <div class="d-hero"><div class="thumb">${ICON[p.cat]}</div><div style="min-width:0"><div class="pbrand">${esc(p.brand)}</div><h2>${esc(p.name)}</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;align-items:center">${award?`<span class="award-b">${award.award}</span>`:''}<span id="dRating">${ratingHtml(id)}</span></div></div></div>
+      <div class="d-buy"><div class="price num">${money(p.price)}${cur!=='THB'?`<small>${fmtIn('THB',p.price)}</small>`:''}<small>Approximate price</small></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ${inC?'sel':''}" data-compare="${p.id}">${inC?'✓ In compare':'+ Compare'}</button><a class="btn primary" href="#buy" data-jump="buy">Where to buy</a></div></div>
+      <div><p class="d-desc">${esc(p.desc)}</p><p class="bestfor"><b>Best for:</b> ${esc(p.best)}</p>
+        <div style="margin-top:10px"><button class="btn sm" data-chat-ask="Tell me more about the ${esc(p.brand+' '+p.name)}. Is it worth it, and what are the best alternatives?">Ask AI about this</button></div></div>
+      <div class="proscons"><div><h3>What we like</h3><ul class="pc">${p.pros.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><div><h3>Keep in mind</h3><ul class="pc con">${p.cons.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>
+      <div><h2 style="margin-bottom:8px">Specifications</h2><div class="specs"><table><tbody>${p.spec.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}<tr><td>Wireless</td><td>${p.wl?'Yes':'No'}</td></tr></tbody></table></div></div>
+      <div id="buy"><div class="sec-h"><h2>Where to buy</h2><span class="muted">Opens in a new tab</span></div>
+        <div class="shops">${shops(p).map(s=>`<a class="shop" href="${s.u}" target="_blank" rel="noopener noreferrer"><span class="shop-i">${esc(s.n[0])}</span><span style="min-width:0"><b>${esc(s.n)}</b><small>${esc(s.d)}</small></span>${EXT_I}</a>`).join('')}</div>
+        <p class="muted" style="font-size:12px;margin:8px 0 0">Links open store searches for this product. Prices, stock and sellers vary; buy from official or trusted sellers.</p></div>
+      <div id="priceSec"></div>
+      <div id="demandSec"></div>
+      <div><div class="sec-h"><h2>Reviews</h2></div><div id="revSum"></div><div id="revForm"></div><div class="rv-list" id="revList" style="margin-top:12px"></div></div>
+      <div id="comWrap"><div class="sec-h"><h2>Questions & comments</h2></div><div id="comForm"></div><div class="rv-list" id="comList" style="margin-top:12px"></div></div>
+    </div>`;
+  $('#drawer').classList.add('open');$('#drawer').setAttribute('aria-hidden','false');$('#dscrim').hidden=false;$('#drawer').scrollTop=0;
+  renderForms();renderDrawerLists();renderPriceSec();renderDemandSec();
+  setTimeout(()=>$('#dClose')?.focus(),50);
+}
+function closeDrawer(){drawerId=null;$('#drawer').classList.remove('open');$('#drawer').setAttribute('aria-hidden','true');$('#dscrim').hidden=true}
+function renderForms(){
+  if(!drawerId)return;
+  if(!db){$('#revForm').innerHTML=`<p class="muted">Member reviews appear when this page is opened in Claude by a signed-in viewer.</p>`;$('#comForm').innerHTML='';$('#comWrap').hidden=true;return}
+  $('#comWrap').hidden=false;
+  if(canWrite===false){$('#revForm').innerHTML=`<p class="muted">You can read reviews here. Posting needs Contributor access to this page.</p>`;$('#comForm').innerHTML='';return}
+  $('#revForm').innerHTML=`<form class="form" id="fRev"><div class="frow"><span class="muted">Your rating</span><div class="star-pick" role="radiogroup" aria-label="Rating">${[1,2,3,4,5].map(n=>`<button type="button" role="radio" aria-checked="${reviewStars===n}" aria-label="${n} star${n>1?'s':''}" data-star="${n}" class="${reviewStars>=n?'on':''}">★</button>`).join('')}</div></div>
+    <label class="visually-hidden" for="revText">Your review</label><textarea id="revText" maxlength="1000" placeholder="How does it feel, sound or look? Build quality, comfort, value…"></textarea>
+    <div class="frow"><span class="muted" id="revMsg"></span><button class="btn primary sm" type="submit">Post review</button></div></form>`;
+  $('#comForm').innerHTML=`<form class="form" id="fCom"><label class="visually-hidden" for="comText">Your question or comment</label><textarea id="comText" maxlength="1000" placeholder="Ask a question or share a tip…"></textarea>
+    <div class="frow"><span class="muted" id="comMsg"></span><button class="btn sm" type="submit">Post comment</button></div></form>`;
+}
+function timeAgo(t){const s=(Date.now()-t)/1000;if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+' min ago';if(s<86400)return Math.floor(s/3600)+' h ago';if(s<86400*30)return Math.floor(s/86400)+' d ago';return new Date(t).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}
+function itemHtml(x,kind){return `<div class="rv"><div class="rv-top">${x.author?`<img alt="" data-av="${esc(x.author)}" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">`:''}<span class="who" data-uid="${esc(x.author||'')}">${x.author?'':'Someone'}</span>${kind==='r'?starStr(x.rating):''}<span class="when">${timeAgo(x.at||0)}</span>${x.author&&myId&&x.author===myId?`<button class="btn ghost sm del" data-del-${kind}="${esc(x.id)}">Delete</button>`:''}</div><p></p></div>`}
+async function renderDrawerLists(){
+  if(!drawerId)return;const id=drawerId,rs=reviews.filter(r=>r.part===id),cs=comments.filter(c=>c.part===id),rt=ratingOf(id);
+  $('#revSum').innerHTML=rt?`<div class="rv-sum"><div class="avg num">${rt.avg.toFixed(1)}</div><div>${starStr(rt.avg)}<div class="muted">${rt.n} review${rt.n>1?'s':''}</div></div></div>`:'';
+  $('#dRating').innerHTML=ratingHtml(id);
+  const rl=$('#revList'),cl=$('#comList');
+  rl.innerHTML=rs.length?rs.map(r=>itemHtml(r,'r')).join(''):(db?`<p class="muted">No reviews yet. Own this? Be the first to review it.</p>`:'');
+  cl.innerHTML=cs.length?cs.map(c=>itemHtml(c,'c')).join(''):(db?`<p class="muted">No questions yet.</p>`:'');
+  rl.querySelectorAll('.rv p').forEach((el,i)=>el.textContent=rs[i].text||'');cl.querySelectorAll('.rv p').forEach((el,i)=>el.textContent=cs[i].text||'');
+  renderDemandSec();
+  const ids=[...new Set([...rs,...cs].map(x=>x.author).filter(Boolean))];
+  if(userNs&&ids.length){const ps=await userNs.profiles(ids);if(drawerId!==id)return;
+    document.querySelectorAll('#drawer [data-uid]').forEach(el=>{const u=el.dataset.uid;if(!u)return;const p=ps[u];el.textContent=p?.isMe?'You':(p?.name||'RigForge member')});
+    document.querySelectorAll('#drawer [data-av]').forEach(el=>{const p=ps[el.dataset.av];if(p?.avatarUrl)el.src=p.avatarUrl})}
+  else document.querySelectorAll('#drawer [data-uid]').forEach(el=>{if(el.dataset.uid)el.textContent=el.dataset.uid===myId?'You':'RigForge member'});
+}
+function refreshRatings(){document.querySelectorAll('[data-rating-for]').forEach(el=>el.innerHTML=ratingHtml(el.dataset.ratingFor))}
+async function postReview(){const text=$('#revText').value.trim(),msg=$('#revMsg');
+  if(!reviewStars){msg.textContent='Pick a star rating first.';return}if(text.length<3){msg.textContent='Add a few words about your experience.';return}
+  msg.textContent='Posting…';try{await db.collection('reviews').add({part:drawerId,rating:reviewStars,text:text.slice(0,1000),author:myId||null,at:Date.now()});reviewStars=0;renderForms();toast('Review posted. Thank you!')}
+  catch(e){msg.textContent=e?.code==='invalid_argument'?'You don’t have permission to post here.':e?.code==='quota_exceeded'?'Review storage is full.':'Couldn’t post. Try again in a moment.';if(e?.code==='invalid_argument'){canWrite=false;setTimeout(renderForms,1500)}}}
+async function postComment(){const text=$('#comText').value.trim(),msg=$('#comMsg');if(text.length<2){msg.textContent='Write your question or comment first.';return}
+  msg.textContent='Posting…';try{await db.collection('comments').add({part:drawerId,text:text.slice(0,1000),author:myId||null,at:Date.now()});$('#comText').value='';msg.textContent='';toast('Comment posted')}
+  catch(e){msg.textContent=e?.code==='invalid_argument'?'You don’t have permission to post here.':'Couldn’t post. Try again in a moment.';if(e?.code==='invalid_argument'){canWrite=false;setTimeout(renderForms,1500)}}}
+async function initData(){
+  const cl=window.claude;if(!cl||!cl.use)return;
+  try{userNs=await cl.use('user');if(userNs){myId=await userNs.id();canWrite=await userNs.can('data.write')}}catch(e){}
+  try{db=await cl.use('db')}catch(e){db=null}
+  if(!db)return;
+  db.collection('reviews').orderBy('at','desc').limit(1000).onSnapshot(s=>{reviews=s.docs.map(d=>({id:d.id,...d.data()}));refreshRatings();renderDrawerLists()},()=>{});
+  db.collection('comments').orderBy('at','desc').limit(1000).onSnapshot(s=>{comments=s.docs.map(d=>({id:d.id,...d.data()}));renderDrawerLists()},()=>{});
+  if(drawerId)renderForms();
+}
+
+/* ---------- converter ---------- */
+function renderConv(){
+  if(conv.amt===null)conv.amt=1000;
+  const out=convert(+conv.amt||0,conv.from,conv.to),one=convert(1,conv.from,conv.to);
+  const opts=sel=>CURRENCIES.map(x=>`<option value="${x.c}" ${x.c===sel?'selected':''}>${x.c}</option>`).join('');
+  $('#conv').innerHTML=`<h3>Currency converter</h3><div class="sub">Rates from ${RATES_DATE}. For reference only.</div>
+    <div class="conv-grid"><div class="conv-row"><input id="cAmt" type="number" inputmode="decimal" min="0" step="any" value="${conv.amt}" aria-label="Amount"><select id="cFrom" aria-label="From currency">${opts(conv.from)}</select></div>
+      <button class="swap" id="cSwap" aria-label="Swap currencies"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg></button>
+      <div class="conv-out"><div class="big num" id="cOut">${fmtIn(conv.to,out)}</div><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:6px"><span class="rate num">1 ${conv.from} = ${one.toLocaleString('en-US',{maximumFractionDigits:one<1?5:3})} ${conv.to}</span><select id="cTo" aria-label="To currency" style="width:108px">${opts(conv.to)}</select></div></div></div>
+    <div class="quick">${['USD','EUR','JPY','SGD','MYR','CNY'].map(c=>`<button data-qto="${c}">${c}</button>`).join('')}</div>
+    <div class="conv-foot"><button class="btn primary" id="cShow">Show prices in ${conv.to}</button></div>`;
+}
+function openConv(){renderConv();$('#conv').hidden=false;$('#convBtn').classList.add('on');$('#convBtn').setAttribute('aria-expanded','true')}
+function closeConv(){$('#conv').hidden=true;$('#convBtn').classList.remove('on');$('#convBtn').setAttribute('aria-expanded','false')}
+
+/* ---------- AI chat ---------- */
+let sampleFn=null,sampleState='pending',chatMsgs=[],chatBusy=false,chatCtl=null;
+const SUGGESTIONS=['Best wireless mouse under ฿4,000?','OLED or IPS for competitive games?','What is Rapid Trigger?','Build me a ฿15,000 setup','Headset or IEMs for FPS?'];
+function systemPrompt(){
+  const cat_=P.map(p=>`${p.id} | ${p.cat}/${p.sub} | ${p.brand} ${p.name} | ${p.price} | ${p.wl?'wireless':'wired'} | ${p.spec.map(s=>s[0]+': '+s[1]).join('; ')}`).join('\n');
+  return `You are "RigForge AI", the gaming-gear expert on RigForge Gear, a guide to gaming keyboards, mice, headsets, monitors and accessories by NVK (Thailand). Answer ANY question: choosing gear, comparing products, explaining terms (switches, polling rate, panel types, etc.), setup tips and troubleshooting. Be friendly, expert and concise: aim for under 170 words unless asked for detail. Use short paragraphs or "- " bullet lists; **bold** sparingly; no tables, no headings.
+When you recommend a product from the catalog below, write its id in double square brackets, e.g. [[gpx-sl2]], next to its name in normal text. The page turns each into a button that opens the product with store links, so only use ids from the catalog. You may mention products we don't list, but say they're not in the RigForge catalog.
+Catalog prices are approximate Thai prices in THB for a demo; tell users to check the store links for today's price. The visitor is viewing prices in ${cur}${cur!=='THB'?` (1 THB ≈ ${CUR[cur].r} ${cur})`:''}.
+Don't invent specs beyond the catalog; if unsure, say so. If a question is unrelated to gaming gear, still answer briefly and helpfully.
+${compare.length?`The visitor is currently comparing: ${compare.map(id=>BYID[id].brand+' '+BYID[id].name).join(', ')}.\n`:''}
+CATALOG (id | category/type | name | price THB | connection | specs):
+${cat_}`;
+}
+function mdLite(src){
+  let s=esc(src);
+  s=s.replace(/\[\[([a-z0-9\-]+)\]\]/gi,(m,id)=>{const p=BYID[id];if(!p)return'';return `<button class="chip-part" data-detail="${p.id}">View · ${esc(p.name)} · ${money(p.price)}</button>`});
+  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>');
+  const lines=s.split('\n');let out='',list=null,para=[];
+  const flushP=()=>{if(para.length){out+=`<p>${para.join('<br>')}</p>`;para=[]}},flushL=()=>{if(list){out+=`<${list.t}>${list.items.map(i=>`<li>${i}</li>`).join('')}</${list.t}>`;list=null}};
+  for(const ln of lines){const ul=ln.match(/^\s*[-*•]\s+(.*)/),ol=ln.match(/^\s*\d+[.)]\s+(.*)/),hd=ln.match(/^\s*#{1,4}\s+(.*)/);
+    if(ul||ol){flushP();const t=ul?'ul':'ol';if(!list||list.t!==t){flushL();list={t,items:[]}}list.items.push((ul||ol)[1])}
+    else if(!ln.trim()){flushP();flushL()}else if(hd){flushP();flushL();out+=`<p><strong>${hd[1]}</strong></p>`}else{flushL();para.push(ln)}}
+  flushP();flushL();return out;
+}
+function renderChat(){
+  const body=$('#chBody');
+  if(sampleState==='off'){body.innerHTML=`<div class="bub bot"><p>The AI assistant isn't available in this view. Open this page in Claude while signed in to chat with RigForge AI.</p></div>`;$('#chSugg').innerHTML='';$('#chIn').disabled=true;$('#chSend').disabled=true;return}
+  body.innerHTML=`<div class="bub bot"><p>Hi! I'm <strong>RigForge AI</strong>. I know every product in our gear guide. Ask me what to buy, what a spec means, or how two products compare.</p></div>`+chatMsgs.map((m,i)=>m.role==='user'?`<div class="bub user"></div>`:`<div class="bub bot ${m.error?'err':''}" data-bi="${i}">${m.pending&&!m.content?'<span class="thinking"><span></span><span></span><span></span></span>':mdLite(m.content)}${m.note?`<p class="muted" style="margin-top:6px">${esc(m.note)}</p>`:''}</div>`).join('');
+  body.querySelectorAll('.bub.user').forEach((el,j)=>{el.textContent=chatMsgs.filter(m=>m.role==='user')[j].content});
+  $('#chSugg').innerHTML=chatMsgs.length?'':SUGGESTIONS.map(s=>`<button data-chat-ask="${esc(s)}">${esc(s)}</button>`).join('');
+  $('#chSend').textContent=chatBusy?'Stop':'Send';$('#chSend').classList.toggle('primary',!chatBusy);$('#chIn').disabled=false;$('#chSend').disabled=false;body.scrollTop=body.scrollHeight;
+}
+function updateBotBubble(i){const el=document.querySelector(`#chBody [data-bi="${i}"]`);if(!el)return renderChat();el.innerHTML=mdLite(chatMsgs[i].content);$('#chBody').scrollTop=$('#chBody').scrollHeight}
+function openChat(){closeConv();$('#chat').hidden=false;$('#fab').hidden=true;renderChat();setTimeout(()=>$('#chIn').focus(),50)}
+function closeChat(){$('#chat').hidden=true;$('#fab').hidden=false}
+async function sendChat(text){
+  text=(text||'').trim();if(!text||chatBusy)return;
+  if(sampleState==='pending'){toast('The assistant is still starting. Try again in a moment.');return}
+  if(!sampleFn){sampleState='off';renderChat();return}
+  chatMsgs.push({role:'user',content:text});const i=chatMsgs.push({role:'assistant',content:'',pending:true})-1;chatBusy=true;renderChat();
+  const turns=chatMsgs.slice(0,-1).filter(m=>!m.error&&m.content).slice(-12).map(m=>({role:m.role,content:m.content}));while(turns.length&&turns[0].role!=='user')turns.shift();
+  chatCtl=new AbortController();
+  try{const r=await sampleFn([{role:'user',content:systemPrompt()},...turns],{cache:false,signal:chatCtl.signal,onText:({text})=>{chatMsgs[i].content=text;chatMsgs[i].pending=false;updateBotBubble(i)}});
+    chatMsgs[i]={role:'assistant',content:r.text,note:r.truncated?'Answer cut short. Ask a narrower question for the rest.':''}}
+  catch(e){const code=e?.code;
+    if(code==='cancelled'){chatMsgs[i]={role:'assistant',content:e.text||'',note:'Stopped.'};if(!e.text)chatMsgs[i].error=true}
+    else if(['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed'].includes(code))sampleState='off';
+    else{const copy={rate_limited:'You’re sending messages quickly. Wait a moment, then try again.',session_expired:'Please sign in to Claude again, then retry.',refused:'I can’t help with that one. Try asking a different way.',prompt_too_large:'That conversation got too long. Start a new chat.',empty_completion:'I didn’t get an answer. Try rephrasing.'}[code]||'Something went wrong reaching the assistant. Try again.';
+      chatMsgs[i]=e?.text&&code!=='refused'?{role:'assistant',content:e.text,note:copy}:{role:'assistant',content:copy,error:true}}}
+  finally{chatBusy=false;chatCtl=null;renderChat()}
+}
+function initSample(){const cl=window.claude;if(!cl||!cl.use){sampleState='off';return}
+  cl.use('sample').then(s=>{sampleFn=s;sampleState=s?'ready':'off';if(!$('#chat').hidden)renderChat()}).catch(()=>{sampleState='off'})}
+
+/* ---------- events ---------- */
+$('#cur').innerHTML=CURRENCIES.map(x=>`<option value="${x.c}" ${x.c===cur?'selected':''}>${x.s.length>1?x.c:x.s+' '+x.c}</option>`).join('');
+function setCur(c){cur=c;$('#cur').value=c;store.set('rg-cur',c);render();if(drawerId)openDrawer(drawerId)}
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2200)}
+function setView(v){view=v;render();window.scrollTo({top:0,behavior:'smooth'})}
+function toggleCompare(id){
+  const p=BYID[id];
+  if(compare.includes(id))compare=compare.filter(x=>x!==id);
+  else{if(compare.length&&BYID[compare[0]].cat!==p.cat){compare=[id];toast(`Started a new ${catOf(p.cat).one} comparison`)}
+    else if(compare.length>=4){toast('You can compare up to 4 products');return}else compare.push(id)}
+  store.set('rg-compare',compare);render();if(drawerId===id)openDrawer(id);
+}
+document.addEventListener('click',e=>{
+  const cv=$('#conv');if(!cv.hidden&&!e.target.closest('#conv')&&!e.target.closest('#convBtn'))closeConv();
+  const t=e.target.closest('button,a');if(!t)return;const d=t.dataset;
+  if(t.id==='convBtn'){cv.hidden?openConv():closeConv();return}
+  if(t.id==='cSwap'){[conv.from,conv.to]=[conv.to,conv.from];renderConv();return}
+  if(d.qto){conv.to=d.qto;if(conv.from===conv.to)conv.from='THB';renderConv();return}
+  if(t.id==='cShow'){setCur(conv.to);closeConv();toast(`Showing prices in ${CUR[conv.to].n}`);return}
+  if('chatOpen' in d){openChat();return}
+  if(d.chatAsk){closeDrawer();openChat();sendChat(d.chatAsk);return}
+  if(t.id==='chClose'){closeChat();return}
+  if(t.id==='chClear'){if(chatBusy)chatCtl?.abort();chatMsgs=[];renderChat();return}
+  if(t.id==='chSend'&&chatBusy){e.preventDefault();chatCtl?.abort();return}
+  if(d.detail){if(window.innerWidth<560&&!$('#chat').hidden)closeChat();openDrawer(d.detail);return}
+  if(d.jump){e.preventDefault();$('#'+d.jump)?.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(t.id==='dClose'){closeDrawer();return}
+  if(d.compare){toggleCompare(d.compare);return}
+  if('clearCompare' in d){compare=[];store.set('rg-compare',compare);render();return}
+  if(d.prange){priceRange=d.prange;renderPriceSec();return}
+  if(d.fch){fcH=+d.fch;renderPriceSec();return}
+  if(d.star){reviewStars=+d.star;document.querySelectorAll('[data-star]').forEach(s=>{s.classList.toggle('on',+s.dataset.star<=reviewStars);s.setAttribute('aria-checked',String(+s.dataset.star===reviewStars))});return}
+  if(d.delR){db?.doc('reviews/'+d.delR).delete().then(()=>toast('Review deleted'),()=>toast('Couldn’t delete that review'));return}
+  if(d.delC){db?.doc('comments/'+d.delC).delete().then(()=>toast('Comment deleted'),()=>toast('Couldn’t delete that comment'));return}
+  if(d.view){if(d.view==='browse'&&t.classList.contains('brand')){cat='all';sub='all';q=''}setView(d.view);return}
+  if(d.cat){cat=d.cat;sub='all';brandF='all';render();return}
+  if(d.catGo){cat=d.catGo;sub='all';brandF='all';setView('browse');return}
+  if(d.sub){sub=d.sub;render();return}
+  if(d.sort){sort=d.sort;render();return}
+});
+$('#dscrim').addEventListener('click',closeDrawer);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeConv();closeDrawer();if(!$('#chat').hidden&&!chatBusy)closeChat()}});
+document.addEventListener('submit',e=>{
+  if(e.target.id==='chForm'){e.preventDefault();if(chatBusy){chatCtl?.abort();return}const v=$('#chIn').value;$('#chIn').value='';autoGrow();sendChat(v)}
+  if(e.target.id==='fRev'){e.preventDefault();postReview()}
+  if(e.target.id==='fCom'){e.preventDefault();postComment()}
+});
+function autoGrow(){const el=$('#chIn');el.style.height='auto';el.style.height=Math.min(120,el.scrollHeight)+'px'}
+$('#chIn').addEventListener('input',autoGrow);
+$('#chIn').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('#chForm').requestSubmit()}});
+document.addEventListener('input',e=>{
+  if(e.target.id==='q'){q=e.target.value;const pos=e.target.selectionStart;render();const el=$('#q');el.focus();try{el.setSelectionRange(pos,pos)}catch(_){}}
+  if(e.target.id==='cAmt'){conv.amt=e.target.value;$('#cOut').textContent=fmtIn(conv.to,convert(+conv.amt||0,conv.from,conv.to))}
+});
+document.addEventListener('change',e=>{
+  const id=e.target.id;
+  if(id==='cur')setCur(e.target.value);
+  if(id==='brandF'){brandF=e.target.value;render()}
+  if(id==='maxP'){maxP=+e.target.value;render()}
+  if(id==='wlOnly'){wlOnly=e.target.checked;render()}
+  if(id==='cFrom'){conv.from=e.target.value;renderConv()}
+  if(id==='cTo'){conv.to=e.target.value;renderConv()}
+});
+if(!window.claude)document.documentElement.classList.add('no-claude');
+render();initSample();initData();
+
+</script>
+
+</body>
+</html>
