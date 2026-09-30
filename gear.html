@@ -303,6 +303,12 @@ tfoot td{font-weight:700;border-bottom:0;font-size:18px;letter-spacing:-.02em}
 .d-body{padding:20px;display:grid;gap:22px}
 .d-hero{display:flex;gap:16px;align-items:flex-start}
 .d-hero .thumb{width:72px;height:72px;border-radius:18px}
+.card-img{height:150px;border-radius:12px;background:#fff;overflow:hidden;flex:none}
+.card-img img{display:block;width:100%;height:100%;object-fit:contain;padding:10px;box-sizing:border-box}
+.thumb.has-img{background:#fff;overflow:hidden}
+.thumb.has-img svg{display:none}
+.thumb img{display:block;width:100%;height:100%;object-fit:contain;padding:3px;box-sizing:border-box}
+.d-hero .thumb.d-img.has-img{width:180px;height:140px}
 .d-hero .thumb svg{width:40px;height:40px}
 .d-hero h2{font-size:22px;line-height:1.2}
 .d-buy{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--surface-2);border-radius:14px;padding:14px 16px}
@@ -488,6 +494,7 @@ ul.pc.con li::marker{content:"–  ";color:var(--warn)}
 </section>
 <div class="toast" id="toast" role="status"></div>
 
+<script src="gear-images.js"></script>
 <script>
 const CATS=[
   {key:'keyboard',label:'Keyboards',one:'keyboard',subs:['Full size','96% / 98%','TKL','75%','65%','60%']},
@@ -1054,6 +1061,11 @@ const P=[
 /* GEN-MORE end */
 ];
 const BYID=Object.fromEntries(P.map(p=>[p.id,p]));
+/* product photos: IMG (gear-images.js) maps id -> [url, backup urls]. Broken links fall through to the next, then to the icon (or nothing). */
+function photo(p,cls,fallback=''){const u=((window.IMG||{})[p.id]||[]);if(!u.length)return fallback?`<div class="${cls}">${fallback}</div>`:'';
+  return `<div class="${cls} has-img" data-fb="${fallback?1:0}"><img src="${esc(u[0])}" data-alt="${esc(u.slice(1).join(' '))}" alt="${esc(p.brand+' '+p.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="imgFail(this)">${fallback}</div>`}
+function imgFail(el){const rest=(el.dataset.alt||'').split(' ').filter(Boolean);if(rest.length){el.dataset.alt=rest.slice(1).join(' ');el.src=rest[0];return}
+  const box=el.parentNode;box.classList.remove('has-img');el.remove();if(box.dataset.fb==='0')box.remove()}
 
 const SETUPS=[
   {id:'budget',name:'Budget Esports',tag:'Starter',desc:'Everything you need to start competing, for about ฿10,000.',items:['k552','g305','bsv2x','aoc-24g2sp','qck-heavy']},
@@ -1325,7 +1337,7 @@ function filtered(){
 }
 function card(p){
   const award=BEST.find(x=>x.id===p.id),inC=compare.includes(p.id),d=demand(p);
-  return `<article class="card">
+  return `<article class="card">${photo(p,'card-img')}
     <div class="card-top" style="padding-right:0"><div class="thumb">${ICON[p.cat]}</div><div style="min-width:0;flex:1"><div class="pbrand">${esc(p.brand)}${award?` · <span style="color:var(--accent)">${award.award}</span>`:''}</div><button class="link pname" data-detail="${p.id}">${esc(p.name)}</button><div class="meta-row"><span class="dm-chip ${d.score>=80?'hot':''}">${demandLabel(d.score)}</span><span data-rating-for="${p.id}">${ratingHtml(p.id)}</span></div></div></div>
     <p class="card-desc">${esc(p.best)}</p>
     <div class="tags">${keyTags(p).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
@@ -1373,7 +1385,7 @@ function renderCompare(){
   const cheapest=Math.min(...items.map(p=>p.price));
   const row=(label,fn,cls='')=>`<tr><th scope="row">${label}</th>${items.map(p=>`<td class="${cls}">${fn(p)}</td>`).join('')}</tr>`;
   return `<div class="main-head"><div><div class="eyebrow">Compare · ${catOf(items[0].cat).label}</div><h1 style="margin-top:6px">Side-by-side comparison</h1></div><div class="head-acts"><button class="btn ghost" data-clear-compare>Clear all</button><button class="btn" data-chat-ask="Compare these ${catOf(items[0].cat).label.toLowerCase()} for me and tell me which to buy and why: ${items.map(p=>p.brand+' '+p.name).join(', ')}.">Ask AI which to buy</button></div></div>
-  <div class="tbl-wrap cmp"><table><thead><tr><th></th>${items.map(p=>`<th><div class="cmp-h"><span class="thumb sm">${ICON[p.cat]}</span><div><div class="pbrand">${esc(p.brand)}</div><button class="link pname" data-detail="${p.id}">${esc(p.name)}</button></div></div><button class="btn ghost sm" data-compare="${p.id}">Remove</button></th>`).join('')}</tr></thead><tbody>
+  <div class="tbl-wrap cmp"><table><thead><tr><th></th>${items.map(p=>`<th><div class="cmp-h">${photo(p,'thumb sm',ICON[p.cat])}<div><div class="pbrand">${esc(p.brand)}</div><button class="link pname" data-detail="${p.id}">${esc(p.name)}</button></div></div><button class="btn ghost sm" data-compare="${p.id}">Remove</button></th>`).join('')}</tr></thead><tbody>
     ${row('Price',p=>`<b class="num">${money(p.price)}</b>${p.price===cheapest&&items.length>1?' <span class="pill ok">Lowest</span>':''}`)}
     ${row('3-month trend',p=>trendChip(p))}
     ${row('Popularity',p=>{const d=demand(p);return `${demandLabel(d.score)} <span class="muted num">(${d.score}/100)</span>`})}
@@ -1411,7 +1423,7 @@ function openDrawer(id){
   $('#drawer').innerHTML=`
     <div class="d-head"><span class="eyebrow">${catOf(p.cat).label} · ${esc(p.sub)}</span><button class="btn ghost sm" id="dClose" aria-label="Close details">✕</button></div>
     <div class="d-body">
-      <div class="d-hero"><div class="thumb">${ICON[p.cat]}</div><div style="min-width:0"><div class="pbrand">${esc(p.brand)}</div><h2>${esc(p.name)}</h2>
+      <div class="d-hero">${photo(p,'thumb d-img',ICON[p.cat])}<div style="min-width:0"><div class="pbrand">${esc(p.brand)}</div><h2>${esc(p.name)}</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;align-items:center">${award?`<span class="award-b">${award.award}</span>`:''}<span id="dRating">${ratingHtml(id)}</span></div></div></div>
       <div class="d-buy"><div class="price num">${money(p.price)}${cur!=='THB'?`<small>${fmtIn('THB',p.price)}</small>`:''}<small>Approximate price</small></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ${inC?'sel':''}" data-compare="${p.id}">${inC?'✓ In compare':'+ Compare'}</button><a class="btn primary" href="#buy" data-jump="buy">Where to buy</a></div></div>
