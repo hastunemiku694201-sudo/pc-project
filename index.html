@@ -317,6 +317,8 @@ tfoot td{font-weight:700;border-bottom:0;font-size:18px;letter-spacing:-.02em}
 .d-hero{display:flex;gap:16px;align-items:flex-start}
 .d-hero .thumb{width:72px;height:72px;border-radius:18px}
 .d-hero .thumb svg{width:40px;height:40px}
+.st-open{width:100%;justify-content:center;border:1px dashed var(--line)}
+.st-open:hover{border-color:var(--accent);color:var(--accent)}
 .card-img{height:140px;border-radius:12px;background:#fff;overflow:hidden;flex:none}
 .card-img img{display:block;width:100%;height:100%;object-fit:contain;padding:10px;box-sizing:border-box}
 .thumb.has-img{background:#fff;overflow:hidden}
@@ -470,6 +472,7 @@ tfoot td{font-weight:700;border-bottom:0;font-size:18px;letter-spacing:-.02em}
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script src="parts-images.js"></script>
+<script src="stores.js"></script>
 <script>
 /* ================= DATA START ================= */
 const ICON={
@@ -1143,6 +1146,7 @@ function renderList(cat){
       <div class="card-top"><div class="thumb">${ICON[cat]}</div><div style="min-width:0"><div class="pbrand">${p.brand}${award?` · <span style="color:var(--accent)">${award.award}</span>`:''}</div><button class="link pname" data-detail="${p.id}">${p.name}</button><div data-rating-for="${p.id}">${ratingHtml(p.id)}</div></div></div>
       <div class="tags">${tags(p).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
       ${m?`<div class="msgs">${m}</div>`:''}
+      ${p.none?'':`<button class="btn sm ghost st-open" data-stores="${p.id}">Compare store prices</button>`}
       <div class="card-foot"><div class="price num">${p.price?money(p.price):'Free'}${cur!=='THB'&&p.price?`<small>${fmtIn('THB',p.price)}</small>`:''}${trendChip(p)}</div>
         <div class="acts"><button class="btn sm ghost" data-detail="${p.id}">Details</button>${sel?`<button class="btn sm sel" data-clear="${cat}">✓ Selected</button>`:`<button class="btn sm ${st==='err'?'':'primary'}" data-pick="${p.id}">${build[cat]?'Swap in':'Add'}</button>`}</div></div>
     </article>`}).join(''):`<div class="empty">No parts match. Clear the search or turn off “Compatible only”.</div>`)}
@@ -1428,6 +1432,7 @@ function openDrawer(id){
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">${award.map(a=>`<span class="pick" style="padding:0;border:0;background:none"><span class="award">${a.award}</span></span>`).join('')}<span id="dRating">${ratingHtml(id)}</span></div></div></div>
       <div class="d-buy"><div class="price num">${p.price?money(p.price):'Free'}${cur!=='THB'&&p.price?`<small>${fmtIn('THB',p.price)}</small>`:''}</div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${Object.keys(build).some(k=>k!==p.cat&&build[k])?`<span class="pill ${st}">${st==='ok'?'Fits your build':st==='warn'?'Fits, with a warning':'Won’t fit your build'}</span>`:''}
+        ${p.none?'':`<button class="btn" data-stores="${p.id}">Compare stores</button>`}
         ${sel?`<span class="pill ok">In your build</span>`:`<button class="btn primary" data-pick-stay="${p.id}">${build[p.cat]?'Swap into build':'Add to build'}</button>`}</div></div>
       ${iss.length?`<div class="msgs">${iss.map(i=>`<div class="msg ${i.level}"><b>${i.level==='err'?'✕':'!'}</b><span>${i.msg}</span></div>`).join('')}</div>`:''}
       <div><h2 style="margin-bottom:8px">About this ${catLabel(p.cat).toLowerCase()}</h2><p class="d-desc">${descOf(id)}</p>
